@@ -22,7 +22,7 @@ func (i *InstallReq) validate() error {
 
 func Install(req *InstallReq) (ret gin.H, err error) {
 	if err = req.validate(); err != nil {
-		return
+		return ret, errors.Trace(err)
 	}
 	helper := &InstallHelper{req: req}
 	pkg, err := helper.checkInstall()

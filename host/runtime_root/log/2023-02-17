@@ -1,0 +1,12 @@
+{"level":"info","time":"2023-02-17T08:05:42.628Z","caller":"backend/main.go:28","msg":"-- info --"}
+{"level":"debug","time":"2023-02-17T08:05:42.633Z","caller":"backend/main.go:29","msg":"-- Debug --"}
+{"level":"warn","time":"2023-02-17T08:05:42.634Z","caller":"backend/main.go:30","msg":"-- Warn --"}
+{"level":"error","time":"2023-02-17T08:05:42.634Z","caller":"backend/main.go:31","msg":"-- Error --"}
+{"level":"error","time":"2023-02-17T08:05:42.634Z","caller":"backend/main.go:32","msg":"-- ErrorTrace --"}
+{"level":"fatal","time":"2023-02-17T08:05:42.634Z","caller":"backend/main.go:33","msg":"-- Fatal --"}
+{"level":"info","time":"2023-02-17T08:06:15.502Z","caller":"backend/main.go:28","msg":"-- info --"}
+{"level":"debug","time":"2023-02-17T08:06:15.505Z","caller":"backend/main.go:29","msg":"-- Debug --"}
+{"level":"warn","time":"2023-02-17T08:06:15.505Z","caller":"backend/main.go:30","msg":"-- Warn --"}
+{"level":"error","time":"2023-02-17T08:06:15.506Z","caller":"backend/main.go:31","msg":"-- Error --"}
+{"level":"error","time":"2023-02-17T08:06:15.506Z","caller":"backend/main.go:32","msg":"-- ErrorTrace --"}
+{"level":"warn","time":"2023-02-17T08:06:15.506Z","caller":"backend/main.go:34","msg":"-- Warn --"}

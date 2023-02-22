@@ -1,8 +1,10 @@
 package mysql
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/jinzhu/gorm"
+	"github.com/obgnail/plugin-platform/platform/pool/plugin_pool"
 	"reflect"
 )
 
@@ -30,6 +32,24 @@ type PluginInstance struct {
 
 func (i *PluginInstance) tableName() string {
 	return "plugin_instance"
+}
+
+func (i *PluginInstance) GetConfig() *plugin_pool.PluginConfig {
+	s := &plugin_pool.Service{
+		AppUUID:      i.AppUUID,
+		InstanceUUID: i.InstanceUUID,
+		Name:         i.Name,
+		Version:      i.Version,
+		Description:  i.Description,
+		Status:       i.Status,
+	}
+	apis := make([]*plugin_pool.Api, 0)
+	_ = json.Unmarshal([]byte(i.Apis), &apis)
+	cfg := &plugin_pool.PluginConfig{
+		Service: s,
+		Apis:    apis,
+	}
+	return cfg
 }
 
 //func (i *PluginInstance) Uninstall(appId string, instanceId string, orgId string, teamId string) error {

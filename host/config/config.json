@@ -1,0 +1,22 @@
+{
+  "platform_address": "tcp://127.0.0.1:9006",
+  "platform_version": "0.2.0",
+  "platform_id": "R0000001",
+  "platform_name": "platform",
+  "platform_mysql_user": "root",
+  "platform_mysql_password": "root",
+  "platform_mysql_host": "127.0.0.1",
+  "platform_mysql_port": 3306,
+  "platform_mysql_db": "plugins",
+  "path_to_plugin": "/data/plugin/upload",
+  "runtime_id": "Host",
+  "runtime_name": "DefaultHost",
+  "runtime_language": "golang",
+  "runtime_version": "1.1.0",
+  "runtime_min_system_version": "3.5.0",
+  "runtime_debug_mode": true,
+  "runtime_timeout_sec": 30,
+  "runtime_language_version": "3.5.0",
+  "runtime_work_space": "./runtime_root/space",
+  "runtime_log_dir": "./runtime_root/log"
+}
