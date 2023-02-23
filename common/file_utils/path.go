@@ -1,4 +1,4 @@
-package utils
+package file_utils
 
 import "os"
 
@@ -12,4 +12,15 @@ func PathExists(path string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+func FindPath(path string) (string, error) {
+	for i := 0; i < 5; i++ {
+		if _, err := os.Stat(path); err == nil {
+			break
+		} else {
+			path = "../" + path
+		}
+	}
+	return path, nil
 }

@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/obgnail/plugin-platform/platform/config"
+	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/platform/service/types"
 	"strings"
 )
@@ -16,16 +16,16 @@ func IsPluginYamlPath(yamlPath string) bool {
 }
 
 func GetPluginUpgradeFilePath(appUUID string) string {
-	PluginFileDir := config.StringOrPanic("plugin_file_directory")
+	PluginFileDir := config.StringOrPanic("platform.plugins_storage_dir")
 	return JoinPath(PluginFileDir, appUUID, types.PluginUpgradeDir)
 }
 
 func GetPluginDir(appUUID string, version string) string {
-	PluginFileDir := config.StringOrPanic("plugin_file_directory")
+	PluginFileDir := config.StringOrPanic("platform.plugins_storage_dir")
 	return JoinPath(PluginFileDir, appUUID, version)
 }
 
 func GetPluginConfigPath(appUUID string, version string) string {
-	PluginFileDir := config.StringOrPanic("plugin_file_directory")
+	PluginFileDir := config.StringOrPanic("platform.plugins_storage_dir")
 	return JoinPath(PluginFileDir, appUUID, version, types.PluginFileConfigDir, types.PluginFileConfigYaml)
 }

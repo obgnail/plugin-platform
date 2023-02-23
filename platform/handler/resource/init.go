@@ -2,24 +2,24 @@ package resource
 
 import (
 	"github.com/BangWork/ones-platform-api/protocol/build_message"
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/protocol"
 )
 
-var _ common.IResources = (*Resource)(nil)
+var _ common_type.IResources = (*Resource)(nil)
 
 type Resource struct {
 	SourceMessage   *protocol.PlatformMessage
 	DistinctMessage *protocol.PlatformMessage
 
-	log       common.PluginLogger
-	event     common.EventPublisher
-	space     common.Workspace
-	sysDBOp   common.SysDB
-	localDB   common.LocalDB
-	aPICoreOp common.APICore
-	network   common.Network
-	ability   common.Ability
+	log       common_type.PluginLogger
+	event     common_type.EventPublisher
+	space     common_type.Workspace
+	sysDBOp   common_type.SysDB
+	localDB   common_type.LocalDB
+	aPICoreOp common_type.APICore
+	network   common_type.Network
+	ability   common_type.Ability
 }
 
 func New(sourceMessage *protocol.PlatformMessage) *Resource {
@@ -38,34 +38,34 @@ func New(sourceMessage *protocol.PlatformMessage) *Resource {
 	return resource
 }
 
-func (r *Resource) GetLogger() common.PluginLogger {
+func (r *Resource) GetLogger() common_type.PluginLogger {
 	return r.log
 }
 
-func (r *Resource) GetEventPublisher() common.EventPublisher {
+func (r *Resource) GetEventPublisher() common_type.EventPublisher {
 	return r.event
 }
 
-func (r *Resource) GetWorkspace() common.Workspace {
+func (r *Resource) GetWorkspace() common_type.Workspace {
 	return r.space
 }
 
-func (r *Resource) GetSysDB() common.SysDB {
+func (r *Resource) GetSysDB() common_type.SysDB {
 	return r.sysDBOp
 }
 
-func (r *Resource) GetLocalDB() common.LocalDB {
+func (r *Resource) GetLocalDB() common_type.LocalDB {
 	return r.localDB
 }
 
-func (r *Resource) GetAPICore() common.APICore {
+func (r *Resource) GetAPICore() common_type.APICore {
 	return r.aPICoreOp
 }
 
-func (r *Resource) GetOutDoor() common.Network {
+func (r *Resource) GetOutDoor() common_type.Network {
 	return r.network
 }
 
-func (r *Resource) GetAbility() common.Ability {
+func (r *Resource) GetAbility() common_type.Ability {
 	return r.ability
 }

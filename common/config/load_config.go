@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	configPath := "./config/config.json"
+	configPath := "./common/config/config.json"
 	if err := LoadConfigs(configPath); err != nil {
 		panic(err)
 	}
@@ -48,7 +48,7 @@ func LoadConfigs(configPath string) (err error) {
 func getKey(key string) (value interface{}, ok bool) {
 	list := strings.Split(key, ".")
 	if len(list) != 2 {
-		return "", false
+		panic("get key err")
 	}
 	first, second := list[0], list[1]
 	value, ok = config[first][second]

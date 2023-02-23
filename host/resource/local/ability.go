@@ -1,18 +1,17 @@
 package local
 
 import (
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
 )
 
-var _ common.Ability = (*Ability)(nil)
+var _ common_type.Ability = (*Ability)(nil)
 
 type Ability struct {
-	LayoutCard common.LayoutCard
-	Notify     common.Notify
-	Field      common.Field
+	LayoutCard common_type.LayoutCard
+	Notify     common_type.Notify
 }
 
-func NewAbility(plugin common.IPlugin) common.Ability {
+func NewAbility(plugin common_type.IPlugin) common_type.Ability {
 	//return &Ability{
 	//	LayoutCard: NewLayoutCard(plugin),
 	//	Notify:     NewNotify(plugin),
@@ -21,14 +20,10 @@ func NewAbility(plugin common.IPlugin) common.Ability {
 	return nil
 }
 
-func (a *Ability) GetNotify() common.Notify {
+func (a *Ability) GetNotify() common_type.Notify {
 	return a.Notify
 }
 
-func (a *Ability) GetLayoutCard() common.LayoutCard {
+func (a *Ability) GetLayoutCard() common_type.LayoutCard {
 	return a.LayoutCard
-}
-
-func (a *Ability) GetField() common.Field {
-	return a.Field
 }

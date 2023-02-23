@@ -1,7 +1,7 @@
 package protocol
 
 import (
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
 	"strconv"
 	"strings"
 )
@@ -14,7 +14,7 @@ func SplitVersion(version string) *Version {
 	return &Version{Major: int32(major), Minor: int32(minor), Revision: int32(patch)}
 }
 
-func BuildErrorMessage(err common.PluginError) *ErrorMessage {
+func BuildErrorMessage(err common_type.PluginError) *ErrorMessage {
 	if err != nil {
 		return &ErrorMessage{
 			Code:  int64(err.Code()),

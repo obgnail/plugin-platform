@@ -3,6 +3,7 @@ package connect
 import (
 	"github.com/golang/protobuf/proto"
 	"github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"sync"
 	"time"
@@ -39,10 +40,12 @@ func (s *BaseHandler) Send(msg *protocol.PlatformMessage, timeout time.Duration)
 
 	msgBytes, e := proto.Marshal(msg)
 	if e != nil {
+		log.ErrorDetails(e)
 		err = common_type.NewPluginError(common_type.ProtoMarshalFailure, common_type.ProtoMarshalFailureError.Error(), e.Error())
 		return nil, err
 	}
 	if e = s.Zmq.Send(msgBytes); e != nil {
+		log.ErrorDetails(e)
 		err = common_type.NewPluginError(common_type.EndpointSendErr, common_type.EndpointSendError.Error(), e.Error())
 		return nil, err
 	}
@@ -54,7 +57,6 @@ func (s *BaseHandler) Send(msg *protocol.PlatformMessage, timeout time.Duration)
 
 // SendAsync 异步发送
 func (s *BaseHandler) SendAsync(msg *protocol.PlatformMessage, timeout time.Duration, callback CallBack) {
-
 	spin := newSpin(msg.Header.SeqNo, msg, timeout, callback)
 	s.spins.Store(spin.id, spin)
 
@@ -65,11 +67,13 @@ func (s *BaseHandler) SendAsync(msg *protocol.PlatformMessage, timeout time.Dura
 
 	msgBytes, e := proto.Marshal(msg)
 	if e != nil {
+		log.ErrorDetails(e)
 		err := common_type.NewPluginError(common_type.ProtoMarshalFailure, common_type.ProtoMarshalFailureError.Error(), e.Error())
 		spin.onError(err)
 		return
 	}
 	if e = s.Zmq.Send(msgBytes); e != nil {
+		log.ErrorDetails(e)
 		err := common_type.NewPluginError(common_type.EndpointSendErr, common_type.EndpointSendError.Error(), e.Error())
 		spin.onError(err)
 		return
@@ -80,6 +84,7 @@ func (s *BaseHandler) OnMessage(endpoint *EndpointInfo, content []byte) {
 	msg := &protocol.PlatformMessage{}
 	var e common_type.PluginError
 	if err := proto.Unmarshal(content, msg); err != nil {
+		log.ErrorDetails(e)
 		e = common_type.NewPluginError(common_type.ProtoUnmarshalFailure, common_type.ProtoUnmarshalFailureError.Error(), err.Error())
 	}
 	if spin, ok := s.spins.Load(msg.Header.SeqNo); ok {

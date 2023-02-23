@@ -1,17 +1,17 @@
 package local
 
 import (
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
 )
 
-var _ common.APICore = (*APICoreOp)(nil)
+var _ common_type.APICore = (*APICoreOp)(nil)
 
 type APICoreOp struct {
 	//msg    *protocol.HttpRequestMessage
-	plugin common.IPlugin
+	plugin common_type.IPlugin
 }
 
-func NewAPICore(plugin common.IPlugin) common.APICore {
+func NewAPICore(plugin common_type.IPlugin) common_type.APICore {
 	return &APICoreOp{plugin: plugin}
 }
 
@@ -27,11 +27,11 @@ func NewAPICore(plugin common.IPlugin) common.APICore {
 //	return msg
 //}
 //
-//func (n *APICoreOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common.PluginError) {
+//func (n *APICoreOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
 //	return SyncSendToHost(n.plugin, platformMessage)
 //}
 
-func (a *APICoreOp) Fetch(httpRequest *common.HttpRequest) *common.HttpResponse {
+func (a *APICoreOp) Fetch(httpRequest *common_type.HttpRequest) *common_type.HttpResponse {
 	//headers := make(map[string]*protocol.HeaderVal)
 	//for k, val := range httpRequest.Headers {
 	//	headerVal := &protocol.HeaderVal{Val: val}
@@ -46,7 +46,7 @@ func (a *APICoreOp) Fetch(httpRequest *common.HttpRequest) *common.HttpResponse 
 	//}
 	//msg, err := a.sendMsgToHost(a.buildMessage(httpRequestMessage))
 	//if err != nil {
-	//	return &common.HttpResponse{
+	//	return &common_type.HttpResponse{
 	//		Err:        err,
 	//		StatusCode: 500,
 	//	}
@@ -62,15 +62,15 @@ func (a *APICoreOp) Fetch(httpRequest *common.HttpRequest) *common.HttpResponse 
 	//}
 	//
 	//if reterr := msg.GetResource().GetHttp().GetResourceHttpResponse().GetError(); reterr != nil {
-	//	return &common.HttpResponse{
-	//		Err:        common.NewPluginError(int(reterr.Code), reterr.GetError(), reterr.GetMsg()),
+	//	return &common_type.HttpResponse{
+	//		Err:        common_type.NewPluginError(int(reterr.Code), reterr.GetError(), reterr.GetMsg()),
 	//		StatusCode: utils.Int64ToInt(msg.GetResource().GetHttp().GetResourceHttpResponse().GetStatusCode()),
 	//		Headers:    responseHeaders,
 	//		Body:       body,
 	//	}
 	//}
 	//
-	//return &common.HttpResponse{
+	//return &common_type.HttpResponse{
 	//	Headers:    responseHeaders,
 	//	Body:       body,
 	//	StatusCode: utils.Int64ToInt(msg.GetResource().GetHttp().GetResourceHttpResponse().GetStatusCode()),

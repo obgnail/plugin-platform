@@ -1,17 +1,17 @@
 package local
 
 import (
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
 )
 
-var _ common.SysDB = (*SysDBOp)(nil)
+var _ common_type.SysDB = (*SysDBOp)(nil)
 
 type SysDBOp struct {
 	//msg    *protocol.DatabaseMessage_DatabaseRequestMessage
-	plugin common.IPlugin
+	plugin common_type.IPlugin
 }
 
-func NewSysDB(plugin common.IPlugin) common.SysDB {
+func NewSysDB(plugin common_type.IPlugin) common_type.SysDB {
 	return &SysDBOp{plugin: plugin}
 }
 
@@ -26,7 +26,7 @@ func NewSysDB(plugin common.IPlugin) common.SysDB {
 //	return nil
 //}
 //
-//func (db *SysDBOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common.PluginError) {
+//func (db *SysDBOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
 //	//return SyncSendToHost(db.plugin, platformMessage)
 //	return nil, nil
 //}
@@ -64,10 +64,10 @@ func NewSysDB(plugin common.IPlugin) common.SysDB {
 //	return 0, 0
 //}
 
-func (d *SysDBOp) Select(db, sql string) ([]*common.RawData, []*common.ColumnDesc, common.PluginError) {
+func (d *SysDBOp) Select(db, sql string) ([]*common_type.RawData, []*common_type.ColumnDesc, common_type.PluginError) {
 	//b := validateSysDbName(dbName)
 	//if !b {
-	//	return nil, nil, common.NewPluginError(common.DataBaseNameFailure, common.DataBaseNameError.Error(), "Database Name illegal")
+	//	return nil, nil, common_type.NewPluginError(common_type.DataBaseNameFailure, common_type.DataBaseNameError.Error(), "Database Name illegal")
 	//}
 	//instance, operation := db.Common(dbName, op)
 	//databaseRequestMessage := &protocol.DatabaseMessage_DatabaseRequestMessage{
@@ -81,18 +81,18 @@ func (d *SysDBOp) Select(db, sql string) ([]*common.RawData, []*common.ColumnDes
 	//}
 	//if msg.GetResource().GetDatabase().GetDBResponse().GetError() != nil {
 	//	reterr := msg.GetResource().GetDatabase().GetDBResponse().GetError()
-	//	return nil, nil, common.NewPluginError(int(reterr.GetCode()), reterr.GetError(), reterr.GetMsg())
+	//	return nil, nil, common_type.NewPluginError(int(reterr.GetCode()), reterr.GetError(), reterr.GetMsg())
 	//}
 	//if msg.GetResource().GetDatabase().GetDBResponse().GetDBError() != nil {
 	//	dberr := msg.GetResource().GetDatabase().GetDBResponse().GetDBError()
-	//	return nil, nil, common.NewPluginError(int(dberr.GetCode()), dberr.GetError(), dberr.GetMsg())
+	//	return nil, nil, common_type.NewPluginError(int(dberr.GetCode()), dberr.GetError(), dberr.GetMsg())
 	//}
 	//rawDatas, columns := resourceutils.ParseTableData(msg.GetResource().GetDatabase().GetDBResponse().GetData())
 	//return rawDatas, columns, nil
 	return nil, nil, nil
 }
 
-func (d *SysDBOp) AsyncSelect(db, sql string, callback common.SysDBCallBack) {
+func (d *SysDBOp) AsyncSelect(db, sql string, callback common_type.SysDBCallBack) {
 	//instance, operation := db.Common(dbName, op)
 	//databaseRequestMessage := &protocol.DatabaseMessage_DatabaseRequestMessage{
 	//	Instance:  instance,
@@ -105,14 +105,14 @@ func (d *SysDBOp) AsyncSelect(db, sql string, callback common.SysDBCallBack) {
 	return
 }
 
-func (d *SysDBOp) Unmarshal(rawData []*common.RawData, columnDesc []*common.ColumnDesc, v interface{}) common.PluginError {
+func (d *SysDBOp) Unmarshal(rawData []*common_type.RawData, columnDesc []*common_type.ColumnDesc, v interface{}) common_type.PluginError {
 	//err := resourceutils.Unmarshal(rawData, columnDesc, v)
 	//if err != nil {
-	//	return common.NewPluginError(common.UnmarshalFailure, err.Error(), common.UnmarshalError.Error())
+	//	return common_type.NewPluginError(common_type.UnmarshalFailure, err.Error(), common_type.UnmarshalError.Error())
 	//}
 	return nil
 }
 
-func (d *SysDBOp) Exec(db, sql string) common.PluginError {
+func (d *SysDBOp) Exec(db, sql string) common_type.PluginError {
 	return nil
 }

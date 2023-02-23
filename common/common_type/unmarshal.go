@@ -1,17 +1,16 @@
-package utils
+package common_type
 
 import (
 	"bytes"
 	"encoding/binary"
 	"encoding/gob"
 	"fmt"
-	common "github.com/obgnail/plugin-platform/common/common_type"
 	"math"
 	"reflect"
 	"strconv"
 )
 
-func Unmarshal(rawData []*common.RawData, columnDesc []*common.ColumnDesc, v interface{}) error {
+func Unmarshal(rawData []*RawData, columnDesc []*ColumnDesc, v interface{}) error {
 	val := reflect.Indirect(reflect.ValueOf(v))
 	typ := val.Type()
 	for _, r := range rawData {

@@ -1,23 +1,23 @@
 package local
 
-import common "github.com/obgnail/plugin-platform/common/common_type"
+import "github.com/obgnail/plugin-platform/common/common_type"
 
-var _ common.IResources = (*LocalResource)(nil)
+var _ common_type.IResources = (*LocalResource)(nil)
 
 type LocalResource struct {
-	plugin common.IPlugin
+	plugin common_type.IPlugin
 
-	log       common.PluginLogger
-	event     common.EventPublisher
-	space     common.Workspace
-	sysDBOp   common.SysDB
-	localDB   common.LocalDB
-	aPICoreOp common.APICore
-	network   common.Network
-	ability   common.Ability
+	log       common_type.PluginLogger
+	event     common_type.EventPublisher
+	space     common_type.Workspace
+	sysDBOp   common_type.SysDB
+	localDB   common_type.LocalDB
+	aPICoreOp common_type.APICore
+	network   common_type.Network
+	ability   common_type.Ability
 }
 
-func New(plugin common.IPlugin) *LocalResource {
+func New(plugin common_type.IPlugin) *LocalResource {
 	l := &LocalResource{
 		log:       Logger,
 		event:     NewEvent(plugin),
@@ -31,34 +31,34 @@ func New(plugin common.IPlugin) *LocalResource {
 	return l
 }
 
-func (r *LocalResource) GetLogger() common.PluginLogger {
+func (r *LocalResource) GetLogger() common_type.PluginLogger {
 	return r.log
 }
 
-func (r *LocalResource) GetEventPublisher() common.EventPublisher {
+func (r *LocalResource) GetEventPublisher() common_type.EventPublisher {
 	return r.event
 }
 
-func (r *LocalResource) GetWorkspace() common.Workspace {
+func (r *LocalResource) GetWorkspace() common_type.Workspace {
 	return r.space
 }
 
-func (r *LocalResource) GetSysDB() common.SysDB {
+func (r *LocalResource) GetSysDB() common_type.SysDB {
 	return r.sysDBOp
 }
 
-func (r *LocalResource) GetLocalDB() common.LocalDB {
+func (r *LocalResource) GetLocalDB() common_type.LocalDB {
 	return r.localDB
 }
 
-func (r *LocalResource) GetAPICore() common.APICore {
+func (r *LocalResource) GetAPICore() common_type.APICore {
 	return r.aPICoreOp
 }
 
-func (r *LocalResource) GetOutDoor() common.Network {
+func (r *LocalResource) GetOutDoor() common_type.Network {
 	return r.network
 }
 
-func (r *LocalResource) GetAbility() common.Ability {
+func (r *LocalResource) GetAbility() common_type.Ability {
 	return r.ability
 }

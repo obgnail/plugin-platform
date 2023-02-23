@@ -6,9 +6,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	common "github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/host/config"
-	"github.com/obgnail/plugin-platform/host/resource/utils"
+	"github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/config"
 	"io/ioutil"
 	"math"
 	"reflect"
@@ -16,56 +15,56 @@ import (
 	"strings"
 )
 
-var _ common.LocalDB = (*LocalDB)(nil)
+var _ common_type.LocalDB = (*LocalDB)(nil)
 
 type LocalDB struct {
 	db     *sql.DB
-	plugin common.IPlugin
+	plugin common_type.IPlugin
 }
 
-func NewLocalDB(plugin common.IPlugin) common.LocalDB {
+func NewLocalDB(plugin common_type.IPlugin) common_type.LocalDB {
 	return &LocalDB{plugin: plugin}
 }
 
-func (localdb *LocalDB) initMysql() common.PluginError {
+func (localdb *LocalDB) initMysql() common_type.PluginError {
 	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Asia%%2FShanghai&charset=utf8mb4&multiStatements=true",
-		config.StringOrPanic("platform_mysql_user"),
-		config.StringOrPanic("platform_mysql_password"),
-		config.StringOrPanic("platform_mysql_host"),
-		config.IntOrPanic("platform_mysql_port"),
-		config.StringOrPanic("platform_mysql_db"),
+		config.StringOrPanic("platform.mysql_user"),
+		config.StringOrPanic("platform.mysql_password"),
+		config.StringOrPanic("platform.mysql_host"),
+		config.IntOrPanic("platform.mysql_port"),
+		config.StringOrPanic("platform.mysql_db_name"),
 	)
 
 	db, err := sql.Open("mysql", connStr)
 	if err != nil {
-		return common.NewPluginError(common.DataBaseNameFailure, err.Error(), err.Error())
+		return common_type.NewPluginError(common_type.DataBaseNameFailure, err.Error(), err.Error())
 	}
 	if err = db.Ping(); err != nil {
-		return common.NewPluginError(common.DataBaseNameFailure, err.Error(), err.Error())
+		return common_type.NewPluginError(common_type.DataBaseNameFailure, err.Error(), err.Error())
 	}
 	localdb.db = db
 	return nil
 }
 
-func (localdb *LocalDB) readSqlFile(sqlFilePath string) (string, common.PluginError) {
+func (localdb *LocalDB) readSqlFile(sqlFilePath string) (string, common_type.PluginError) {
 	if !strings.HasSuffix(sqlFilePath, ".sql") {
 		err := fmt.Errorf("wrong file type")
-		return "", common.NewPluginError(common.SysDbImportSqlFailure, err.Error(), common.SysDbImportSqlError.Error())
+		return "", common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
 	}
 	fileBytes, err := ioutil.ReadFile(sqlFilePath)
 	if err != nil {
-		return "", common.NewPluginError(common.SysDbImportSqlFailure, err.Error(), common.SysDbImportSqlError.Error())
+		return "", common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
 	}
 	return string(fileBytes), nil
 }
 
-func (localdb *LocalDB) fixSql(content string) (string, common.PluginError) {
+func (localdb *LocalDB) fixSql(content string) (string, common_type.PluginError) {
 	//通过正则表达式拿到对应的tableName
 	re := regexp.MustCompile("{{([^{}]*)}}")
 	tableNameList := re.FindAllString(content, -1)
 	if len(tableNameList) == 0 {
 		err := fmt.Errorf("not set tableName")
-		return "", common.NewPluginError(common.SysDbImportSqlFailure, err.Error(), common.SysDbImportSqlError.Error())
+		return "", common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
 	}
 	for _, tableName := range tableNameList {
 		newTableName := strings.TrimRight(tableName, "}}")
@@ -75,7 +74,7 @@ func (localdb *LocalDB) fixSql(content string) (string, common.PluginError) {
 	return content, nil
 }
 
-func (localdb *LocalDB) ImportSQL(sqlFilePath string) common.PluginError {
+func (localdb *LocalDB) ImportSQL(sqlFilePath string) common_type.PluginError {
 	fileContent, err := localdb.readSqlFile(sqlFilePath)
 	if err != nil {
 		return err
@@ -87,32 +86,32 @@ func (localdb *LocalDB) ImportSQL(sqlFilePath string) common.PluginError {
 	fmt.Println("import sql:\n", fileContent)
 
 	if err := localdb.Exec(fileContent); err != nil {
-		return common.NewPluginError(common.SysDbImportSqlFailure, err.Error(), common.SysDbImportSqlError.Error())
+		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
 	}
 	return nil
 }
 
-func (localdb *LocalDB) Select(sql string) ([]*common.RawData, []*common.ColumnDesc, common.PluginError) {
+func (localdb *LocalDB) Select(sql string) ([]*common_type.RawData, []*common_type.ColumnDesc, common_type.PluginError) {
 	if err := localdb.initMysql(); err != nil {
-		return nil, nil, common.NewPluginError(common.SysDbSelectFailure, err.Error(), err.Msg())
+		return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, err.Error(), err.Msg())
 	}
 	defer localdb.db.Close()
 
 	rows, err := localdb.db.Query(sql)
 	if err != nil {
-		return nil, nil, common.NewPluginError(common.SysDbSelectFailure, common.SysDbSelectFailureError.Error(), err.Error())
+		return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, common_type.SysDbSelectFailureError.Error(), err.Error())
 	}
 	defer rows.Close()
 
 	built := make([]interface{}, 0)
-	colDesc := make([]*common.ColumnDesc, 0)
+	colDesc := make([]*common_type.ColumnDesc, 0)
 
 	colTypes, err := rows.ColumnTypes()
 	if err != nil {
-		return nil, nil, common.NewPluginError(common.SysDbSelectFailure, common.SysDbSelectFailureError.Error(), err.Error())
+		return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, common_type.SysDbSelectFailureError.Error(), err.Error())
 	}
 	for idx, ct := range colTypes {
-		desc := &common.ColumnDesc{
+		desc := &common_type.ColumnDesc{
 			Index: int64(idx),
 			Name:  ct.Name(),
 			Type:  ct.DatabaseTypeName(),
@@ -131,10 +130,10 @@ func (localdb *LocalDB) Select(sql string) ([]*common.RawData, []*common.ColumnD
 		}
 	}
 
-	rawData := make([]*common.RawData, 0)
+	rawData := make([]*common_type.RawData, 0)
 	for rows.Next() {
 		if err = rows.Scan(built...); err != nil {
-			return nil, nil, common.NewPluginError(common.SysDbSelectFailure, common.SysDbSelectFailureError.Error(), err.Error())
+			return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, common_type.SysDbSelectFailureError.Error(), err.Error())
 		}
 		cells := make([][]byte, 0)
 		for _, i := range built {
@@ -145,7 +144,7 @@ func (localdb *LocalDB) Select(sql string) ([]*common.RawData, []*common.ColumnD
 				v := reflect.ValueOf(i).Elem().Int()
 				byteBuf := bytes.NewBuffer([]byte{})
 				if err := binary.Write(byteBuf, binary.BigEndian, v); err != nil {
-					return nil, nil, common.NewPluginError(common.SysDbSelectFailure, common.SysDbSelectFailureError.Error(), err.Error())
+					return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, common_type.SysDbSelectFailureError.Error(), err.Error())
 				}
 				cells = append(cells, byteBuf.Bytes())
 			case "*float":
@@ -160,7 +159,7 @@ func (localdb *LocalDB) Select(sql string) ([]*common.RawData, []*common.ColumnD
 				v := reflect.ValueOf(i).Elem().Field(0).Int()
 				byteBuf := bytes.NewBuffer([]byte{})
 				if err := binary.Write(byteBuf, binary.BigEndian, v); err != nil {
-					return nil, nil, common.NewPluginError(common.SysDbSelectFailure, err.Error(), common.SysDbSelectFailureError.Error())
+					return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, err.Error(), common_type.SysDbSelectFailureError.Error())
 				}
 				cells = append(cells, byteBuf.Bytes())
 			case "*sql.NullFloat64":
@@ -173,34 +172,34 @@ func (localdb *LocalDB) Select(sql string) ([]*common.RawData, []*common.ColumnD
 				cells = append(cells, reflect.ValueOf(i).Elem().Bytes())
 			}
 		}
-		rawData = append(rawData, &common.RawData{Cell: cells})
+		rawData = append(rawData, &common_type.RawData{Cell: cells})
 	}
 	return rawData, colDesc, nil
 }
 
-func (localdb *LocalDB) AsyncSelect(sql string, callback common.SysDBCallBack) {
+func (localdb *LocalDB) AsyncSelect(sql string, callback common_type.SysDBCallBack) {
 	rawData, columnDesc, err := localdb.Select(sql)
 	callback(rawData, columnDesc, err)
 }
 
-func (localdb *LocalDB) Exec(sql string) common.PluginError {
+func (localdb *LocalDB) Exec(sql string) common_type.PluginError {
 	if err := localdb.initMysql(); err != nil {
-		return common.NewPluginError(common.SysDbExecFailure, err.Error(), err.Msg())
+		return common_type.NewPluginError(common_type.SysDbExecFailure, err.Error(), err.Msg())
 	}
 	defer localdb.db.Close()
 
 	if _, err := localdb.db.Exec(sql); err != nil {
-		return common.NewPluginError(common.SysDbExecFailure, common.SysDbExecFailureError.Error(), err.Error())
+		return common_type.NewPluginError(common_type.SysDbExecFailure, common_type.SysDbExecFailureError.Error(), err.Error())
 	}
 	return nil
 }
 
-func (localdb *LocalDB) Unmarshal(rawData []*common.RawData, columnDesc []*common.ColumnDesc, v interface{}) common.PluginError {
+func (localdb *LocalDB) Unmarshal(rawData []*common_type.RawData, columnDesc []*common_type.ColumnDesc, v interface{}) common_type.PluginError {
 	if len(rawData) == 0 {
 		return nil
 	}
-	if err := utils.Unmarshal(rawData, columnDesc, v); err != nil {
-		return common.NewPluginError(common.UnmarshalFailure, err.Error(), common.UnmarshalError.Error())
+	if err := common_type.Unmarshal(rawData, columnDesc, v); err != nil {
+		return common_type.NewPluginError(common_type.UnmarshalFailure, err.Error(), common_type.UnmarshalError.Error())
 	}
 	return nil
 }

@@ -66,6 +66,7 @@ func (p *ZmqEndpoint) Close() error {
 	p.cancel()
 	if p.socket != nil {
 		if err := p.socket.Close(); err != nil {
+			log.ErrorDetails(err)
 			return errors.Trace(err)
 		}
 	}

@@ -1,7 +1,7 @@
 package main
 
 import (
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
 	"plugin"
 )
 
@@ -10,7 +10,7 @@ func GetPluginPath() string {
 	return a
 }
 
-func getPluginFactory(path string) (func() common.IPlugin, error) {
+func getPluginFactory(path string) (func() common_type.IPlugin, error) {
 	p, err := plugin.Open(path)
 	if err != nil {
 		return nil, err
@@ -20,7 +20,7 @@ func getPluginFactory(path string) (func() common.IPlugin, error) {
 		return nil, err
 	}
 
-	return factory.(func() common.IPlugin), nil
+	return factory.(func() common_type.IPlugin), nil
 }
 
 //func main2() {
@@ -33,7 +33,7 @@ func getPluginFactory(path string) (func() common.IPlugin, error) {
 //	users := make([]*User, 0)
 //
 //	localResource.GetLocalDB().AsyncSelect("select * from user;", &users,
-//		func(rawData []*common.RawData, descs []*common.ColumnDesc, pluginError common.PluginError, i interface{}) {
+//		func(rawData []*common_type.RawData, descs []*common_type.ColumnDesc, pluginError common_type.PluginError, i interface{}) {
 //			if pluginError != nil {
 //				fmt.Println(pluginError)
 //			}
@@ -57,7 +57,7 @@ func getPluginFactory(path string) (func() common.IPlugin, error) {
 //	if err != nil {
 //		panic(err)
 //	}
-//	res := plugin.Enable(common.LifeCycleRequest{})
+//	res := plugin.Enable(common_type.LifeCycleRequest{})
 //	if err != nil {
 //		panic(err)
 //	}

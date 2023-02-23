@@ -1,31 +1,31 @@
 package release
 
 import (
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/host/handler"
 	"github.com/obgnail/plugin-platform/host/resource/local"
 )
 
-var _ common.IResources = (*ReleaseResource)(nil)
+var _ common_type.IResources = (*Resource)(nil)
 
-type ReleaseResource struct {
+type Resource struct {
 	*handler.HostHandler
 
-	plugin common.IPlugin
+	plugin common_type.IPlugin
 
-	log       common.PluginLogger
-	event     common.EventPublisher
-	space     common.Workspace
-	sysDBOp   common.SysDB
-	localDB   common.LocalDB
-	aPICoreOp common.APICore
-	network   common.Network
-	ability   common.Ability
+	log       common_type.PluginLogger
+	event     common_type.EventPublisher
+	space     common_type.Workspace
+	sysDBOp   common_type.SysDB
+	localDB   common_type.LocalDB
+	aPICoreOp common_type.APICore
+	network   common_type.Network
+	ability   common_type.Ability
 }
 
-func NewReleaseResource(plugin common.IPlugin) *ReleaseResource {
+func NewResource(plugin common_type.IPlugin) *Resource {
 	h := handler.Default(false)
-	resource := &ReleaseResource{
+	resource := &Resource{
 		HostHandler: h,
 		log:         local.Logger,
 		event:       local.NewEvent(plugin),
@@ -40,34 +40,34 @@ func NewReleaseResource(plugin common.IPlugin) *ReleaseResource {
 	return resource
 }
 
-func (r *ReleaseResource) GetLogger() common.PluginLogger {
+func (r *Resource) GetLogger() common_type.PluginLogger {
 	return r.log
 }
 
-func (r *ReleaseResource) GetEventPublisher() common.EventPublisher {
+func (r *Resource) GetEventPublisher() common_type.EventPublisher {
 	return r.event
 }
 
-func (r *ReleaseResource) GetWorkspace() common.Workspace {
+func (r *Resource) GetWorkspace() common_type.Workspace {
 	return r.space
 }
 
-func (r *ReleaseResource) GetSysDB() common.SysDB {
+func (r *Resource) GetSysDB() common_type.SysDB {
 	return r.sysDBOp
 }
 
-func (r *ReleaseResource) GetLocalDB() common.LocalDB {
+func (r *Resource) GetLocalDB() common_type.LocalDB {
 	return r.localDB
 }
 
-func (r *ReleaseResource) GetAPICore() common.APICore {
+func (r *Resource) GetAPICore() common_type.APICore {
 	return r.aPICoreOp
 }
 
-func (r *ReleaseResource) GetOutDoor() common.Network {
+func (r *Resource) GetOutDoor() common_type.Network {
 	return r.network
 }
 
-func (r *ReleaseResource) GetAbility() common.Ability {
+func (r *Resource) GetAbility() common_type.Ability {
 	return r.ability
 }

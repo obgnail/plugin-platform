@@ -115,5 +115,4 @@ type LocalDB interface {
 type Ability interface {
 	GetNotify() Notify
 	GetLayoutCard() LayoutCard
-	GetField() Field
 }

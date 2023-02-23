@@ -2,7 +2,7 @@ package connect
 
 import (
 	"github.com/golang/protobuf/proto"
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/protocol"
 )
 
@@ -10,7 +10,7 @@ var _ MessagePacker = (*ProtoPacker)(nil)
 
 type ProtoPacker struct{}
 
-func (i *ProtoPacker) Unpack(data []byte) (*EndpointInfo, *EndpointInfo, []byte, common.PluginError) {
+func (i *ProtoPacker) Unpack(data []byte) (*EndpointInfo, *EndpointInfo, []byte, common_type.PluginError) {
 	if len(data) == 0 {
 		return nil, nil, nil, genError("empty msg")
 	}
@@ -25,7 +25,7 @@ func (i *ProtoPacker) Unpack(data []byte) (*EndpointInfo, *EndpointInfo, []byte,
 	return source, target, data, nil
 }
 
-func (i *ProtoPacker) Pack(source, target *EndpointInfo, data []byte) ([]byte, common.PluginError) {
+func (i *ProtoPacker) Pack(source, target *EndpointInfo, data []byte) ([]byte, common_type.PluginError) {
 	msg := &protocol.PlatformMessage{}
 	if err := proto.Unmarshal(data, msg); err != nil {
 		return nil, genError(err.Error())
@@ -50,7 +50,7 @@ func getEndpointInfo(node *protocol.RouterNode) *EndpointInfo {
 	return ret
 }
 
-func genError(err string) common.PluginError {
-	return common.NewPluginError(common.ProtoUnmarshalFailure,
-		common.ProtoUnmarshalFailureError.Error(), err)
+func genError(err string) common_type.PluginError {
+	return common_type.NewPluginError(common_type.ProtoUnmarshalFailure,
+		common_type.ProtoUnmarshalFailureError.Error(), err)
 }

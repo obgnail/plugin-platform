@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/obgnail/plugin-platform/common/config"
 	utils_errors "github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
-	"github.com/obgnail/plugin-platform/platform/config"
 	"github.com/obgnail/plugin-platform/platform/controllers"
 	"net/http"
 	"os"
@@ -35,7 +35,7 @@ func Run() {
 	//plugin.POST("/disable", controllers.Disable)
 	//plugin.POST("/upgrade", controllers.Upgrade)
 
-	addr := fmt.Sprintf("%s:%d", config.StringOrPanic("host"), config.IntOrPanic("http_port"))
+	addr := fmt.Sprintf("%s:%d", config.StringOrPanic("platform.host"), config.IntOrPanic("platform.http_port"))
 	srv := &http.Server{Addr: addr, Handler: app}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {

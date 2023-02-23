@@ -3,6 +3,7 @@ package log
 import (
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/errors"
+	"github.com/obgnail/plugin-platform/common/file_utils"
 	"io"
 	"os"
 	"strings"
@@ -14,6 +15,10 @@ func init() {
 	sep := "/github.com"
 	pathPrefix := "/github.com/obgnail/plugin-platform"
 	file := config.StringOrPanic("platform.log_path")
+	file, err := file_utils.FindPath(file)
+	if err != nil {
+		panic("no found path")
+	}
 	level := config.StringOrPanic("platform.log_level")
 
 	logFile, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0640)

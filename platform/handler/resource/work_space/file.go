@@ -6,8 +6,8 @@ import (
 	"compress/gzip"
 	"crypto/md5"
 	. "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/errors"
-	"github.com/obgnail/plugin-platform/host/config"
 	"github.com/obgnail/plugin-platform/platform/handler/utils"
 	"io"
 	"io/ioutil"
@@ -486,7 +486,7 @@ func (o *SpaceOperation) List(dirPath string) ([]string, PluginError) {
 }
 
 func GetFilePath(instanceID, name string) (path string, err error) {
-	pathPrefix := []string{config.StringOrPanic("runtime_work_space"), instanceID}
+	pathPrefix := []string{config.StringOrPanic("host.plugin_workspace_dir"), instanceID}
 
 	var filename string
 	if strings.Contains(name, string(os.PathSeparator)) {

@@ -1,23 +1,17 @@
-package utils
+package message
 
 import (
+	"github.com/obgnail/plugin-platform/common/config"
+	"github.com/obgnail/plugin-platform/common/connect"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/common/seq"
-	"github.com/obgnail/plugin-platform/host/config"
-)
-
-const (
-	RolePlatform = "platform"
-	RoleHost     = "host"
-	RoleHostBoot = "host_boot"
 )
 
 var (
-	hostID   = config.StringOrPanic("runtime_id")
-	hostName = config.StringOrPanic("runtime_name")
-
-	platformID   = config.StringOrPanic("platform_id")
-	platformName = config.StringOrPanic("platform_name")
+	hostID       = config.StringOrPanic("host.id")
+	hostName     = config.StringOrPanic("host.name")
+	platformID   = config.StringOrPanic("platform.id")
+	platformName = config.StringOrPanic("platform.name")
 )
 
 func GetInitMessage() *protocol.PlatformMessage {
@@ -48,7 +42,7 @@ func GetHostInfo() *protocol.RouterNode {
 	return &protocol.RouterNode{
 		ID: hostID,
 		Tags: map[string]string{
-			"role": RoleHost,
+			"role": connect.RoleHost,
 			"id":   hostID,
 			"name": hostName,
 		},
@@ -59,7 +53,7 @@ func GetPlatformInfo() *protocol.RouterNode {
 	return &protocol.RouterNode{
 		ID: platformID,
 		Tags: map[string]string{
-			"role": RolePlatform,
+			"role": connect.RolePlatform,
 			"id":   platformID,
 			"name": platformName,
 		},

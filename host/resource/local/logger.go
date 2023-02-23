@@ -2,15 +2,15 @@ package local
 
 import (
 	"github.com/natefinch/lumberjack"
-	common "github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/host/config"
+	"github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"path/filepath"
 	"time"
 )
 
-var _ common.PluginLogger = (*Log)(nil)
+var _ common_type.PluginLogger = (*Log)(nil)
 
 var Logger *Log
 
@@ -43,7 +43,7 @@ func (log *Log) Fatal(format string) {
 }
 
 func init() {
-	logPath := filepath.Join(config.StringOrPanic("runtime_log_dir"), time.Now().Format("2006-01-02"))
+	logPath := filepath.Join(config.StringOrPanic("host.plugin_log_dir"), time.Now().Format("2006-01-02"))
 	hook := lumberjack.Logger{
 		Filename: logPath, // 日志文件路径
 		MaxSize:  128,     // 每个日志文件保存的大小 单位:M

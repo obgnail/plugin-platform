@@ -1,17 +1,17 @@
 package local
 
 import (
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
 )
 
-var _ common.Network = (*NetworkOp)(nil)
+var _ common_type.Network = (*NetworkOp)(nil)
 
 type NetworkOp struct {
 	//msg    *protocol.HttpRequestMessage
-	plugin common.IPlugin
+	plugin common_type.IPlugin
 }
 
-func NewNetwork(plugin common.IPlugin) common.Network {
+func NewNetwork(plugin common_type.IPlugin) common_type.Network {
 	return &NetworkOp{plugin: plugin}
 }
 
@@ -27,11 +27,11 @@ func NewNetwork(plugin common.IPlugin) common.Network {
 //	return msg
 //}
 //
-//func (n *NetworkOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common.PluginError) {
+//func (n *NetworkOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
 //	return SyncSendToHost(n.plugin, platformMessage)
 //}
 
-func (n *NetworkOp) Fetch(httpRequest *common.HttpRequest) *common.HttpResponse {
+func (n *NetworkOp) Fetch(httpRequest *common_type.HttpRequest) *common_type.HttpResponse {
 	//headers := make(map[string]*protocol.HeaderVal)
 	//for k, val := range httpRequest.Headers {
 	//	headerVal := &protocol.HeaderVal{Val: val}
@@ -46,7 +46,7 @@ func (n *NetworkOp) Fetch(httpRequest *common.HttpRequest) *common.HttpResponse 
 	//}
 	//msg, err := n.sendMsgToHost(n.buildMessage(httpRequestMessage))
 	//if err != nil {
-	//	return &common.HttpResponse{
+	//	return &common_type.HttpResponse{
 	//		StatusCode: 500,
 	//		Err:        err,
 	//	}
@@ -61,15 +61,15 @@ func (n *NetworkOp) Fetch(httpRequest *common.HttpRequest) *common.HttpResponse 
 	//}
 	//
 	//if reterr := msg.GetResource().GetHttp().GetResourceHttpResponse().GetError(); reterr != nil {
-	//	return &common.HttpResponse{
+	//	return &common_type.HttpResponse{
 	//		Headers:    responseHeaders,
 	//		StatusCode: utils.Int64ToInt(msg.GetResource().GetHttp().GetResourceHttpResponse().GetStatusCode()),
-	//		Err:        common.NewPluginError(int(reterr.Code), reterr.GetError(), reterr.GetMsg()),
+	//		Err:        common_type.NewPluginError(int(reterr.Code), reterr.GetError(), reterr.GetMsg()),
 	//		Body:       body,
 	//	}
 	//}
 	//
-	//return &common.HttpResponse{
+	//return &common_type.HttpResponse{
 	//	Headers:    responseHeaders,
 	//	Body:       body,
 	//	StatusCode: utils.Int64ToInt(msg.GetResource().GetHttp().GetResourceHttpResponse().GetStatusCode()),
@@ -78,13 +78,13 @@ func (n *NetworkOp) Fetch(httpRequest *common.HttpRequest) *common.HttpResponse 
 }
 
 //type AsyncNetwork struct {
-//	callBackHandler common.NetworkCallBack
-//	timeoutHandler  common.AsyncInvokeTimeoutCallback
+//	callBackHandler common_type.NetworkCallBack
+//	timeoutHandler  common_type.AsyncInvokeTimeoutCallback
 //}
 //
-//func (a *AsyncNetwork) callBack(param, ret *protocol.PlatformMessage, asyncObject interface{}, err common.PluginError) {
+//func (a *AsyncNetwork) callBack(param, ret *protocol.PlatformMessage, asyncObject interface{}, err common_type.PluginError) {
 //	httpResp := ret.GetResource().GetHttp().GetResourceHttpResponse()
-//	resp := &common.HttpResponse{
+//	resp := &common_type.HttpResponse{
 //		Headers:    make(map[string][]string),
 //		Body:       httpResp.Body,
 //		StatusCode: int(httpResp.StatusCode),
@@ -95,11 +95,11 @@ func (n *NetworkOp) Fetch(httpRequest *common.HttpRequest) *common.HttpResponse 
 //	a.callBackHandler(resp, err, asyncObject)
 //}
 //
-//func (a *AsyncNetwork) timeOutHandler(param *protocol.PlatformMessage, asyncObject interface{}, err common.PluginError) {
+//func (a *AsyncNetwork) timeOutHandler(param *protocol.PlatformMessage, asyncObject interface{}, err common_type.PluginError) {
 //	a.timeoutHandler(err, asyncObject)
 //}
 
-func (n *NetworkOp) AsyncFetch(httpRequest *common.HttpRequest, callback common.NetworkCallBack) {
+func (n *NetworkOp) AsyncFetch(httpRequest *common_type.HttpRequest, callback common_type.NetworkCallBack) {
 
 	//headers := make(map[string]*protocol.HeaderVal)
 	//for k, val := range httpRequest.Headers {

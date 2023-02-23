@@ -382,8 +382,8 @@ type HttpResourceMessage struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ResourceType        HttpResourceMessage_HttpResourceType `protobuf:"varint,1,opt,name=ResourceType,proto3,enum=protocol.HttpResourceMessage_HttpResourceType" json:"ResourceType,omitempty"`
-	ResourceHttpRequest *HttpRequestMessage                  `protobuf:"bytes,10,opt,name=ResourceHttpRequest,proto3" json:"ResourceHttpRequest,omitempty"`
+	ResourceType         HttpResourceMessage_HttpResourceType `protobuf:"varint,1,opt,name=ResourceType,proto3,enum=protocol.HttpResourceMessage_HttpResourceType" json:"ResourceType,omitempty"`
+	ResourceHttpRequest  *HttpRequestMessage                  `protobuf:"bytes,10,opt,name=ResourceHttpRequest,proto3" json:"ResourceHttpRequest,omitempty"`
 	ResourceHttpResponse *HttpResponseMessage                 `protobuf:"bytes,11,opt,name=ResourceHttpResponse,proto3" json:"ResourceHttpResponse,omitempty"`
 }
 

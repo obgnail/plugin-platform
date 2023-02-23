@@ -1,7 +1,7 @@
 package work_space
 
 import (
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/protocol"
 )
 
@@ -24,7 +24,7 @@ func NewWorkSpace(source, distinct *protocol.PlatformMessage) *WorkSpace {
 
 func (w *WorkSpace) WorkSpaceOperation() {
 	var f = &SpaceOperation{InstanceID: w.instanceID}
-	var err common.PluginError
+	var err common_type.PluginError
 	var ok bool
 	var fileTree []string
 	var fileByte []byte

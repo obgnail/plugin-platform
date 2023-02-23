@@ -1,11 +1,11 @@
 package handler
 
 import (
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/config"
+	"github.com/obgnail/plugin-platform/common/connect"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
-	"github.com/obgnail/plugin-platform/host/config"
-	"github.com/obgnail/plugin-platform/utils/connect"
 	"os"
 	"time"
 )
@@ -41,31 +41,31 @@ func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, i
 }
 
 func Default(isLocal bool) *HostHandler {
-	id := config.StringOrPanic("runtime_id")
-	name := config.StringOrPanic("runtime_name")
-	addr := config.StringOrPanic("platform_address")
-	lang := config.StringOrPanic("runtime_language")
-	hostVersion := config.StringOrPanic("runtime_version")
-	minSysVersion := config.StringOrPanic("runtime_min_system_version")
-	langVersion := config.StringOrPanic("runtime_language_version")
+	id := config.StringOrPanic("host.id")
+	name := config.StringOrPanic("host.name")
+	addr := config.StringOrPanic("host.platform_address")
+	lang := config.StringOrPanic("host.language")
+	hostVersion := config.StringOrPanic("host.version")
+	minSysVersion := config.StringOrPanic("host.min_system_version")
+	langVersion := config.StringOrPanic("host.language_version")
 
 	h := New(id, name, addr, lang, hostVersion, minSysVersion, langVersion, isLocal)
 	return h
 }
 
-func (h *HostHandler) OnConnect() common.PluginError {
+func (h *HostHandler) OnConnect() common_type.PluginError {
 	log.Info("OnConnect: %s", h.descriptor.Name)
 	return nil
 }
 
-func (h *HostHandler) OnDisconnect() common.PluginError {
+func (h *HostHandler) OnDisconnect() common_type.PluginError {
 	log.Info("OnDisconnect: %s", h.descriptor.Name)
 	return nil
 }
 
-func (h *HostHandler) OnError(err common.PluginError) {
+func (h *HostHandler) OnError(err common_type.PluginError) {
 	log.Warn("OnError: %s", h.descriptor.Name)
-	if err.Code() != common.EndpointReceiveErr {
+	if err.Code() != common_type.EndpointReceiveErr {
 		os.Exit(1)
 	}
 	time.Sleep(time.Second * 9)
@@ -74,7 +74,7 @@ func (h *HostHandler) OnError(err common.PluginError) {
 	}
 }
 
-func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common.PluginError) {
+func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
 	if err != nil {
 		log.ErrorDetails(err)
 		return
@@ -87,7 +87,7 @@ func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.Platfo
 
 }
 
-func (h *HostHandler) Send(sender common.IPlugin, msg *protocol.PlatformMessage) (*protocol.PlatformMessage, common.PluginError) {
+func (h *HostHandler) Send(sender common_type.IPlugin, msg *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
 	// TODO: assemble message with host information
 
 	applicationVersion := protocol.SplitVersion(sender.GetPluginDescription().PluginDescription().ApplicationVersion().VersionString())
@@ -101,7 +101,7 @@ func (h *HostHandler) Send(sender common.IPlugin, msg *protocol.PlatformMessage)
 			MinSystemVersion:   h.descriptor.MinSystemVersion,
 		},
 		InstanceID: sender.GetPluginDescription().InstanceID(),
-		HostID:     config.StringOrPanic("runtime_id"),
+		HostID:     config.StringOrPanic("host.id"),
 	}
 	if msg.GetResource() != nil {
 		msg.Resource.Sender = pluginInstanceDescriptor
@@ -115,10 +115,10 @@ func (h *HostHandler) Send(sender common.IPlugin, msg *protocol.PlatformMessage)
 	return result, err
 }
 
-func (h *HostHandler) SendAsync(sender common.IPlugin, msg *protocol.PlatformMessage, callback connect.CallBack) {
+func (h *HostHandler) SendAsync(sender common_type.IPlugin, msg *protocol.PlatformMessage, callback connect.CallBack) {
 	h.BaseHandler.SendAsync(msg, defaultTimeout, callback)
 }
 
-func (h *HostHandler) Run() common.PluginError {
+func (h *HostHandler) Run() common_type.PluginError {
 	return h.GetZmq().Connect()
 }
