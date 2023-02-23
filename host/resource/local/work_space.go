@@ -6,8 +6,9 @@ import (
 	"compress/gzip"
 	"crypto/md5"
 	"fmt"
-	common "github.com/obgnail/plugin-platform/common_type"
+	common "github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/host/config"
+	"github.com/obgnail/plugin-platform/host/resource/utils"
 	"io"
 	"io/ioutil"
 	"os"
@@ -26,7 +27,7 @@ func NewSpace(plugin common.IPlugin) common.Workspace {
 }
 
 func (s *Space) CreateFile(name string) common.PluginError {
-	newFile, err := os.Create(s.GetSpacePath(name))
+	newFile, err := os.Create(s.getSpacePath(name))
 	if err != nil {
 		return common.NewPluginError(common.CreateFileFailure, err.Error(), common.CreateFileFailureError.Error())
 	}
@@ -35,7 +36,7 @@ func (s *Space) CreateFile(name string) common.PluginError {
 }
 
 func (s *Space) MakeDir(name string) common.PluginError {
-	_name := s.GetSpacePath(name)
+	_name := s.getSpacePath(name)
 	err := os.MkdirAll(_name, os.ModePerm)
 	if err != nil {
 		return common.NewPluginError(common.MakeDirFailure, err.Error(), common.MakeDirFailureError.Error())
@@ -44,8 +45,8 @@ func (s *Space) MakeDir(name string) common.PluginError {
 }
 
 func (s *Space) Rename(originalPath string, newPath string) common.PluginError {
-	_originalPath := s.GetSpacePath(originalPath)
-	_newPath := s.GetSpacePath(newPath)
+	_originalPath := s.getSpacePath(originalPath)
+	_newPath := s.getSpacePath(newPath)
 
 	err := os.Rename(_originalPath, _newPath)
 	if err != nil {
@@ -55,7 +56,7 @@ func (s *Space) Rename(originalPath string, newPath string) common.PluginError {
 }
 
 func (s *Space) Remove(name string) common.PluginError {
-	err := os.Remove(s.GetSpacePath(name))
+	err := os.Remove(s.getSpacePath(name))
 	if err != nil {
 		return common.NewPluginError(common.RemoveFileFailure, err.Error(), common.RemoveFileFailureError.Error())
 	}
@@ -63,7 +64,7 @@ func (s *Space) Remove(name string) common.PluginError {
 }
 
 func (s *Space) IsExist(name string) (bool, common.PluginError) {
-	_, err := os.Stat(s.GetSpacePath(name))
+	_, err := os.Stat(s.getSpacePath(name))
 	if err != nil && os.IsNotExist(err) {
 		return false, common.NewPluginError(common.IsExistFileFailure, err.Error(), common.IsExistFileFailureError.Error())
 	}
@@ -71,7 +72,7 @@ func (s *Space) IsExist(name string) (bool, common.PluginError) {
 }
 
 func (s *Space) IsDir(name string) (bool, common.PluginError) {
-	path := s.GetSpacePath(name)
+	path := s.getSpacePath(name)
 	stat, err := os.Stat(path)
 	if err != nil {
 		return false, common.NewPluginError(common.IsDirFailure, err.Error(), common.IsDirFailureError.Error())
@@ -80,8 +81,8 @@ func (s *Space) IsDir(name string) (bool, common.PluginError) {
 }
 
 func (s *Space) Copy(originalPath string, newPath string) common.PluginError {
-	_originalPath := s.GetSpacePath(originalPath)
-	_newPath := s.GetSpacePath(newPath)
+	_originalPath := s.getSpacePath(originalPath)
+	_newPath := s.getSpacePath(newPath)
 
 	originalFile, err := os.Open(_originalPath)
 	if err != nil {
@@ -108,7 +109,7 @@ func (s *Space) Copy(originalPath string, newPath string) common.PluginError {
 }
 
 func (s *Space) Read(name string) ([]byte, common.PluginError) {
-	file, err := os.Open(s.GetSpacePath(name))
+	file, err := os.Open(s.getSpacePath(name))
 	if err != nil {
 		return []byte{}, common.NewPluginError(common.ReadFailure, err.Error(), common.ReadFailureError.Error())
 	}
@@ -122,7 +123,7 @@ func (s *Space) Read(name string) ([]byte, common.PluginError) {
 }
 
 func (s *Space) ReadLines(name string, lineBegin, lineEnd int32) ([]byte, common.PluginError) {
-	path := s.GetSpacePath(name)
+	path := s.getSpacePath(name)
 	file, err := os.Open(path)
 	defer file.Close()
 	if err != nil {
@@ -148,7 +149,7 @@ func (s *Space) ReadLines(name string, lineBegin, lineEnd int32) ([]byte, common
 }
 
 func (s *Space) WriteBytes(name string, byteSlice []byte) common.PluginError {
-	file, err := os.OpenFile(s.GetSpacePath(name), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
+	file, err := os.OpenFile(s.getSpacePath(name), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
 		return common.NewPluginError(common.WriteBytesFailure, err.Error(), common.WriteBytesFailureError.Error())
 	}
@@ -162,7 +163,7 @@ func (s *Space) WriteBytes(name string, byteSlice []byte) common.PluginError {
 }
 
 func (s *Space) AppendBytes(filePath string, byteSlice []byte) common.PluginError {
-	_filePath := s.GetSpacePath(filePath)
+	_filePath := s.getSpacePath(filePath)
 
 	file, err := os.OpenFile(_filePath, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
@@ -177,7 +178,7 @@ func (s *Space) AppendBytes(filePath string, byteSlice []byte) common.PluginErro
 }
 
 func (s *Space) WriteStrings(name string, content []string) common.PluginError {
-	file, err := os.OpenFile(s.GetSpacePath(name), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
+	file, err := os.OpenFile(s.getSpacePath(name), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
 		return common.NewPluginError(common.WriteStringsFailure, err.Error(), common.WriteStringsFailureError.Error())
 	}
@@ -195,7 +196,7 @@ func (s *Space) WriteStrings(name string, content []string) common.PluginError {
 }
 
 func (s *Space) AppendStrings(filePath string, content []string) common.PluginError {
-	_filePath := s.GetSpacePath(filePath)
+	_filePath := s.getSpacePath(filePath)
 
 	file, err := os.OpenFile(_filePath, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
@@ -222,7 +223,7 @@ func (s *Space) Zip(outFileName string, targetFiles []string) common.PluginError
 	var filesToArchive []targetFile
 
 	for _, targetFilePath := range targetFiles {
-		tFile, err := os.Open(s.GetSpacePath(targetFilePath))
+		tFile, err := os.Open(s.getSpacePath(targetFilePath))
 		if err != nil {
 			return common.NewPluginError(common.ZipFailure, err.Error(), common.ZipFailureError.Error())
 		}
@@ -243,7 +244,7 @@ func (s *Space) Zip(outFileName string, targetFiles []string) common.PluginError
 		})
 	}
 
-	_outFileName := s.GetSpacePath(outFileName)
+	_outFileName := s.getSpacePath(outFileName)
 	outFile, err := os.Create(_outFileName)
 	if err != nil {
 		return common.NewPluginError(common.ZipFailure, err.Error(), common.ZipFailureError.Error())
@@ -266,8 +267,8 @@ func (s *Space) Zip(outFileName string, targetFiles []string) common.PluginError
 }
 
 func (s *Space) UnZip(name string, targetDir string) common.PluginError {
-	_name := s.GetSpacePath(name)
-	_targetDir := s.GetSpacePath(targetDir)
+	_name := s.getSpacePath(name)
+	_targetDir := s.getSpacePath(targetDir)
 
 	zipReader, err := zip.OpenReader(_name)
 	if err != nil {
@@ -311,7 +312,7 @@ func (s *Space) UnZip(name string, targetDir string) common.PluginError {
 
 func (s *Space) Gz(name string) common.PluginError {
 	gzFileName := name + ".gz"
-	_gzFileName := s.GetSpacePath(gzFileName)
+	_gzFileName := s.getSpacePath(gzFileName)
 
 	outputFile, err := os.Create(_gzFileName)
 	if err != nil {
@@ -333,7 +334,7 @@ func (s *Space) Gz(name string) common.PluginError {
 }
 
 func (s *Space) UnGz(name string, targetFile string) common.PluginError {
-	_name := s.GetSpacePath(name)
+	_name := s.getSpacePath(name)
 
 	gzipFile, err := os.Open(_name)
 	if err != nil {
@@ -346,7 +347,7 @@ func (s *Space) UnGz(name string, targetFile string) common.PluginError {
 	}
 	defer gzipReader.Close()
 
-	outfileWriter, err := os.Create(s.GetSpacePath(targetFile))
+	outfileWriter, err := os.Create(s.getSpacePath(targetFile))
 	if err != nil {
 		return common.NewPluginError(common.UnGzFailure, err.Error(), common.UnGzFailureError.Error())
 	}
@@ -360,7 +361,7 @@ func (s *Space) UnGz(name string, targetFile string) common.PluginError {
 }
 
 func (s *Space) Hash(name string) ([]byte, common.PluginError) {
-	data, err := ioutil.ReadFile(s.GetSpacePath(name))
+	data, err := ioutil.ReadFile(s.getSpacePath(name))
 
 	if err != nil {
 		return nil, common.NewPluginError(common.HashFailure, err.Error(), common.HashFailureError.Error())
@@ -372,7 +373,7 @@ func (s *Space) Hash(name string) ([]byte, common.PluginError) {
 
 func (s *Space) List(dirPath string) ([]string, common.PluginError) {
 	var dirList []string
-	_dirPath := s.GetSpacePath(dirPath)
+	_dirPath := s.getSpacePath(dirPath)
 
 	err := filepath.Walk(_dirPath,
 		func(path string, f os.FileInfo, err error) error {
@@ -388,122 +389,56 @@ func (s *Space) List(dirPath string) ([]string, common.PluginError) {
 	return dirList, nil
 }
 
-func (s *Space) AsyncCopy(
-	originalPath string,
-	newPath string,
-	object interface{},
-	callback common.AsyncInvokeCallbackParams,
-	timeoutCallback common.AsyncInvokeTimeoutCallback,
-) {
-	returnData := make(chan common.PluginError, 1)
+func (s *Space) AsyncCopy(originalPath string, newPath string, callback common.AsyncInvokeCallbackParams) {
+	errChan := make(chan common.PluginError, 1)
 	go func() {
-		err := s.Copy(originalPath, newPath)
-		returnData <- err
+		errChan <- s.Copy(originalPath, newPath)
 	}()
 
-	select {
-	case <-time.After(time.Duration(1000 * 30000000)):
-		err := common.NewPluginError(common.MsgTimeOut, common.MsgTimeOutError.Error(), "timeout")
-		timeoutCallback(err, object)
-	case err := <-returnData:
-		callback(err, object)
-	}
+	s.callback(errChan, callback)
 }
 
-func (s *Space) AsyncZip(
-	outFileName string,
-	targetFiles []string,
-	object interface{},
-	callback common.AsyncInvokeCallbackParams,
-	timeoutCallback common.AsyncInvokeTimeoutCallback,
-) {
-	returnData := make(chan common.PluginError, 1)
+func (s *Space) AsyncZip(outFileName string, targetFiles []string, callback common.AsyncInvokeCallbackParams) {
+	errChan := make(chan common.PluginError, 1)
 	go func() {
-		err := s.Zip(outFileName, targetFiles)
-		returnData <- err
+		errChan <- s.Zip(outFileName, targetFiles)
 	}()
 
-	select {
-	case <-time.After(time.Duration(1000 * 30000000)):
-		err := common.NewPluginError(common.MsgTimeOut, common.MsgTimeOutError.Error(), "timeout")
-		timeoutCallback(err, object)
-	case err := <-returnData:
-		callback(err, object)
-	}
+	s.callback(errChan, callback)
 }
 
-func (s *Space) AsyncUnZip(
-	name string,
-	targetDir string,
-	object interface{},
-	callback common.AsyncInvokeCallbackParams,
-	timeoutCallback common.AsyncInvokeTimeoutCallback,
-) {
-	returnData := make(chan common.PluginError, 1)
+func (s *Space) AsyncUnZip(name string, targetDir string, callback common.AsyncInvokeCallbackParams) {
+	errChan := make(chan common.PluginError, 1)
 	go func() {
-		err := s.UnZip(name, targetDir)
-		returnData <- err
+		errChan <- s.UnZip(name, targetDir)
 	}()
 
-	select {
-	case <-time.After(time.Duration(1000 * 30000000)):
-		err := common.NewPluginError(common.MsgTimeOut, common.MsgTimeOutError.Error(), "timeout")
-		timeoutCallback(err, object)
-	case err := <-returnData:
-		callback(err, object)
-	}
+	s.callback(errChan, callback)
 }
 
-func (s *Space) AsyncGz(
-	name string,
-	object interface{},
-	callback common.AsyncInvokeCallbackParams,
-	timeoutCallback common.AsyncInvokeTimeoutCallback,
-) {
-	returnData := make(chan common.PluginError, 1)
+func (s *Space) AsyncGz(name string, callback common.AsyncInvokeCallbackParams) {
+	errChan := make(chan common.PluginError, 1)
 	go func() {
-		err := s.Gz(name)
-		returnData <- err
+		errChan <- s.Gz(name)
 	}()
 
-	select {
-	case <-time.After(time.Duration(1000 * 30000000)):
-		err := common.NewPluginError(common.MsgTimeOut, common.MsgTimeOutError.Error(), "timeout")
-		timeoutCallback(err, object)
-	case err := <-returnData:
-		callback(err, object)
-	}
+	s.callback(errChan, callback)
 }
 
-func (s *Space) AsyncUnGz(
-	name string,
-	targetFile string,
-	object interface{},
-	callback common.AsyncInvokeCallbackParams,
-	timeoutCallback common.AsyncInvokeTimeoutCallback,
-) {
-	returnData := make(chan common.PluginError, 1)
+func (s *Space) AsyncUnGz(name string, targetFile string, callback common.AsyncInvokeCallbackParams) {
+	errChan := make(chan common.PluginError, 1)
 	go func() {
-		err := s.UnGz(name, targetFile)
-		returnData <- err
+		errChan <- s.UnGz(name, targetFile)
 	}()
 
-	select {
-	case <-time.After(time.Duration(1000 * 30000000)):
-		err := common.NewPluginError(common.MsgTimeOut, common.MsgTimeOutError.Error(), "timeout")
-		timeoutCallback(err, object)
-	case err := <-returnData:
-		callback(err, object)
-	}
+	s.callback(errChan, callback)
 }
 
-func (s *Space) GetSpacePath(name string) string {
-	fmt.Println("=============", s.plugin.GetPluginDescription())
+func (s *Space) getSpacePath(name string) string {
 	appUUID := s.plugin.GetPluginDescription().PluginDescription().ApplicationID()
-	fmt.Println("xxx", appUUID)
 	_dir := filepath.Join(config.StringOrPanic("runtime_work_space"), appUUID)
 
-	exist, err := PathExists(_dir)
+	exist, err := utils.PathExists(_dir)
 	if err != nil {
 		fmt.Printf("get dir error![%v]\n", err)
 	}
@@ -528,14 +463,12 @@ func (s *Space) GetSpacePath(name string) string {
 	return _filePath
 }
 
-// PathExists 判断文件夹是否存在
-func PathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
+func (s *Space) callback(errChan chan common.PluginError, callback common.AsyncInvokeCallbackParams) {
+	var err common.PluginError
+	select {
+	case <-time.After(3 * time.Second):
+		err = common.NewPluginError(common.MsgTimeOut, common.MsgTimeOutError.Error(), "timeout")
+	case err = <-errChan:
 	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
+	callback(err)
 }

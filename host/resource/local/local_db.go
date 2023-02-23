@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	common "github.com/obgnail/plugin-platform/common_type"
+	common "github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/host/config"
 	"github.com/obgnail/plugin-platform/host/resource/utils"
 	"io/ioutil"
@@ -178,9 +178,9 @@ func (localdb *LocalDB) Select(sql string) ([]*common.RawData, []*common.ColumnD
 	return rawData, colDesc, nil
 }
 
-func (localdb *LocalDB) AsyncSelect(sql string, asyncObj interface{}, callback common.SysDBCallBack) {
+func (localdb *LocalDB) AsyncSelect(sql string, callback common.SysDBCallBack) {
 	rawData, columnDesc, err := localdb.Select(sql)
-	callback(rawData, columnDesc, err, asyncObj)
+	callback(rawData, columnDesc, err)
 }
 
 func (localdb *LocalDB) Exec(sql string) common.PluginError {

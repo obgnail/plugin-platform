@@ -1,0 +1,46 @@
+{
+  "platform": {
+    "id": "R0000001",
+    "name": "plugin_platform",
+    "version": "1.0.0",
+    "host": "127.0.0.1",
+    "http_port": 9005,
+    "tcp_port": 9006,
+    "entry_address": "http://127.0.0.1:9001",
+    "entry_internal_address": "http://127.0.0.1:9102",
+    "mysql_address": "localhost:3306",
+    "mysql_user": "root",
+    "mysql_password": "root",
+    "mysql_root_password": "root",
+    "mysql_db_name": "plugin_platform",
+    "mysql_db_max_idle": 10,
+    "mysql_db_max_open": 100,
+    "redis_address": "localhost:6379",
+    "redis_db": 0,
+    "redis_password": "",
+    "plugin_file_directory": "./plugin_root",
+    "plugin_runtime_directory": "",
+    "web_plugin_file_directory": "",
+    "plugin_log_file_directory": "./plugin_root",
+    "timeout_sec": 30,
+    "log_file_path": "./plugin_platform.log",
+    "dispatch_mode": "solo",
+    "is_dev": true,
+    "entry_ability_prototype_path": "../bang-api/ability_prototype",
+    "host_mode": "power_save"
+  },
+  "host": {
+    "id": "Host",
+    "name": "default_host",
+    "version": "1.1.0",
+    "min_system_version": "3.5.0",
+    "language": "golang",
+    "path_to_plugin": "/data/plugin/upload",
+    "timeout_sec": 30,
+    "debug_mode": true,
+    "work_space": "./runtime_root/space",
+    "log_dir": "./runtime_root/log"
+  },
+  "host_boot": {
+  }
+}

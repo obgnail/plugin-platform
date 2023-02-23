@@ -1,5 +1,5 @@
 {
-  "platform_address": "tcp://127.0.0.1:9006",
+  "platform_address": "tcp://localhost:9006",
   "platform_version": "0.2.0",
   "platform_id": "R0000001",
   "platform_name": "platform",

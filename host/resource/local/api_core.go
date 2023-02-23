@@ -1,7 +1,7 @@
 package local
 
 import (
-	common "github.com/obgnail/plugin-platform/common_type"
+	common "github.com/obgnail/plugin-platform/common/common_type"
 )
 
 var _ common.APICore = (*APICoreOp)(nil)
@@ -16,7 +16,7 @@ func NewAPICore(plugin common.IPlugin) common.APICore {
 }
 
 //
-//func (n *APICoreOp) BuildMessage(httpRequestMessage *protocol.HttpRequestMessage) *protocol.PlatformMessage {
+//func (n *APICoreOp) buildMessage(httpRequestMessage *protocol.HttpRequestMessage) *protocol.PlatformMessage {
 //	msg := utils.GetInitMessage()
 //	msg.Resource = &protocol.ResourceMessage{
 //		Http: &protocol.HttpResourceMessage{
@@ -27,7 +27,7 @@ func NewAPICore(plugin common.IPlugin) common.APICore {
 //	return msg
 //}
 //
-//func (n *APICoreOp) SendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common.PluginError) {
+//func (n *APICoreOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common.PluginError) {
 //	return SyncSendToHost(n.plugin, platformMessage)
 //}
 
@@ -44,7 +44,7 @@ func (a *APICoreOp) Fetch(httpRequest *common.HttpRequest) *common.HttpResponse 
 	//	Headers: headers,
 	//	Root:    httpRequest.Root,
 	//}
-	//msg, err := a.SendMsgToHost(a.BuildMessage(httpRequestMessage))
+	//msg, err := a.sendMsgToHost(a.buildMessage(httpRequestMessage))
 	//if err != nil {
 	//	return &common.HttpResponse{
 	//		Err:        err,

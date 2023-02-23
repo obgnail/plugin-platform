@@ -1,4 +1,4 @@
-package local
+package release
 
 import (
 	"github.com/obgnail/plugin-platform/host/config"
@@ -19,5 +19,5 @@ func StartHost() {
 	if err := h.Run(); err != nil {
 		panic(err)
 	}
-	//h.Send()
+	h.Send()
 }

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "host": "127.0.0.1",
   "http_port": 9005,
-  "tcp_port":  "9006",
+  "tcp_port":  9006,
   "entry_address": "http://127.0.0.1:9001",
   "entry_internal_address": "http://127.0.0.1:9102",
   "mysql_address": "localhost:3306",

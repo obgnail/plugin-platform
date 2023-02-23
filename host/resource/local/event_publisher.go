@@ -1,7 +1,7 @@
 package local
 
 import (
-	common "github.com/obgnail/plugin-platform/common_type"
+	common "github.com/obgnail/plugin-platform/common/common_type"
 )
 
 var _ common.EventPublisher = (*Event)(nil)

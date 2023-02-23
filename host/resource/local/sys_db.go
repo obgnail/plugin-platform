@@ -1,7 +1,7 @@
 package local
 
 import (
-	common "github.com/obgnail/plugin-platform/common_type"
+	common "github.com/obgnail/plugin-platform/common/common_type"
 )
 
 var _ common.SysDB = (*SysDBOp)(nil)
@@ -15,7 +15,7 @@ func NewSysDB(plugin common.IPlugin) common.SysDB {
 	return &SysDBOp{plugin: plugin}
 }
 
-//func (db *SysDBOp) BuildMessage(databaseRequestMessage *protocol.DatabaseMessage_DatabaseRequestMessage) *protocol.PlatformMessage {
+//func (db *SysDBOp) buildMessage(databaseRequestMessage *protocol.DatabaseMessage_DatabaseRequestMessage) *protocol.PlatformMessage {
 //	//msg := utils.GetInitMessage()
 //	//msg.Resource = &protocol.ResourceMessage{
 //	//	Database: &protocol.DatabaseMessage{
@@ -26,7 +26,7 @@ func NewSysDB(plugin common.IPlugin) common.SysDB {
 //	return nil
 //}
 //
-//func (db *SysDBOp) SendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common.PluginError) {
+//func (db *SysDBOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common.PluginError) {
 //	//return SyncSendToHost(db.plugin, platformMessage)
 //	return nil, nil
 //}
@@ -75,7 +75,7 @@ func (d *SysDBOp) Select(db, sql string) ([]*common.RawData, []*common.ColumnDes
 	//	Operation: operation,
 	//	Statement: sql,
 	//}
-	//msg, err := db.SendMsgToHost(db.BuildMessage(databaseRequestMessage))
+	//msg, err := db.sendMsgToHost(db.buildMessage(databaseRequestMessage))
 	//if err != nil {
 	//	return nil, nil, err
 	//}
@@ -92,7 +92,7 @@ func (d *SysDBOp) Select(db, sql string) ([]*common.RawData, []*common.ColumnDes
 	return nil, nil, nil
 }
 
-func (d *SysDBOp) AsyncSelect(db, sql string, asyncObj interface{}, callback common.SysDBCallBack) {
+func (d *SysDBOp) AsyncSelect(db, sql string, callback common.SysDBCallBack) {
 	//instance, operation := db.Common(dbName, op)
 	//databaseRequestMessage := &protocol.DatabaseMessage_DatabaseRequestMessage{
 	//	Instance:  instance,
@@ -101,7 +101,7 @@ func (d *SysDBOp) AsyncSelect(db, sql string, asyncObj interface{}, callback com
 	//}
 	//asyncSysDb := new(AsyncSysDb)
 	//asyncSysDb.callBackHandler = callback
-	//AsyncSendToHost(db.plugin, db.BuildMessage(databaseRequestMessage), asyncObj, asyncSysDb.callBack, nil)
+	//AsyncSendToHost(db.plugin, db.buildMessage(databaseRequestMessage), asyncObj, asyncSysDb.callBack, nil)
 	return
 }
 

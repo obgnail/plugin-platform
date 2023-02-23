@@ -3,9 +3,9 @@ package lifecycle
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/utils/errors"
-	"github.com/obgnail/plugin-platform/utils/log"
 )
 
 type InstallReq struct {

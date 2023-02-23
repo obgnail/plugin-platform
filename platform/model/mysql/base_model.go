@@ -2,7 +2,7 @@ package mysql
 
 import (
 	"fmt"
-	"github.com/obgnail/plugin-platform/utils/log"
+	"github.com/obgnail/plugin-platform/common/log"
 	"reflect"
 	"strings"
 	"time"

@@ -1,6 +1,6 @@
 package local
 
-import common "github.com/obgnail/plugin-platform/common_type"
+import common "github.com/obgnail/plugin-platform/common/common_type"
 
 var _ common.IResources = (*LocalResource)(nil)
 

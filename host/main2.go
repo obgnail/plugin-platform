@@ -4,8 +4,47 @@ import (
 	"fmt"
 	common "github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/log"
+	"github.com/obgnail/plugin-platform/host/resource/release"
 )
 
+func main() {
+	plugin := &mockPlugin{}
+	resource := release.NewReleaseResource(plugin)
+	instanceDesc := &mockInstanceDesc{}
+
+	log.Info("OK")
+	err := plugin.Assign(instanceDesc, resource)
+	if err != nil {
+		panic(err)
+	}
+	workSpace := resource.GetWorkspace()
+	e := workSpace.CreateFile("qwe_____.txt")
+	if e != nil {
+		panic(e)
+	}
+}
+
+////////////////////////////
+type mockInstanceDesc struct{}
+
+func (i *mockInstanceDesc) InstanceID() string { return "InstanceID123" }
+func (i *mockInstanceDesc) PluginDescription() common.PluginDescriptor {
+	return &mockPluginDescriptor{}
+}
+
+type mockPluginDescriptor struct{}
+
+func (i *mockPluginDescriptor) ApplicationID() string            { return "ApplicationID123" }
+func (i *mockPluginDescriptor) Name() string                     { return "ApplicationID123" }
+func (i *mockPluginDescriptor) Language() string                 { return "Language123" }
+func (i *mockPluginDescriptor) LanguageVersion() common.IVersion { return common.NewVersion(1, 2, 3) }
+func (i *mockPluginDescriptor) ApplicationVersion() common.IVersion {
+	return common.NewVersion(1, 2, 3)
+}
+func (i *mockPluginDescriptor) HostVersion() common.IVersion      { return common.NewVersion(1, 2, 3) }
+func (i *mockPluginDescriptor) MinSystemVersion() common.IVersion { return common.NewVersion(1, 2, 3) }
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 var _ common.IPlugin = (*mockPlugin)(nil)
 
 type mockPlugin struct {

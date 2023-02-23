@@ -2,7 +2,7 @@ package local
 
 import (
 	"github.com/natefinch/lumberjack"
-	common "github.com/obgnail/plugin-platform/common_type"
+	common "github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/host/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

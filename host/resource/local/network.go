@@ -1,7 +1,7 @@
 package local
 
 import (
-	common "github.com/obgnail/plugin-platform/common_type"
+	common "github.com/obgnail/plugin-platform/common/common_type"
 )
 
 var _ common.Network = (*NetworkOp)(nil)
@@ -16,7 +16,7 @@ func NewNetwork(plugin common.IPlugin) common.Network {
 }
 
 //
-//func (n *NetworkOp) BuildMessage(resourceHttpRequest *protocol.HttpRequestMessage) *protocol.PlatformMessage {
+//func (n *NetworkOp) buildMessage(resourceHttpRequest *protocol.HttpRequestMessage) *protocol.PlatformMessage {
 //	msg := utils.GetInitMessage()
 //	msg.Resource = &protocol.ResourceMessage{
 //		Http: &protocol.HttpResourceMessage{
@@ -27,7 +27,7 @@ func NewNetwork(plugin common.IPlugin) common.Network {
 //	return msg
 //}
 //
-//func (n *NetworkOp) SendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common.PluginError) {
+//func (n *NetworkOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common.PluginError) {
 //	return SyncSendToHost(n.plugin, platformMessage)
 //}
 
@@ -44,7 +44,7 @@ func (n *NetworkOp) Fetch(httpRequest *common.HttpRequest) *common.HttpResponse 
 	//	Headers: headers,
 	//	Root:    httpRequest.Root,
 	//}
-	//msg, err := n.SendMsgToHost(n.BuildMessage(httpRequestMessage))
+	//msg, err := n.sendMsgToHost(n.buildMessage(httpRequestMessage))
 	//if err != nil {
 	//	return &common.HttpResponse{
 	//		StatusCode: 500,
@@ -99,8 +99,7 @@ func (n *NetworkOp) Fetch(httpRequest *common.HttpRequest) *common.HttpResponse 
 //	a.timeoutHandler(err, asyncObject)
 //}
 
-func (n *NetworkOp) AsyncFetch(httpRequest *common.HttpRequest,
-	object interface{}, callback common.NetworkCallBack, timeoutHandler common.AsyncInvokeTimeoutCallback) {
+func (n *NetworkOp) AsyncFetch(httpRequest *common.HttpRequest, callback common.NetworkCallBack) {
 
 	//headers := make(map[string]*protocol.HeaderVal)
 	//for k, val := range httpRequest.Headers {
@@ -117,6 +116,6 @@ func (n *NetworkOp) AsyncFetch(httpRequest *common.HttpRequest,
 	//asyncNetwork := new(AsyncNetwork)
 	//asyncNetwork.callBackHandler = callback
 	//asyncNetwork.timeoutHandler = timeoutHandler
-	//AsyncSendToHost(n.plugin, n.BuildMessage(httpRequestMessage), object, asyncNetwork.callBack, asyncNetwork.timeOutHandler)
+	//AsyncSendToHost(n.plugin, n.buildMessage(httpRequestMessage), object, asyncNetwork.callBack, asyncNetwork.timeOutHandler)
 	return
 }
