@@ -1,9 +1,9 @@
 package mysql
 
 import (
+	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/platform/pool/plugin_pool"
 	"github.com/obgnail/plugin-platform/platform/service/utils"
-	"github.com/obgnail/plugin-platform/utils/errors"
 	"gopkg.in/yaml.v2"
 )
 

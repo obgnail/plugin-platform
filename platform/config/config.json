@@ -17,7 +17,7 @@
   "redis_address": "localhost:6379",
   "redis_db": 0,
   "redis_password": "",
-  "plugin_file_directory": "./plugin_root",
+  "plugins_storage_dir": "./plugin_root",
   "plugin_runtime_directory": "",
   "web_plugin_file_directory": "",
   "plugin_log_file_directory": "./plugin_root",

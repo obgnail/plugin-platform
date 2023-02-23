@@ -1,7 +1,8 @@
 package log
 
 import (
-	"github.com/obgnail/plugin-platform/utils/errors"
+	"github.com/obgnail/plugin-platform/common/config"
+	"github.com/obgnail/plugin-platform/common/errors"
 	"io"
 	"os"
 	"strings"
@@ -12,8 +13,8 @@ var CommonLogger *Logger
 func init() {
 	sep := "/github.com"
 	pathPrefix := "/github.com/obgnail/plugin-platform"
-	file := "plugin-platform.log"
-	level := "debug"
+	file := config.StringOrPanic("platform.log_path")
+	level := config.StringOrPanic("platform.log_level")
 
 	logFile, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0640)
 	if err != nil {

@@ -1,4 +1,4 @@
-package common
+package common_type
 
 type IPlugin interface {
 	// 程序实现

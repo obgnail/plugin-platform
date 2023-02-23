@@ -2,7 +2,7 @@ package connect
 
 import (
 	"github.com/golang/protobuf/proto"
-	common "github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"sync"
 	"time"
@@ -31,7 +31,7 @@ func (s *BaseHandler) GetZmq() *ZmqEndpoint {
 
 // Send 同步发送
 func (s *BaseHandler) Send(msg *protocol.PlatformMessage, timeout time.Duration) (
-	result *protocol.PlatformMessage, err common.PluginError) {
+	result *protocol.PlatformMessage, err common_type.PluginError) {
 
 	spin := newSpin(msg.Header.SeqNo, msg, timeout, nil)
 	s.spins.Store(spin.id, spin)
@@ -39,11 +39,11 @@ func (s *BaseHandler) Send(msg *protocol.PlatformMessage, timeout time.Duration)
 
 	msgBytes, e := proto.Marshal(msg)
 	if e != nil {
-		err = common.NewPluginError(common.ProtoMarshalFailure, common.ProtoMarshalFailureError.Error(), e.Error())
+		err = common_type.NewPluginError(common_type.ProtoMarshalFailure, common_type.ProtoMarshalFailureError.Error(), e.Error())
 		return nil, err
 	}
 	if e = s.Zmq.Send(msgBytes); e != nil {
-		err = common.NewPluginError(common.EndpointSendErr, common.EndpointSendError.Error(), e.Error())
+		err = common_type.NewPluginError(common_type.EndpointSendErr, common_type.EndpointSendError.Error(), e.Error())
 		return nil, err
 	}
 
@@ -65,12 +65,12 @@ func (s *BaseHandler) SendAsync(msg *protocol.PlatformMessage, timeout time.Dura
 
 	msgBytes, e := proto.Marshal(msg)
 	if e != nil {
-		err := common.NewPluginError(common.ProtoMarshalFailure, common.ProtoMarshalFailureError.Error(), e.Error())
+		err := common_type.NewPluginError(common_type.ProtoMarshalFailure, common_type.ProtoMarshalFailureError.Error(), e.Error())
 		spin.onError(err)
 		return
 	}
 	if e = s.Zmq.Send(msgBytes); e != nil {
-		err := common.NewPluginError(common.EndpointSendErr, common.EndpointSendError.Error(), e.Error())
+		err := common_type.NewPluginError(common_type.EndpointSendErr, common_type.EndpointSendError.Error(), e.Error())
 		spin.onError(err)
 		return
 	}
@@ -78,9 +78,9 @@ func (s *BaseHandler) SendAsync(msg *protocol.PlatformMessage, timeout time.Dura
 
 func (s *BaseHandler) OnMessage(endpoint *EndpointInfo, content []byte) {
 	msg := &protocol.PlatformMessage{}
-	var e common.PluginError
+	var e common_type.PluginError
 	if err := proto.Unmarshal(content, msg); err != nil {
-		e = common.NewPluginError(common.ProtoUnmarshalFailure, common.ProtoUnmarshalFailureError.Error(), err.Error())
+		e = common_type.NewPluginError(common_type.ProtoUnmarshalFailure, common_type.ProtoUnmarshalFailureError.Error(), err.Error())
 	}
 	if spin, ok := s.spins.Load(msg.Header.SeqNo); ok {
 		spin.(*syncSpin).onResult(msg)
@@ -88,7 +88,7 @@ func (s *BaseHandler) OnMessage(endpoint *EndpointInfo, content []byte) {
 	s.FurtherHandler.OnMsg(endpoint, msg, e)
 }
 
-type CallBack func(input, result *protocol.PlatformMessage, err common.PluginError)
+type CallBack func(input, result *protocol.PlatformMessage, err common_type.PluginError)
 
 // syncSpin: onError、onResult、onTimeout时执行回调
 type syncSpin struct {
@@ -96,7 +96,7 @@ type syncSpin struct {
 
 	input  *protocol.PlatformMessage
 	result *protocol.PlatformMessage
-	err    common.PluginError
+	err    common_type.PluginError
 
 	timeout  time.Duration
 	callback CallBack
@@ -116,7 +116,7 @@ func newSpin(id uint64, input *protocol.PlatformMessage, timeout time.Duration, 
 	}
 }
 
-func (s *syncSpin) onError(err common.PluginError) {
+func (s *syncSpin) onError(err common_type.PluginError) {
 	s.err = err
 	s.exit <- struct{}{}
 }
@@ -129,7 +129,7 @@ func (s *syncSpin) onResult(msg *protocol.PlatformMessage) {
 func (s *syncSpin) wait() {
 	select {
 	case <-time.After(s.timeout):
-		s.err = common.NewPluginError(common.MsgTimeOut, common.MsgTimeOutError.Error(), "timeout")
+		s.err = common_type.NewPluginError(common_type.MsgTimeOut, common_type.MsgTimeOutError.Error(), "timeout")
 	case <-s.exit:
 	}
 

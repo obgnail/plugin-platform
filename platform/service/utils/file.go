@@ -5,7 +5,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
-	"github.com/obgnail/plugin-platform/utils/errors"
+	"github.com/obgnail/plugin-platform/common/errors"
 	"io"
 	"io/ioutil"
 	"mime/multipart"

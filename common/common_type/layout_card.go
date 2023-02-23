@@ -1,4 +1,4 @@
-package common
+package common_type
 
 type SettingLayoutCardBody struct {
 	Action          int32  `json:"action"`

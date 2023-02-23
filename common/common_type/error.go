@@ -1,4 +1,4 @@
-package common
+package common_type
 
 type PluginError interface {
 	Code() int

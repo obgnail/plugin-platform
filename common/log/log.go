@@ -2,7 +2,7 @@ package log
 
 import (
 	"fmt"
-	"github.com/obgnail/plugin-platform/utils/errors"
+	"github.com/obgnail/plugin-platform/common/errors"
 	"io"
 	"os"
 	"runtime"

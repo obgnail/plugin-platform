@@ -1,0 +1,47 @@
+syntax = "proto3";
+package protocol;
+option go_package = "protocol";
+
+import "common.proto";
+
+
+message StorageRequestMessage{
+    string Key = 1;
+    string Value = 2;
+}
+
+message StorageResponseMessage{
+    ErrorMessage Error = 1;
+    string Result = 2;
+}
+
+message StorageMessage{
+    StorageRequestMessage  StorageRequest  = 1;
+    StorageResponseMessage StorageResponse = 2;
+}
+
+message PropertiesRequestMessage{
+    string TeamUUID = 1;
+    string TypeStr  = 2;
+    string TypeUUID = 3;
+    string FieldKey = 4;
+}
+
+message PropertiesResponseMessage{
+    ErrorMessage Error = 1;
+    string Result = 2;
+}
+
+message PropertiesMessage{
+    PropertiesRequestMessage  PropertiesRequest  = 1;
+    PropertiesResponseMessage PropertiesResponse = 2;
+}
+
+message CmdbMessage{
+    // 添加消息头，路由数据
+    PluginInstanceDescriptor Sender = 1;
+    HostDescriptor Host = 2;
+
+    StorageMessage Storage = 20;
+    PropertiesMessage Properties = 21;
+}

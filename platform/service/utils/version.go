@@ -1,8 +1,8 @@
 package utils
 
 import (
+	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/platform/service/types"
-	"github.com/obgnail/plugin-platform/utils/errors"
 	"strconv"
 	"strings"
 )

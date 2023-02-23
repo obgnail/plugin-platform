@@ -1,4 +1,4 @@
-package common
+package common_type
 
 type Notify interface {
 	SendMessage(*SendSubMessageReq) PluginError

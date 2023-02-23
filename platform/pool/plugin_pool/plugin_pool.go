@@ -4,7 +4,7 @@ package plugin_pool
 //import (
 //	"github.com/BangWork/ones-plugin-common/golang/common"
 //	"github.com/obgnail/plugin-platform/platform/model/mysql"
-//	"github.com/obgnail/plugin-platform/utils/errors"
+//	"github.com/obgnail/plugin-platform/common/errors"
 //	"sync"
 //	"time"
 //)

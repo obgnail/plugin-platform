@@ -1,4 +1,4 @@
-package common
+package common_type
 
 type Field interface {
 	ItemsAddProject(*ItemsAddProjectReq) *ItemsAddResp
@@ -9,20 +9,20 @@ type Field interface {
 }
 
 type ItemsAddProjectReq struct {
-	FieldType 		string
-	Name      		string
-	ItemType  		string
-	Pool      		string
-	ContextType  	string
+	FieldType   string
+	Name        string
+	ItemType    string
+	Pool        string
+	ContextType string
 }
 
 type ItemsAddProductReq struct {
-	FieldType 		string
-	Name      		string
-	ItemType  		string
-	Pool      		string
-	ContextType  	string
-	Require         bool
+	FieldType   string
+	Name        string
+	ItemType    string
+	Pool        string
+	ContextType string
+	Require     bool
 }
 
 type ItemsAddResp struct {

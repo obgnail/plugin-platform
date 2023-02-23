@@ -1,4 +1,4 @@
-package common
+package common_type
 
 type HttpRequest struct {
 	Method   string

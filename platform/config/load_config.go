@@ -3,7 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/obgnail/plugin-platform/utils/errors"
+	"github.com/obgnail/plugin-platform/common/errors"
 	"io/ioutil"
 	"os"
 )
