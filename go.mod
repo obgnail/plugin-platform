@@ -3,6 +3,7 @@ module github.com/obgnail/plugin-platform
 go 1.18
 
 require (
+	github.com/blastrain/vitess-sqlparser v0.0.0-20201030050434-a139afbb1aba
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/go-zeromq/zmq4 v0.15.0

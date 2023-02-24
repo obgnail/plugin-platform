@@ -5,6 +5,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/host/resource/release"
+	"time"
 )
 
 func main() {
@@ -17,8 +18,89 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	workSpace := resource.GetWorkspace()
+	//testWorkSpace(plugin)
+	testDB(plugin)
+}
+
+func testDB(plugin *mockPlugin) {
+	localDB := plugin.resource.GetLocalDB()
+
+	//if err := localDB.ImportSQL("./config/plugin.sql"); err != nil {
+	//	panic(err)
+	//}
+	//
+	//rawData, cols, err := localDB.Select("select * from upload_tips;")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//type User struct {
+	//	UUID       string `orm:"team_uuid"`
+	//	Name       string `orm:"content"`
+	//	UpdateTime int    `orm:"update_time"`
+	//}
+	//users := make([]*User, 0)
+	//e := localDB.Unmarshal(rawData, cols, &users)
+	//if e != nil {
+	//	panic(e)
+	//}
+	//fmt.Printf("%+v\n", users)
+
+	localDB.AsyncSelect("select * from upload_tips;", func(data []*common_type.RawData, descs []*common_type.ColumnDesc, pluginError common_type.PluginError) {
+		type User struct {
+			UUID       string `orm:"team_uuid"`
+			Name       string `orm:"content"`
+			UpdateTime int    `orm:"update_time"`
+		}
+		users := make([]*User, 0)
+		e := localDB.Unmarshal(data, descs, &users)
+		if e != nil {
+			panic(e)
+		}
+		fmt.Printf("%+v\n", users)
+	})
+
+	//err := localDB.Exec("update upload_tips set content = 'yyy' where team_uuid = 'asd';")
+	//if err != nil {
+	//	panic(err)
+	//}
+
+	sysDB := plugin.resource.GetSysDB()
+	rawData, cols, err := sysDB.Select("plugin_platform", "select * from plugin_package;")
+	if err != nil {
+		panic(err)
+	}
+
+	type Package struct {
+		ID         string `orm:"id"`
+		AppUUID    string `orm:"app_uuid"`
+		Name       string `orm:"name"`
+		Size       int    `orm:"size"`
+		Version    string `orm:"version"`
+		CreateTime int    `orm:"create_time"`
+		UpdateTime int    `orm:"update_time"`
+		Deleted    int    `orm:"deleted"`
+	}
+	ps := make([]*Package, 0)
+	e := sysDB.Unmarshal(rawData, cols, &ps)
+	if e != nil {
+		panic(e)
+	}
+	fmt.Printf("%+v\n", ps)
+	time.Sleep(time.Hour)
+}
+
+func testWorkSpace(plugin *mockPlugin) {
+	workSpace := plugin.resource.GetWorkspace()
+	workSpace.AsyncCopy("qwe_____.txt", "qwe_____2.txt", func(pluginError common_type.PluginError) {
+		fmt.Println("----___ ok ___----")
+		fmt.Println(pluginError)
+	})
+	time.Sleep(time.Hour)
 	e := workSpace.CreateFile("qwe_____.txt")
+	if e != nil {
+		panic(e)
+	}
+	e = workSpace.WriteStrings("qwe_____.txt", []string{"123\n", "345"})
 	if e != nil {
 		panic(e)
 	}
@@ -34,14 +116,14 @@ func (i *mockInstanceDesc) PluginDescription() common_type.PluginDescriptor {
 
 type mockPluginDescriptor struct{}
 
-func (i *mockPluginDescriptor) ApplicationID() string { return "ApplicationID123" }
-func (i *mockPluginDescriptor) Name() string          { return "ApplicationID123" }
+func (i *mockPluginDescriptor) ApplicationID() string { return "lt1ZZuMd" }
+func (i *mockPluginDescriptor) Name() string          { return "Application123" }
 func (i *mockPluginDescriptor) Language() string      { return "Language123" }
 func (i *mockPluginDescriptor) LanguageVersion() common_type.IVersion {
 	return common_type.NewVersion(1, 2, 3)
 }
 func (i *mockPluginDescriptor) ApplicationVersion() common_type.IVersion {
-	return common_type.NewVersion(1, 2, 3)
+	return common_type.NewVersion(1, 0, 0)
 }
 func (i *mockPluginDescriptor) HostVersion() common_type.IVersion {
 	return common_type.NewVersion(1, 2, 3)

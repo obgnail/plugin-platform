@@ -92,7 +92,7 @@ func (d *SysDBOp) Select(db, sql string) ([]*common_type.RawData, []*common_type
 	return nil, nil, nil
 }
 
-func (d *SysDBOp) AsyncSelect(db, sql string, callback common_type.SysDBCallBack) {
+func (d *SysDBOp) AsyncSelect(db, sql string, callback common_type.DBCallBack) {
 	//instance, operation := db.Common(dbName, op)
 	//databaseRequestMessage := &protocol.DatabaseMessage_DatabaseRequestMessage{
 	//	Instance:  instance,

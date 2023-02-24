@@ -1,6 +1,9 @@
 package file_utils
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 // PathExists 判断文件夹是否存在
 func PathExists(path string) (bool, error) {
@@ -17,10 +20,10 @@ func PathExists(path string) (bool, error) {
 func FindPath(path string) (string, error) {
 	for i := 0; i < 5; i++ {
 		if _, err := os.Stat(path); err == nil {
-			break
+			return path, nil
 		} else {
 			path = "../" + path
 		}
 	}
-	return path, nil
+	return path, fmt.Errorf("no such path")
 }

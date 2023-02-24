@@ -436,7 +436,8 @@ func (s *Space) AsyncUnGz(name string, targetFile string, callback common_type.A
 
 func (s *Space) getSpacePath(name string) string {
 	appUUID := s.plugin.GetPluginDescription().PluginDescription().ApplicationID()
-	_dir := filepath.Join(config.StringOrPanic("host.plugin_workspace_dir"), appUUID)
+	instanceUUID := s.plugin.GetPluginDescription().InstanceID()
+	_dir := filepath.Join(config.StringOrPanic("host.plugin_workspace_dir"), appUUID, instanceUUID)
 
 	exist, err := file_utils.PathExists(_dir)
 	if err != nil {

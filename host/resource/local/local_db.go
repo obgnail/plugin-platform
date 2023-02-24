@@ -8,8 +8,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/config"
+	"github.com/obgnail/plugin-platform/host/resource/common"
 	"io/ioutil"
 	"math"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
@@ -32,7 +34,7 @@ func (localdb *LocalDB) initMysql() common_type.PluginError {
 		config.StringOrPanic("platform.mysql_password"),
 		config.StringOrPanic("platform.mysql_host"),
 		config.IntOrPanic("platform.mysql_port"),
-		config.StringOrPanic("platform.mysql_db_name"),
+		config.StringOrPanic("platform.mysql_user_plugin_db_name"),
 	)
 
 	db, err := sql.Open("mysql", connStr)
@@ -75,6 +77,7 @@ func (localdb *LocalDB) fixSql(content string) (string, common_type.PluginError)
 }
 
 func (localdb *LocalDB) ImportSQL(sqlFilePath string) common_type.PluginError {
+	sqlFilePath = filepath.Clean(sqlFilePath)
 	fileContent, err := localdb.readSqlFile(sqlFilePath)
 	if err != nil {
 		return err
@@ -93,13 +96,13 @@ func (localdb *LocalDB) ImportSQL(sqlFilePath string) common_type.PluginError {
 
 func (localdb *LocalDB) Select(sql string) ([]*common_type.RawData, []*common_type.ColumnDesc, common_type.PluginError) {
 	if err := localdb.initMysql(); err != nil {
-		return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, err.Error(), err.Msg())
+		return nil, nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error(), err.Msg())
 	}
 	defer localdb.db.Close()
 
 	rows, err := localdb.db.Query(sql)
 	if err != nil {
-		return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, common_type.SysDbSelectFailureError.Error(), err.Error())
+		return nil, nil, common_type.NewPluginError(common_type.DbSelectFailure, common_type.DbSelectFailureError.Error(), err.Error())
 	}
 	defer rows.Close()
 
@@ -108,7 +111,7 @@ func (localdb *LocalDB) Select(sql string) ([]*common_type.RawData, []*common_ty
 
 	colTypes, err := rows.ColumnTypes()
 	if err != nil {
-		return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, common_type.SysDbSelectFailureError.Error(), err.Error())
+		return nil, nil, common_type.NewPluginError(common_type.DbSelectFailure, common_type.DbSelectFailureError.Error(), err.Error())
 	}
 	for idx, ct := range colTypes {
 		desc := &common_type.ColumnDesc{
@@ -133,7 +136,7 @@ func (localdb *LocalDB) Select(sql string) ([]*common_type.RawData, []*common_ty
 	rawData := make([]*common_type.RawData, 0)
 	for rows.Next() {
 		if err = rows.Scan(built...); err != nil {
-			return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, common_type.SysDbSelectFailureError.Error(), err.Error())
+			return nil, nil, common_type.NewPluginError(common_type.DbSelectFailure, common_type.DbSelectFailureError.Error(), err.Error())
 		}
 		cells := make([][]byte, 0)
 		for _, i := range built {
@@ -144,7 +147,7 @@ func (localdb *LocalDB) Select(sql string) ([]*common_type.RawData, []*common_ty
 				v := reflect.ValueOf(i).Elem().Int()
 				byteBuf := bytes.NewBuffer([]byte{})
 				if err := binary.Write(byteBuf, binary.BigEndian, v); err != nil {
-					return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, common_type.SysDbSelectFailureError.Error(), err.Error())
+					return nil, nil, common_type.NewPluginError(common_type.DbSelectFailure, common_type.DbSelectFailureError.Error(), err.Error())
 				}
 				cells = append(cells, byteBuf.Bytes())
 			case "*float":
@@ -159,7 +162,7 @@ func (localdb *LocalDB) Select(sql string) ([]*common_type.RawData, []*common_ty
 				v := reflect.ValueOf(i).Elem().Field(0).Int()
 				byteBuf := bytes.NewBuffer([]byte{})
 				if err := binary.Write(byteBuf, binary.BigEndian, v); err != nil {
-					return nil, nil, common_type.NewPluginError(common_type.SysDbSelectFailure, err.Error(), common_type.SysDbSelectFailureError.Error())
+					return nil, nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error(), common_type.DbSelectFailureError.Error())
 				}
 				cells = append(cells, byteBuf.Bytes())
 			case "*sql.NullFloat64":
@@ -177,19 +180,19 @@ func (localdb *LocalDB) Select(sql string) ([]*common_type.RawData, []*common_ty
 	return rawData, colDesc, nil
 }
 
-func (localdb *LocalDB) AsyncSelect(sql string, callback common_type.SysDBCallBack) {
+func (localdb *LocalDB) AsyncSelect(sql string, callback common_type.DBCallBack) {
 	rawData, columnDesc, err := localdb.Select(sql)
 	callback(rawData, columnDesc, err)
 }
 
 func (localdb *LocalDB) Exec(sql string) common_type.PluginError {
 	if err := localdb.initMysql(); err != nil {
-		return common_type.NewPluginError(common_type.SysDbExecFailure, err.Error(), err.Msg())
+		return common_type.NewPluginError(common_type.DbExecFailure, err.Error(), err.Msg())
 	}
 	defer localdb.db.Close()
 
 	if _, err := localdb.db.Exec(sql); err != nil {
-		return common_type.NewPluginError(common_type.SysDbExecFailure, common_type.SysDbExecFailureError.Error(), err.Error())
+		return common_type.NewPluginError(common_type.DbExecFailure, common_type.DbExecFailureError.Error(), err.Error())
 	}
 	return nil
 }
@@ -198,7 +201,7 @@ func (localdb *LocalDB) Unmarshal(rawData []*common_type.RawData, columnDesc []*
 	if len(rawData) == 0 {
 		return nil
 	}
-	if err := common_type.Unmarshal(rawData, columnDesc, v); err != nil {
+	if err := common.Unmarshal(rawData, columnDesc, v); err != nil {
 		return common_type.NewPluginError(common_type.UnmarshalFailure, err.Error(), common_type.UnmarshalError.Error())
 	}
 	return nil

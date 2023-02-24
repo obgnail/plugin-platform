@@ -4,17 +4,18 @@ option go_package = "..;protocol";
 
 import "common.proto";
 
-message ImportSqlMessage{
-  message ImportSqlRequestMessage{
-    string SqlFileName = 1;
-  }
+message RowMessage{
+  repeated bytes Cell = 1;
+}
+message ColumnDesc{
+  int64  Index = 1;
+  string Name = 2;
+  string Type = 3;
+}
 
-  message ImportSqlResponseMessage{
-    ErrorMessage Error = 1;
-  }
-
-  ImportSqlRequestMessage  ImportSqlRequest = 1;
-  ImportSqlResponseMessage ImportSqlResponse = 2;
+message TableMessage{
+  repeated RowMessage RowData = 1;
+  repeated ColumnDesc Column = 2;
 }
 
 message DatabaseMessage{
@@ -27,7 +28,7 @@ message DatabaseMessage{
   message DatabaseResponseMessage{
     ErrorMessage Error = 1;
     ErrorMessage DBError = 2;
-    bytes Data = 6;
+    TableMessage Data = 5;
     int64 Count = 7;
     int64 LastInsertId = 8;
     int64 RowsAffected = 9;
@@ -157,5 +158,4 @@ message ResourceMessage{
   HttpResourceMessage Http = 22;
   WorkspaceMessage Workspace = 23;
   EventMessage Event = 24;
-  ImportSqlMessage ImportSql = 25;
 }

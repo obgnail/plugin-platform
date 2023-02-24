@@ -80,6 +80,18 @@ func (s *BaseHandler) SendAsync(msg *protocol.PlatformMessage, timeout time.Dura
 	}
 }
 
+// SendOnly 只发不收
+func (s *BaseHandler) SendOnly(msg *protocol.PlatformMessage) (err common_type.PluginError) {
+	msgBytes, e := proto.Marshal(msg)
+	if e != nil {
+		return common_type.NewPluginError(common_type.ProtoMarshalFailure, common_type.ProtoMarshalFailureError.Error(), e.Error())
+	}
+	if e = s.Zmq.Send(msgBytes); e != nil {
+		return common_type.NewPluginError(common_type.EndpointSendErr, common_type.EndpointSendError.Error(), e.Error())
+	}
+	return nil
+}
+
 func (s *BaseHandler) OnMessage(endpoint *EndpointInfo, content []byte) {
 	msg := &protocol.PlatformMessage{}
 	var e common_type.PluginError

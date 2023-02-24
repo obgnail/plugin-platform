@@ -12,9 +12,9 @@ const (
 	TargetEndpointNotFound      = 11003
 	ProtoUnmarshalFailure       = 11004
 	ProtoMarshalFailure         = 11005
-	SysDbSelectFailure          = 11006
-	SysDbExecFailure            = 11007
-	SysDbCountFailure           = 11008
+	DbSelectFailure             = 11006
+	DbExecFailure               = 11007
+	DbSqlSyntaxErr              = 11008
 	CreateFileFailure           = 11009
 	ReNameFileFailure           = 11010
 	RemoveFileFailure           = 11011
@@ -72,9 +72,9 @@ var (
 	TargetEndpointNotFoundError      = fmt.Errorf("targetEndpointNotFoundError %d", TargetEndpointNotFound)
 	ProtoUnmarshalFailureError       = fmt.Errorf("ProtoUnmarshalFailureError %d", ProtoUnmarshalFailure)
 	ProtoMarshalFailureError         = fmt.Errorf("ProtoMarshalFailure %d", ProtoMarshalFailure)
-	SysDbSelectFailureError          = fmt.Errorf("SysDbSelectFailure %d", SysDbSelectFailure)
-	SysDbExecFailureError            = fmt.Errorf("SysDbExecFailure %d", SysDbExecFailure)
-	SysDbCountFailureError           = fmt.Errorf("SysDbCountFailure %d", SysDbCountFailure)
+	DbSelectFailureError             = fmt.Errorf("DbSelectFailure %d", DbSelectFailure)
+	DbExecFailureError               = fmt.Errorf("DbExecFailure %d", DbExecFailure)
+	DbSqlSyntaxError                 = fmt.Errorf("DbSqlSyntaxError %d", DbSqlSyntaxErr)
 	CreateFileFailureError           = fmt.Errorf("CreateFileFailure %d", CreateFileFailure)
 	ReNameFileFailureError           = fmt.Errorf("ReNameFileFailure %d", ReNameFileFailure)
 	RemoveFileFailureError           = fmt.Errorf("RemoveFileFailure %d", RemoveFileFailure)

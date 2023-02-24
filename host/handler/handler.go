@@ -5,6 +5,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/connect"
 	"github.com/obgnail/plugin-platform/common/log"
+	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"os"
 	"time"
@@ -28,9 +29,9 @@ func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, i
 			HostID:           id,
 			Name:             name,
 			Language:         lang,
-			HostVersion:      protocol.SplitVersion(hostVersion),
-			MinSystemVersion: protocol.SplitVersion(minSysVersion),
-			LanguageVersion:  protocol.SplitVersion(langVersion),
+			HostVersion:      message_utils.SplitVersion(hostVersion),
+			MinSystemVersion: message_utils.SplitVersion(minSysVersion),
+			LanguageVersion:  message_utils.SplitVersion(langVersion),
 		},
 		isLocal: isLocal,
 	}
@@ -51,6 +52,10 @@ func Default(isLocal bool) *HostHandler {
 
 	h := New(id, name, addr, lang, hostVersion, minSysVersion, langVersion, isLocal)
 	return h
+}
+
+func (h *HostHandler) GetDescriptor() *protocol.HostDescriptor {
+	return h.descriptor
 }
 
 func (h *HostHandler) OnConnect() common_type.PluginError {
@@ -84,13 +89,12 @@ func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.Platfo
 	if msg.Resource != nil {
 		log.Info("%+v", msg)
 	}
-
 }
 
 func (h *HostHandler) Send(sender common_type.IPlugin, msg *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
 	// TODO: assemble message with host information
 
-	applicationVersion := protocol.SplitVersion(sender.GetPluginDescription().PluginDescription().ApplicationVersion().VersionString())
+	applicationVersion := message_utils.SplitVersion(sender.GetPluginDescription().PluginDescription().ApplicationVersion().VersionString())
 	pluginInstanceDescriptor := &protocol.PluginInstanceDescriptor{
 		Application: &protocol.PluginDescriptor{
 			ApplicationID:      sender.GetPluginDescription().PluginDescription().ApplicationID(),

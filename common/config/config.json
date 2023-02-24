@@ -10,15 +10,16 @@
     "mysql_user": "root",
     "mysql_password": "root",
     "mysql_db_name": "plugin_platform",
+    "mysql_user_plugin_db_name": "plugins",
     "mysql_db_max_idle": 10,
     "mysql_db_max_open": 100,
     "redis_address": "localhost:6379",
     "redis_db": 0,
     "redis_password": "",
-    "plugins_storage_dir": "../common/storage_files/plugins",
-    "plugin_runtime_dir": "./common/storage_files/runtime",
-    "plugin_log_dir": "../common/storage_files/plugin_log",
-    "log_path": "./common/storage_files/plugin_platform.log",
+    "plugins_storage_dir": "D:\\golang\\src\\github.com\\obgnail\\plugin-platform\\common\\storage_files\\plugins",
+    "plugin_runtime_dir": "D:\\golang\\src\\github.com\\obgnail\\plugin-platform\\common\\storage_files\\platform_runtime",
+    "plugin_log_dir": "D:\\golang\\src\\github.com\\obgnail\\plugin-platform\\common\\storage_files\\platform_plugin_log",
+    "log_path": "D:\\golang\\src\\github.com\\obgnail\\plugin-platform\\common\\storage_files\\plugin_platform.log",
     "log_level": "debug",
     "timeout_sec": 30,
     "debug_mode": true
@@ -33,8 +34,8 @@
     "language_version": "1.18.0",
     "timeout_sec": 30,
     "debug_mode": true,
-    "plugin_workspace_dir": "./common/storage_files/runtime/space",
-    "plugin_log_dir": "./common/storage_files/runtime/log"
+    "plugin_workspace_dir": "D:\\golang\\src\\github.com\\obgnail\\plugin-platform\\common\\storage_files\\local_runtime",
+    "plugin_log_dir": "D:\\golang\\src\\github.com\\obgnail\\plugin-platform\\common\\storage_files\\local_plugin_log"
   },
   "host_boot": {
   }

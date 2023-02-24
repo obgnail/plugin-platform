@@ -12,6 +12,7 @@ func main() {
 	h.Run()
 
 	log.Info("PlatformHandler OK")
+
 	time.Sleep(time.Hour)
 }
 

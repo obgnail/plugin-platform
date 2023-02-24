@@ -1,16 +1,18 @@
-package common_type
+package common
 
 import (
 	"bytes"
 	"encoding/binary"
 	"encoding/gob"
 	"fmt"
+	"github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/protocol"
 	"math"
 	"reflect"
 	"strconv"
 )
 
-func Unmarshal(rawData []*RawData, columnDesc []*ColumnDesc, v interface{}) error {
+func Unmarshal(rawData []*common_type.RawData, columnDesc []*common_type.ColumnDesc, v interface{}) error {
 	val := reflect.Indirect(reflect.ValueOf(v))
 	typ := val.Type()
 	for _, r := range rawData {
@@ -130,4 +132,30 @@ func strconvErr(err error) error {
 		return ne.Err
 	}
 	return err
+}
+
+func ParseTableData(msg *protocol.TableMessage) ([]*common_type.RawData, []*common_type.ColumnDesc) {
+	RawData := msg.GetRowData()
+	columnData := msg.GetColumn()
+
+	rawDataset := make([]*common_type.RawData, 0)
+	for _, row := range RawData {
+		rawData := &common_type.RawData{Cell: make([][]byte, 0)}
+		for _, cell := range row.Cell {
+			rawData.Cell = append(rawData.Cell, cell)
+		}
+		rawDataset = append(rawDataset, rawData)
+	}
+
+	columns := make([]*common_type.ColumnDesc, 0)
+	for _, column := range columnData {
+		columnDesc := &common_type.ColumnDesc{
+			Name:  column.Name,
+			Index: column.Index,
+			Type:  column.Type,
+		}
+		columns = append(columns, columnDesc)
+	}
+
+	return rawDataset, columns
 }

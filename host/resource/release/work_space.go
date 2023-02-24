@@ -2,10 +2,12 @@ package release
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/common/message"
+	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/host/handler"
 )
+
+var _ common_type.Workspace = (*Space)(nil)
 
 type Space struct {
 	msg     *protocol.WorkspaceMessage_IORequestMessage
@@ -18,11 +20,10 @@ func NewSpace(plugin common_type.IPlugin, handler *handler.HostHandler) common_t
 }
 
 func (s *Space) buildMessage(ioRequest *protocol.WorkspaceMessage_IORequestMessage) *protocol.PlatformMessage {
-	msg := message.GetHostToPlatFormMessage()
+	msg := message_utils.GetHostToPlatFormMessage()
 	msg.Resource = &protocol.ResourceMessage{
-		Workspace: &protocol.WorkspaceMessage{
-			IORequest: ioRequest,
-		},
+		Sender:    message_utils.BuildInstanceDescriptor(s.plugin, s.handler.GetDescriptor().HostID),
+		Workspace: &protocol.WorkspaceMessage{IORequest: ioRequest},
 	}
 	return msg
 }
@@ -32,7 +33,7 @@ func (s *Space) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*proto
 }
 
 func (s *Space) sendToHostAsync(platformMessage *protocol.PlatformMessage, callback common_type.AsyncInvokeCallbackParams) {
-	cb := &callbackWrapper{Func: callback}
+	cb := &spaceCallbackWrapper{Func: callback}
 	s.handler.SendAsync(s.plugin, platformMessage, cb.callBack)
 }
 
@@ -378,10 +379,10 @@ func (s *Space) AsyncUnGz(name, targetFile string, callback common_type.AsyncInv
 	s.sendToHostAsync(s.buildMessage(ioRequestMessage), callback)
 }
 
-type callbackWrapper struct {
+type spaceCallbackWrapper struct {
 	Func common_type.AsyncInvokeCallbackParams
 }
 
-func (w *callbackWrapper) callBack(input, result *protocol.PlatformMessage, err common_type.PluginError) {
+func (w *spaceCallbackWrapper) callBack(input, result *protocol.PlatformMessage, err common_type.PluginError) {
 	w.Func(err)
 }

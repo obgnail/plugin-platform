@@ -71,7 +71,7 @@ type APICore interface {
 	Fetch(*HttpRequest) *HttpResponse
 }
 
-type SysDBCallBack func([]*RawData, []*ColumnDesc, PluginError)
+type DBCallBack func([]*RawData, []*ColumnDesc, PluginError)
 
 type RawData struct {
 	Cell [][]byte
@@ -85,7 +85,7 @@ type ColumnDesc struct {
 
 type SysDB interface {
 	Select(db, sql string) ([]*RawData, []*ColumnDesc, PluginError)
-	AsyncSelect(db, sql string, callback SysDBCallBack)
+	AsyncSelect(db, sql string, callback DBCallBack)
 	Exec(db, sql string) PluginError
 	// Unmarshal eg:
 	//	type User struct {
@@ -99,7 +99,7 @@ type SysDB interface {
 
 type LocalDB interface {
 	Select(sql string) ([]*RawData, []*ColumnDesc, PluginError)
-	AsyncSelect(sql string, callback SysDBCallBack)
+	AsyncSelect(sql string, callback DBCallBack)
 	// Unmarshal eg:
 	//	type User struct {
 	//		UUID string `orm:"uuid"`

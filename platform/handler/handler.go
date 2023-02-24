@@ -7,7 +7,12 @@ import (
 	"github.com/obgnail/plugin-platform/common/connect"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/platform/handler/resource"
+	"time"
 )
+
+//TODO
+var defaultTimeout = 30 * time.Second
 
 type PlatformHandler struct {
 	*connect.BaseHandler
@@ -32,12 +37,12 @@ func Default() *PlatformHandler {
 }
 
 func (ph *PlatformHandler) OnConnect() common_type.PluginError {
-	log.Info("OnConnect")
+	log.Info("PlatformHandler OnConnect")
 	return nil
 }
 
 func (ph *PlatformHandler) OnDisconnect() common_type.PluginError {
-	log.Info("OnDisconnect")
+	log.Info("PlatformHandler OnDisconnect")
 	return nil
 }
 
@@ -48,17 +53,15 @@ func (ph *PlatformHandler) OnMsg(endpoint *connect.EndpointInfo, message *protoc
 	}
 
 	if message.GetResource() != nil {
-		log.Info("message.GetResource() GetSeqNo: %d", message.GetHeader().GetSeqNo())
-		//resourceOp := resource.NewResourceOp(message)
-		//resourceOp.OnResource()
-		//if resourceOp.DistinctMessage != nil {
-		//	log.Logger.Info("message.GetResource() llll GetSeqNo:: %d", resourceOp.DistinctMessage.GetHeader().GetSeqNo())
-		//	err = ph.SendMessage(resourceOp.DistinctMessage)
-		//	if err != nil {
-		//		ph.log.ErrorDetails(err)
-		//		return
-		//	}
-		//}
+		log.Info("【GET】message.GetResource() GetSeqNo: %d", message.GetHeader().GetSeqNo())
+		executor := resource.NewExecutor(message)
+		executor.Execute()
+		if executor.Distinct != nil {
+			log.Info("【SEND】message.GetResource() GetSeqNo: %d", executor.Distinct.GetHeader().GetSeqNo())
+			if err := ph.SendOnly(executor.Distinct); err != nil {
+				log.ErrorDetails(err)
+			}
+		}
 	}
 }
 
@@ -67,7 +70,7 @@ func (ph *PlatformHandler) OnError(pluginError common_type.PluginError) {
 }
 
 func (ph *PlatformHandler) Run() common_type.PluginError {
-	log.Info("Platform handler run")
+	log.Info("PlatformHandler Run")
 
 	return ph.GetZmq().Connect()
 }

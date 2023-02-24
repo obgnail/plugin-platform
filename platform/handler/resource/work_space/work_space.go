@@ -2,6 +2,7 @@ package work_space
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
 )
 
@@ -9,6 +10,7 @@ type WorkSpace struct {
 	source     *protocol.PlatformMessage
 	distinct   *protocol.PlatformMessage
 	opType     protocol.WorkspaceMessage_IOOperationType
+	AppID      string
 	instanceID string
 }
 
@@ -17,13 +19,14 @@ func NewWorkSpace(source, distinct *protocol.PlatformMessage) *WorkSpace {
 		source:     source,
 		distinct:   distinct,
 		opType:     source.GetResource().GetWorkspace().GetIORequest().GetOperation(),
+		AppID:      source.GetResource().GetSender().GetApplication().GetApplicationID(),
 		instanceID: source.GetResource().GetSender().GetInstanceID(),
 	}
 	return w
 }
 
-func (w *WorkSpace) WorkSpaceOperation() {
-	var f = &SpaceOperation{InstanceID: w.instanceID}
+func (w *WorkSpace) Execute() {
+	var f = &SpaceOperation{AppID: w.AppID, InstanceID: w.instanceID}
 	var err common_type.PluginError
 	var ok bool
 	var fileTree []string
@@ -73,11 +76,11 @@ func (w *WorkSpace) WorkSpaceOperation() {
 
 	ioResponseMessage := &protocol.WorkspaceMessage_IOResponseMessage{}
 	if err != nil {
-		ioResponseMessage.Error = protocol.BuildErrorMessage(err)
+		ioResponseMessage.Error = message_utils.BuildErrorMessage(err)
 	}
 	ioResponseMessage.Operation = IOReqMsg.GetOperation()
 	ioResponseMessage.Result = ok
 	ioResponseMessage.Data = fileByte
 	ioResponseMessage.FileTree = fileTree
-	protocol.BuildResourceFileMessage(w.distinct, ioResponseMessage)
+	message_utils.BuildResourceFileMessage(w.distinct, ioResponseMessage)
 }

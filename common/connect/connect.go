@@ -186,9 +186,7 @@ func (p *ZmqEndpoint) startReceiver() {
 				continue
 			}
 
-			sourceID := string(raw.Frames[0])
-			//targetID := string(raw.Frames[1])
-			rawData := raw.Frames[2]
+			rawData := raw.Frames[len(raw.Frames)-1]
 
 			source, _, processData, err := p.packer.Unpack(rawData)
 			if err != nil {
@@ -198,7 +196,7 @@ func (p *ZmqEndpoint) startReceiver() {
 				continue
 			}
 			p.AddEndpoint(source)
-			msg := &zmqMessage{endpointID: sourceID, data: processData}
+			msg := &zmqMessage{endpointID: source.ID, data: processData}
 			go p.handler.OnMessage(source, msg.data)
 		}
 	}

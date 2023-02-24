@@ -8,7 +8,7 @@ import (
 	. "github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/errors"
-	"github.com/obgnail/plugin-platform/platform/handler/utils"
+	"github.com/obgnail/plugin-platform/common/file_utils"
 	"io"
 	"io/ioutil"
 	"os"
@@ -17,11 +17,12 @@ import (
 )
 
 type SpaceOperation struct {
+	AppID      string
 	InstanceID string
 }
 
 func (o *SpaceOperation) CreateFile(name string) PluginError {
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return NewPluginError(CreateFileFailure, CreateFileFailureError.Error(), err.Error())
 	}
@@ -34,7 +35,7 @@ func (o *SpaceOperation) CreateFile(name string) PluginError {
 }
 
 func (o *SpaceOperation) MakeDir(name string) PluginError {
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return NewPluginError(MakeDirFailure, MakeDirFailureError.Error(), err.Error())
 	}
@@ -46,11 +47,11 @@ func (o *SpaceOperation) MakeDir(name string) PluginError {
 }
 
 func (o *SpaceOperation) Rename(originalPath string, newPath string) PluginError {
-	oldPath, err := GetFilePath(o.InstanceID, originalPath)
+	oldPath, err := GetFilePath(o.AppID, o.InstanceID, originalPath)
 	if err != nil {
 		return NewPluginError(ReNameFileFailure, ReNameFileFailureError.Error(), err.Error())
 	}
-	path, err := GetFilePath(o.InstanceID, newPath)
+	path, err := GetFilePath(o.AppID, o.InstanceID, newPath)
 	if err != nil {
 		return NewPluginError(ReNameFileFailure, ReNameFileFailureError.Error(), err.Error())
 	}
@@ -63,7 +64,7 @@ func (o *SpaceOperation) Rename(originalPath string, newPath string) PluginError
 }
 
 func (o *SpaceOperation) Remove(name string) PluginError {
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return NewPluginError(RemoveFileFailure, RemoveFileFailureError.Error(), err.Error())
 	}
@@ -75,7 +76,7 @@ func (o *SpaceOperation) Remove(name string) PluginError {
 }
 
 func (o *SpaceOperation) IsExist(name string) (bool, PluginError) {
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return false, NewPluginError(IsExistFileFailure, IsExistFileFailureError.Error(), err.Error())
 	}
@@ -87,7 +88,7 @@ func (o *SpaceOperation) IsExist(name string) (bool, PluginError) {
 }
 
 func (o *SpaceOperation) IsDir(name string) (bool, PluginError) {
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return false, NewPluginError(IsDirFailure, IsDirFailureError.Error(), err.Error())
 	}
@@ -100,22 +101,22 @@ func (o *SpaceOperation) IsDir(name string) (bool, PluginError) {
 }
 
 func (o *SpaceOperation) Copy(originalPath string, newPath string) PluginError {
-	oldPath, err := GetFilePath(o.InstanceID, originalPath)
+	_originalPath, err := GetFilePath(o.AppID, o.InstanceID, originalPath)
 	if err != nil {
 		return NewPluginError(CopyFileFailure, CopyFileFailureError.Error(), err.Error())
 	}
-	path, err := GetFilePath(o.InstanceID, newPath)
+	_newPath, err := GetFilePath(o.AppID, o.InstanceID, newPath)
 	if err != nil {
 		return NewPluginError(CopyFileFailure, CopyFileFailureError.Error(), err.Error())
 	}
 
-	originalFile, err := os.Open(oldPath)
+	originalFile, err := os.Open(_originalPath)
 	if err != nil {
 		return NewPluginError(CopyFileFailure, CopyFileFailureError.Error(), err.Error())
 	}
 	defer originalFile.Close()
 
-	newFile, err := os.Create(path)
+	newFile, err := os.Create(_newPath)
 	if err != nil {
 		return NewPluginError(CopyFileFailure, CopyFileFailureError.Error(), err.Error())
 	}
@@ -134,7 +135,7 @@ func (o *SpaceOperation) Copy(originalPath string, newPath string) PluginError {
 }
 
 func (o *SpaceOperation) Read(name string) ([]byte, PluginError) {
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return []byte{}, NewPluginError(ReadFailure, ReadFailureError.Error(), err.Error())
 	}
@@ -153,7 +154,7 @@ func (o *SpaceOperation) Read(name string) ([]byte, PluginError) {
 }
 
 func (o *SpaceOperation) ReadLines(name string, lineBegin, lineEnd int32) ([]byte, PluginError) {
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return nil, NewPluginError(ReadLinesFailure, ReadLinesFailureError.Error(), err.Error())
 	}
@@ -183,7 +184,7 @@ func (o *SpaceOperation) ReadLines(name string, lineBegin, lineEnd int32) ([]byt
 }
 
 func (o *SpaceOperation) WriteBytes(name string, byteSlice []byte) PluginError {
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return NewPluginError(WriteBytesFailure, WriteBytesFailureError.Error(), err.Error())
 	}
@@ -202,7 +203,7 @@ func (o *SpaceOperation) WriteBytes(name string, byteSlice []byte) PluginError {
 }
 
 func (o *SpaceOperation) AppendBytes(filePath string, byteSlice []byte) PluginError {
-	path, err := GetFilePath(o.InstanceID, filePath)
+	path, err := GetFilePath(o.AppID, o.InstanceID, filePath)
 	if err != nil {
 		return NewPluginError(AppendBytesFailure, AppendBytesFailureError.Error(), err.Error())
 	}
@@ -220,7 +221,7 @@ func (o *SpaceOperation) AppendBytes(filePath string, byteSlice []byte) PluginEr
 }
 
 func (o *SpaceOperation) WriteStrings(name string, content []string) PluginError {
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return NewPluginError(WriteStringsFailure, WriteStringsFailureError.Error(), err.Error())
 	}
@@ -243,7 +244,7 @@ func (o *SpaceOperation) WriteStrings(name string, content []string) PluginError
 }
 
 func (o *SpaceOperation) AppendStrings(filePath string, content []string) PluginError {
-	path, err := GetFilePath(o.InstanceID, filePath)
+	path, err := GetFilePath(o.AppID, o.InstanceID, filePath)
 	if err != nil {
 		return NewPluginError(AppendStringsFailure, AppendStringsFailureError.Error(), err.Error())
 	}
@@ -270,13 +271,13 @@ func (o *SpaceOperation) AppendStrings(filePath string, content []string) Plugin
 func (o *SpaceOperation) Zip(outFileName string, targetFiles []string) PluginError {
 	var TargetFiles []string
 	for _, v := range targetFiles {
-		path, err := GetFilePath(o.InstanceID, v)
+		path, err := GetFilePath(o.AppID, o.InstanceID, v)
 		if err != nil {
 			return NewPluginError(ZipFailure, ZipFailureError.Error(), err.Error())
 		}
 		TargetFiles = append(TargetFiles, path)
 	}
-	OutFileName, err := GetFilePath(o.InstanceID, outFileName)
+	OutFileName, err := GetFilePath(o.AppID, o.InstanceID, outFileName)
 	if err != nil {
 		return NewPluginError(ZipFailure, ZipFailureError.Error(), err.Error())
 	}
@@ -331,11 +332,11 @@ func (o *SpaceOperation) Zip(outFileName string, targetFiles []string) PluginErr
 }
 
 func (o *SpaceOperation) UnZip(name string, targetDir string) PluginError {
-	zipPath, err := GetFilePath(o.InstanceID, name)
+	zipPath, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return NewPluginError(UnZipFailure, UnZipFailureError.Error(), err.Error())
 	}
-	targetDirPath, err := GetFilePath(o.InstanceID, targetDir)
+	targetDirPath, err := GetFilePath(o.AppID, o.InstanceID, targetDir)
 	if err != nil {
 		return NewPluginError(UnZipFailure, UnZipFailureError.Error(), err.Error())
 	}
@@ -382,11 +383,11 @@ func (o *SpaceOperation) UnZip(name string, targetDir string) PluginError {
 
 func (o *SpaceOperation) Gz(name string) PluginError {
 	gzFileName := name + ".gz"
-	gzPath, err := GetFilePath(o.InstanceID, gzFileName)
+	gzPath, err := GetFilePath(o.AppID, o.InstanceID, gzFileName)
 	if err != nil {
 		return NewPluginError(GzFailure, GzFailureError.Error(), err.Error())
 	}
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return NewPluginError(GzFailure, GzFailureError.Error(), err.Error())
 	}
@@ -411,11 +412,11 @@ func (o *SpaceOperation) Gz(name string) PluginError {
 }
 
 func (o *SpaceOperation) UnGz(name string, targetFile string) PluginError {
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return NewPluginError(UnGzFailure, UnGzFailureError.Error(), err.Error())
 	}
-	targetPath, err := GetFilePath(o.InstanceID, targetFile)
+	targetPath, err := GetFilePath(o.AppID, o.InstanceID, targetFile)
 	if err != nil {
 		return NewPluginError(UnGzFailure, UnGzFailureError.Error(), err.Error())
 	}
@@ -444,7 +445,7 @@ func (o *SpaceOperation) UnGz(name string, targetFile string) PluginError {
 }
 
 func (o *SpaceOperation) Hash(name string) ([]byte, PluginError) {
-	path, err := GetFilePath(o.InstanceID, name)
+	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
 		return nil, NewPluginError(HashFailure, HashFailureError.Error(), err.Error())
 	}
@@ -460,7 +461,7 @@ func (o *SpaceOperation) Hash(name string) ([]byte, PluginError) {
 
 func (o *SpaceOperation) List(dirPath string) ([]string, PluginError) {
 	// 获取到真实路径
-	realPath, err := GetFilePath(o.InstanceID, dirPath)
+	realPath, err := GetFilePath(o.AppID, o.InstanceID, dirPath)
 	if err != nil {
 		return nil, NewPluginError(MakeDirFailure, MakeDirFailureError.Error(), err.Error())
 	}
@@ -485,8 +486,8 @@ func (o *SpaceOperation) List(dirPath string) ([]string, PluginError) {
 	return dirList, nil
 }
 
-func GetFilePath(instanceID, name string) (path string, err error) {
-	pathPrefix := []string{config.StringOrPanic("host.plugin_workspace_dir"), instanceID}
+func GetFilePath(appID, instanceID, name string) (path string, err error) {
+	pathPrefix := []string{config.StringOrPanic("platform.plugin_runtime_dir"), appID, instanceID}
 
 	var filename string
 	if strings.Contains(name, string(os.PathSeparator)) {
@@ -495,7 +496,7 @@ func GetFilePath(instanceID, name string) (path string, err error) {
 		fileDirName := fileSlice[:len(fileSlice)-1]
 		pathPrefix = append(pathPrefix, fileDirName...)
 		dirPrefix := filepath.Join(pathPrefix...)
-		exist, err := utils.PathExists(dirPrefix)
+		exist, err := file_utils.PathExists(dirPrefix)
 		if err != nil {
 			return "", errors.Trace(err)
 		}
@@ -505,7 +506,7 @@ func GetFilePath(instanceID, name string) (path string, err error) {
 			}
 		}
 	} else {
-		exist, err := utils.PathExists(filepath.Join(pathPrefix...))
+		exist, err := file_utils.PathExists(filepath.Join(pathPrefix...))
 		if err != nil {
 			return "", errors.Trace(err)
 		}
