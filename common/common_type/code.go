@@ -45,6 +45,7 @@ const (
 	OnPluginHttpFailure         = 11036
 	AsyncFetchFailure           = 11037
 	GetInstanceFailure          = 11038
+	CallMainSystemAPIFailure    = 11039
 	DbErrorFailure              = 11040
 	FileNotFoundFailure         = 11041
 	CallSysAPIFailure           = 11042
@@ -96,6 +97,7 @@ var (
 	MakeDirFailureError              = fmt.Errorf("MakeDirFailure %d", MakeDirFailure)
 	AsyncFetchFailureError           = fmt.Errorf("AsyncFetchFailure %d", AsyncFetchFailure)
 	GetInstanceFailureError          = fmt.Errorf("GetInstanceFailure %d", GetInstanceFailure)
+	CallMainSystemAPIFailureError    = fmt.Errorf("CallMainSystemAPIFailure %d", CallMainSystemAPIFailure)
 	OnstartFailureError              = fmt.Errorf("OnstartFailure %d", OnstartFailure)
 	OnstopFailureError               = fmt.Errorf("OnstopFailure %d", OnstopFailure)
 	OnEnableFailureError             = fmt.Errorf("OnEnableFailure %d", OnEnableFailure)

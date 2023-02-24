@@ -10,17 +10,16 @@ var _ common_type.IResources = (*Resource)(nil)
 
 type Resource struct {
 	*handler.HostHandler
-
 	plugin common_type.IPlugin
 
-	log       common_type.PluginLogger
-	event     common_type.EventPublisher
-	space     common_type.Workspace
-	sysDBOp   common_type.SysDB
-	localDB   common_type.LocalDB
-	aPICoreOp common_type.APICore
-	network   common_type.Network
-	ability   common_type.Ability
+	log     common_type.PluginLogger
+	event   common_type.EventPublisher
+	space   common_type.Workspace
+	sysDB   common_type.SysDB
+	localDB common_type.LocalDB
+	apiCore common_type.APICore
+	network common_type.Network
+	ability common_type.Ability
 }
 
 func NewResource(plugin common_type.IPlugin) *Resource {
@@ -31,8 +30,8 @@ func NewResource(plugin common_type.IPlugin) *Resource {
 		event:       local.NewEvent(plugin),
 		space:       NewSpace(plugin, h),
 		localDB:     NewLocalDB(plugin, h),
-		sysDBOp:     NewSysDB(plugin, h),
-		aPICoreOp:   local.NewAPICore(plugin),
+		sysDB:       NewSysDB(plugin, h),
+		apiCore:     NewAPICore(plugin, h),
 		network:     local.NewNetwork(plugin),
 		ability:     local.NewAbility(plugin),
 	}
@@ -53,7 +52,7 @@ func (r *Resource) GetWorkspace() common_type.Workspace {
 }
 
 func (r *Resource) GetSysDB() common_type.SysDB {
-	return r.sysDBOp
+	return r.sysDB
 }
 
 func (r *Resource) GetLocalDB() common_type.LocalDB {
@@ -61,7 +60,7 @@ func (r *Resource) GetLocalDB() common_type.LocalDB {
 }
 
 func (r *Resource) GetAPICore() common_type.APICore {
-	return r.aPICoreOp
+	return r.apiCore
 }
 
 func (r *Resource) GetOutDoor() common_type.Network {

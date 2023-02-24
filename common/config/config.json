@@ -1,4 +1,7 @@
 {
+  "main_system": {
+    "addr": "http://127.0.0.1:9001"
+  },
   "platform": {
     "id": "R0000001",
     "name": "platform",

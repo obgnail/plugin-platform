@@ -114,6 +114,12 @@ func BuildResourceDbMessage(distinctMessage *protocol.PlatformMessage, resp *pro
 	distinctMessage.Resource.Database = dataBaseMsg
 }
 
+func BuildResourceNetworkMessage(distinctMessage *protocol.PlatformMessage, resp *protocol.HttpResponseMessage) {
+	httpMessage := &protocol.HttpResourceMessage{}
+	httpMessage.ResourceHttpResponse = resp
+	distinctMessage.Resource.Http = httpMessage
+}
+
 func BuildInstanceDescriptor(plugin common_type.IPlugin, hostID string) *protocol.PluginInstanceDescriptor {
 	desc := plugin.GetPluginDescription().PluginDescription()
 	return &protocol.PluginInstanceDescriptor{

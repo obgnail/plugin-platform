@@ -48,15 +48,15 @@ message HttpRequestMessage{
   string Method = 1;
   string Url = 2;
   map<string, HeaderVal> Headers = 3;
-  string Body = 4;
-  bool   Root = 5;
-  bool   Internal = 6;
+  bytes Body = 4;
+  bool  Root = 5;
+  bool  Internal = 6;
 }
 
 message HttpResponseMessage {
   int64 StatusCode = 1;
   map<string, HeaderVal> Headers = 2;
-  string Body = 3;
+  bytes Body = 3;
   ErrorMessage Error = 4;
 }
 

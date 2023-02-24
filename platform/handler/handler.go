@@ -46,19 +46,18 @@ func (ph *PlatformHandler) OnDisconnect() common_type.PluginError {
 	return nil
 }
 
-func (ph *PlatformHandler) OnMsg(endpoint *connect.EndpointInfo, message *protocol.PlatformMessage, unmarshalError common_type.PluginError) {
-	if unmarshalError != nil {
-		log.ErrorDetails(unmarshalError)
+func (ph *PlatformHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
+	if err != nil {
+		log.ErrorDetails(err)
 		return
 	}
 
-	if message.GetResource() != nil {
-		log.Info("【GET】message.GetResource() GetSeqNo: %d", message.GetHeader().GetSeqNo())
-		executor := resource.NewExecutor(message)
-		executor.Execute()
-		if executor.Distinct != nil {
-			log.Info("【SEND】message.GetResource() GetSeqNo: %d", executor.Distinct.GetHeader().GetSeqNo())
-			if err := ph.SendOnly(executor.Distinct); err != nil {
+	if msg.GetResource() != nil {
+		log.Info("【GET】message.GetResource() GetSeqNo: %d", msg.GetHeader().GetSeqNo())
+		resp := resource.NewExecutor(msg).Execute()
+		if resp != nil {
+			log.Info("【SEND】message.GetResource() GetSeqNo: %d", resp.GetHeader().GetSeqNo())
+			if err := ph.SendOnly(resp); err != nil {
 				log.ErrorDetails(err)
 			}
 		}
