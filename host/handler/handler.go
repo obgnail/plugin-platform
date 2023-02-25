@@ -92,35 +92,27 @@ func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.Platfo
 }
 
 func (h *HostHandler) Send(sender common_type.IPlugin, msg *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
-	// TODO: assemble message with host information
+	h.fillMsg(sender, msg)
+	result, err := h.BaseHandler.Send(msg, defaultTimeout)
+	return result, err
+}
 
-	applicationVersion := message_utils.SplitVersion(sender.GetPluginDescription().PluginDescription().ApplicationVersion().VersionString())
-	pluginInstanceDescriptor := &protocol.PluginInstanceDescriptor{
-		Application: &protocol.PluginDescriptor{
-			ApplicationID:      sender.GetPluginDescription().PluginDescription().ApplicationID(),
-			Name:               sender.GetPluginDescription().PluginDescription().Name(),
-			Language:           sender.GetPluginDescription().PluginDescription().Language(),
-			ApplicationVersion: applicationVersion,
-			HostVersion:        h.descriptor.HostVersion,
-			MinSystemVersion:   h.descriptor.MinSystemVersion,
-		},
-		InstanceID: sender.GetPluginDescription().InstanceID(),
-		HostID:     config.StringOrPanic("host.id"),
-	}
+func (h *HostHandler) SendAsync(sender common_type.IPlugin, msg *protocol.PlatformMessage, callback connect.CallBack) {
+	h.fillMsg(sender, msg)
+	h.BaseHandler.SendAsync(msg, defaultTimeout, callback)
+}
+
+// fillMsg 添加路由信息
+func (h *HostHandler) fillMsg(sender common_type.IPlugin, msg *protocol.PlatformMessage) {
 	if msg.GetResource() != nil {
-		msg.Resource.Sender = pluginInstanceDescriptor
+		msg.Resource.Sender = message_utils.BuildInstanceDescriptor(sender, h.descriptor.HostID)
+		msg.Resource.Host = h.descriptor
 		////补全日志信息
 		//if msg.GetResource().GetLog() != nil {
 		//	msg.Resource.Log.PluginInstanceDescriptor = pluginInstanceDescriptor
 		//	msg.Resource.Log.HostDescriptor = hh.hostDescriptor
 		//}
 	}
-	result, err := h.BaseHandler.Send(msg, defaultTimeout)
-	return result, err
-}
-
-func (h *HostHandler) SendAsync(sender common_type.IPlugin, msg *protocol.PlatformMessage, callback connect.CallBack) {
-	h.BaseHandler.SendAsync(msg, defaultTimeout, callback)
 }
 
 func (h *HostHandler) Run() common_type.PluginError {

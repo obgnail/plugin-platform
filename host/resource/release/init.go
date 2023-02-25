@@ -9,7 +9,6 @@ import (
 var _ common_type.IResources = (*Resource)(nil)
 
 type Resource struct {
-	*handler.HostHandler
 	plugin common_type.IPlugin
 
 	log     common_type.PluginLogger
@@ -25,17 +24,16 @@ type Resource struct {
 func NewResource(plugin common_type.IPlugin) *Resource {
 	h := handler.Default(false)
 	resource := &Resource{
-		HostHandler: h,
-		log:         local.Logger,
-		event:       local.NewEvent(plugin),
-		space:       NewSpace(plugin, h),
-		localDB:     NewLocalDB(plugin, h),
-		sysDB:       NewSysDB(plugin, h),
-		apiCore:     NewAPICore(plugin, h),
-		network:     local.NewNetwork(plugin),
-		ability:     local.NewAbility(plugin),
+		log:     local.Logger,
+		event:   local.NewEvent(plugin),
+		space:   NewSpace(plugin, h),
+		localDB: NewLocalDB(plugin, h),
+		sysDB:   NewSysDB(plugin, h),
+		apiCore: NewAPICore(plugin, h),
+		network: NewOutdoor(plugin, h),
+		ability: local.NewAbility(plugin),
 	}
-	resource.Run()
+	h.Run()
 	return resource
 }
 

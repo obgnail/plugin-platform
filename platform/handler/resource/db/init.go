@@ -43,9 +43,12 @@ func NewDataBase(sourceMessage *protocol.PlatformMessage, distinctMessage *proto
 func (d *DataBase) Execute() {
 	if d.importSqlPath != "" {
 		d.importSql()
-		return
+	} else {
+		d.onSql()
 	}
+}
 
+func (d *DataBase) onSql() {
 	var data *protocol.TableMessage
 	var err common_type.PluginError
 
@@ -61,16 +64,7 @@ func (d *DataBase) Execute() {
 	} else if stmt == StmtRow {
 		err = db.Exec(realSql)
 	}
-
 	d.buildMsg(data, err)
-}
-
-func (d *DataBase) buildMsg(data *protocol.TableMessage, err common_type.PluginError) {
-	resp := &protocol.DatabaseMessage_DatabaseResponseMessage{
-		Data:    data,
-		DBError: message_utils.BuildErrorMessage(err),
-	}
-	message_utils.BuildResourceDbMessage(d.Distinct, resp)
 }
 
 func (d *DataBase) importSql() {
@@ -79,4 +73,12 @@ func (d *DataBase) importSql() {
 	db := GetDB(d.db)
 	err := db.ImportSql(d.importSqlPath, appId, version, d.instanceID)
 	d.buildMsg(nil, err)
+}
+
+func (d *DataBase) buildMsg(data *protocol.TableMessage, err common_type.PluginError) {
+	resp := &protocol.DatabaseMessage_DatabaseResponseMessage{
+		Data:    data,
+		DBError: message_utils.BuildErrorMessage(err),
+	}
+	message_utils.BuildResourceDbMessage(d.Distinct, resp)
 }

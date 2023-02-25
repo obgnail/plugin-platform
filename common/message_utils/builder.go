@@ -31,7 +31,7 @@ func GetInitMessage() *protocol.PlatformMessage {
 	return message
 }
 
-func GetHostToPlatFormMessage() *protocol.PlatformMessage {
+func BuildHostToPlatFormMessageWithHeader() *protocol.PlatformMessage {
 	msg := GetInitMessage()
 	msg.Header.Source = GetHostInfo()
 	msg.Header.Distinct = GetPlatformInfo()

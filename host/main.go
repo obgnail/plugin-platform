@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/log"
@@ -19,7 +20,71 @@ func main() {
 		panic(err)
 	}
 	//testWorkSpace(plugin)
-	testDB(plugin)
+	//testDB(plugin)
+	testNetwork(plugin)
+}
+
+func testNetwork(plugin *mockPlugin) {
+	sysDB := plugin.resource.GetSysDB()
+	rawData, cols, err := sysDB.Select("plugin_platform", "select * from plugin_package;")
+	if err != nil {
+		panic(err)
+	}
+
+	type Package struct {
+		ID         string `orm:"id"`
+		AppUUID    string `orm:"app_uuid"`
+		Name       string `orm:"name"`
+		Size       int    `orm:"size"`
+		Version    string `orm:"version"`
+		CreateTime int    `orm:"create_time"`
+		UpdateTime int    `orm:"update_time"`
+		Deleted    int    `orm:"deleted"`
+	}
+	ps := make([]*Package, 0)
+	e := sysDB.Unmarshal(rawData, cols, &ps)
+	if e != nil {
+		panic(e)
+	}
+
+	result, er := json.Marshal(ps)
+	if er != nil {
+		panic(er)
+	}
+
+	api := plugin.resource.GetAPICore()
+	req := &common_type.HttpRequest{
+		Method:   "post",
+		QueryMap: nil,
+		Path:     "/AAA",
+		Headers: map[string][]string{
+			"TestHeaders":  {"123"},
+			"Content-Type": {"application/json"},
+		},
+		Body: result,
+		Root: false,
+	}
+	resp := api.Fetch(req)
+	fmt.Printf("%+v", resp)
+
+	outdoor := plugin.resource.GetOutDoor()
+
+	req2 := &common_type.HttpRequest{
+		Method:   "get",
+		QueryMap: nil,
+		Url:      "http://localhost:9001/anhao",
+		Headers: map[string][]string{
+			"TestHeaders":  {"123"},
+			"Content-Type": {"application/json"},
+		},
+		Body: result,
+		Root: false,
+	}
+	outdoor.AsyncFetch(req2, func(response *common_type.HttpResponse, pluginError common_type.PluginError) {
+		fmt.Printf("%s%s", string(response.Body), response.Err)
+	})
+
+	time.Sleep(time.Hour)
 }
 
 func testDB(plugin *mockPlugin) {

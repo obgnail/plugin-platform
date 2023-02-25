@@ -24,9 +24,8 @@ func NewCommonDB(plugin common_type.IPlugin, handler *handler.HostHandler) *Comm
 }
 
 func (d *CommonDB) buildMessage(databaseRequestMessage *protocol.DatabaseMessage_DatabaseRequestMessage) *protocol.PlatformMessage {
-	msg := message_utils.GetHostToPlatFormMessage()
+	msg := message_utils.BuildHostToPlatFormMessageWithHeader()
 	msg.Resource = &protocol.ResourceMessage{
-		Sender:   message_utils.BuildInstanceDescriptor(d.plugin, d.handler.GetDescriptor().HostID),
 		Database: &protocol.DatabaseMessage{DBRequest: databaseRequestMessage},
 	}
 	return msg
