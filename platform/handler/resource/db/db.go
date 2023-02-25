@@ -187,7 +187,7 @@ func (d *DB) ImportSql(sqlFileName, appUUID, version, instanceUUID string) commo
 		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
 	}
 	pluginDir := utils.GetPluginDir(appUUID, version)
-	sqlFilePath := utils.JoinPath(pluginDir, sqlFileName)
+	sqlFilePath := file_utils.JoinPath(pluginDir, sqlFileName)
 
 	if ok, err := file_utils.PathExists(sqlFilePath); !ok || err != nil {
 		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())

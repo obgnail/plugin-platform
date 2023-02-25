@@ -74,13 +74,12 @@ func (w *WorkSpace) Execute() {
 		fileTree, err = f.List(IOReqMsg.GetDirName())
 	}
 
-	ioResponseMessage := &protocol.WorkspaceMessage_IOResponseMessage{}
-	if err != nil {
-		ioResponseMessage.Error = message_utils.BuildErrorMessage(err)
+	ioResponseMessage := &protocol.WorkspaceMessage_IOResponseMessage{
+		Error:     message_utils.BuildErrorMessage(err),
+		Operation: IOReqMsg.GetOperation(),
+		Result:    ok,
+		Data:      fileByte,
+		FileTree:  fileTree,
 	}
-	ioResponseMessage.Operation = IOReqMsg.GetOperation()
-	ioResponseMessage.Result = ok
-	ioResponseMessage.Data = fileByte
-	ioResponseMessage.FileTree = fileTree
 	message_utils.BuildResourceFileMessage(w.distinct, ioResponseMessage)
 }

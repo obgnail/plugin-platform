@@ -67,14 +67,13 @@ message HttpContextMessage {
 
 message LogMessage{
   enum LogLevel {
-    Info = 0;
-    Warning = 1;
-    Error = 2;
-    Fatal = 3;
+    Trace = 0;
+    Info = 1;
+    Warning = 2;
+    Error = 3;
   }
   LogLevel Level = 1;
   string Content = 2;
-  uint64 Timestamp = 3;
 }
 
 message ErrorMessage{

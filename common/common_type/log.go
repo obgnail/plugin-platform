@@ -1,12 +1,10 @@
 package common_type
 
 type PluginLogger interface {
+	Trace(string)
 	Info(string)
-	Debug(string)
 	Warn(string)
 	Error(string)
-	ErrorTrace(string)
-	Fatal(string)
 }
 
 type VersionTime int

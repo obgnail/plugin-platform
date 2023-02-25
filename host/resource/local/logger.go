@@ -18,6 +18,10 @@ type Log struct {
 	Logger *zap.SugaredLogger
 }
 
+func (log *Log) Trace(format string) {
+	log.Logger.Infof(format)
+}
+
 func (log *Log) Info(format string) {
 	log.Logger.Infof(format)
 }

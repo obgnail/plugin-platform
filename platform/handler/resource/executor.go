@@ -4,6 +4,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/db"
+	"github.com/obgnail/plugin-platform/platform/handler/resource/log"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/network"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/work_space"
 )
@@ -23,16 +24,22 @@ func NewExecutor(request *protocol.PlatformMessage) *Executor {
 
 // Execute 注意:一条请求可能包含多种资源操作
 func (r *Executor) Execute() (resp *protocol.PlatformMessage) {
+	resource := r.Request.GetResource()
+
+	// log
+	if resource.GetLog() != nil {
+		log.NewLog(r.Request, r.Response).Execute()
+	}
 	// workspace
-	if r.Request.GetResource().GetWorkspace() != nil {
+	if resource.GetWorkspace() != nil {
 		work_space.NewWorkSpace(r.Request, r.Response).Execute()
 	}
 	// localDB、sysDB
-	if r.Request.GetResource().GetDatabase() != nil {
+	if resource.GetDatabase() != nil {
 		db.NewDataBase(r.Request, r.Response).Execute()
 	}
 	// apiCore、outdoor
-	if r.Request.GetResource().GetHttp() != nil {
+	if resource.GetHttp() != nil {
 		network.NewNetWork(r.Request, r.Response).Execute()
 	}
 

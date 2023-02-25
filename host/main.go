@@ -21,7 +21,16 @@ func main() {
 	}
 	//testWorkSpace(plugin)
 	//testDB(plugin)
-	testNetwork(plugin)
+	//testNetwork(plugin)
+	testLog(plugin)
+}
+
+func testLog(plugin *mockPlugin) {
+	logger := plugin.resource.GetLogger()
+	logger.Trace("****** trace ******")
+	logger.Info("****** info ******")
+	logger.Warn("****** warn ******")
+	logger.Error("****** error ******")
 }
 
 func testNetwork(plugin *mockPlugin) {
