@@ -4,8 +4,8 @@ import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/connect"
+	"github.com/obgnail/plugin-platform/common/math"
 	"github.com/obgnail/plugin-platform/common/protocol"
-	"github.com/obgnail/plugin-platform/common/seq"
 )
 
 var (
@@ -18,7 +18,7 @@ var (
 func GetInitMessage() *protocol.PlatformMessage {
 	message := &protocol.PlatformMessage{
 		Header: &protocol.RouterMessage{
-			SeqNo: seq.CreateCaptcha(),
+			SeqNo: math.CreateCaptcha(),
 			Source: &protocol.RouterNode{
 				Tags: make(map[string]string),
 			},
@@ -35,7 +35,7 @@ func BuildHostToPlatFormMessageWithHeader() *protocol.PlatformMessage {
 	msg := GetInitMessage()
 	msg.Header.Source = GetHostInfo()
 	msg.Header.Distinct = GetPlatformInfo()
-	msg.Header.SeqNo = seq.CreateCaptcha()
+	msg.Header.SeqNo = math.CreateCaptcha()
 	return msg
 }
 
@@ -118,6 +118,10 @@ func BuildResourceNetworkMessage(distinctMessage *protocol.PlatformMessage, resp
 	httpMessage := &protocol.HttpResourceMessage{}
 	httpMessage.ResourceHttpResponse = resp
 	distinctMessage.Resource.Http = httpMessage
+}
+
+func BuildResourceEventMessage(distinctMessage *protocol.PlatformMessage, resp *protocol.EventMessage) {
+	distinctMessage.Resource.Event = resp
 }
 
 func BuildInstanceDescriptor(plugin common_type.IPlugin, hostID string) *protocol.PluginInstanceDescriptor {

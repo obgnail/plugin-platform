@@ -4,6 +4,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/db"
+	"github.com/obgnail/plugin-platform/platform/handler/resource/event_publisher"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/log"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/network"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/work_space"
@@ -41,6 +42,10 @@ func (r *Executor) Execute() (resp *protocol.PlatformMessage) {
 	// apiCore、outdoor
 	if resource.GetHttp() != nil {
 		network.NewNetWork(r.Request, r.Response).Execute()
+	}
+	// event
+	if resource.GetEvent() != nil {
+		event_publisher.NewEvent(r.Request, r.Response).Execute()
 	}
 
 	return r.Response

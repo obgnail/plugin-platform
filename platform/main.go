@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/handler"
+	"github.com/obgnail/plugin-platform/platform/model/mysql"
+	"github.com/obgnail/plugin-platform/platform/model/redis"
+	"github.com/obgnail/plugin-platform/platform/pool/plugin_pool"
 	"time"
 )
 
 func main() {
+	Init()
 	h := handler.Default()
 	h.Run()
 
@@ -23,8 +27,9 @@ func onStart(fn func() error) {
 }
 
 func Init() {
-	//onStart(plugin_pool.InitPluginPool)
-	//onStart(mysql.InitDB)
+	onStart(plugin_pool.InitPluginPool)
+	onStart(mysql.InitDB)
+	onStart(redis.InitRedis)
 }
 
 //func RunServer() {

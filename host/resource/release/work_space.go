@@ -10,7 +10,6 @@ import (
 var _ common_type.Workspace = (*Space)(nil)
 
 type Space struct {
-	msg     *protocol.WorkspaceMessage_IORequestMessage
 	plugin  common_type.IPlugin
 	handler *handler.HostHandler
 }

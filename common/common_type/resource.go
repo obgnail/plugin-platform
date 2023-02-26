@@ -25,7 +25,7 @@ type HttpContext struct {
 
 type EventPublisher interface {
 	Subscribe(condition []string) PluginError                                       // 不支持通配符, ex: project.task.create
-	SubscribeWithFilter(condition []string, filter map[string][]string) PluginError // TODO 支持过滤条件, ex: filter: project_uuid_in:[""]
+	SubscribeWithFilter(condition []string, filter map[string][]string) PluginError // 支持过滤条件, ex: filter: project_uuid_in:[""]
 	Unsubscribe(condition []string) PluginError                                     // 支持通配符
 }
 

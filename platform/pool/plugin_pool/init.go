@@ -1,20 +1,18 @@
 package plugin_pool
 
-import "fmt"
-
 func InitPluginPool() error {
-	Pool = NewPluginPool()
+	//Pool = NewPluginPool()
 	return nil
 }
 
-func Run() {
-	h := RunPlatform()
-	fmt.Println(h)
-	//route.SyncSendMsg = h.SyncSendMessage
-	//route.SendMsg = h.SendMessage
-	//pluginpool.SendMsg = h.SendMessage
-	//
-	//if err := Pool.StartPlugins(); err != nil {
-	//	log.ErrorDetails(errors.Trace(err))
-	//}
-}
+//func Run() {
+//	h := RunPlatform()
+//	fmt.Println(h)
+//	//route.SyncSendMsg = h.SyncSendMessage
+//	//route.SendMsg = h.SendMessage
+//	//pluginpool.SendMsg = h.SendMessage
+//	//
+//	//if err := Pool.StartPlugins(); err != nil {
+//	//	log.ErrorDetails(errors.Trace(err))
+//	//}
+//}

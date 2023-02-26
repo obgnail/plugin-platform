@@ -143,8 +143,9 @@ message EventMessage{
     Unsubscribe = 2;
   }
   SubscribeOperationType SubscribeOperation = 1;
-  repeated string SubscribeType = 2;
+  repeated string Condition = 2;
   map<string, Filter>  SubscribeFilter = 3;
+  ErrorMessage Error = 4;
 }
 
 message ResourceMessage{

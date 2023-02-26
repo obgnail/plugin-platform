@@ -22,7 +22,21 @@ func main() {
 	//testWorkSpace(plugin)
 	//testDB(plugin)
 	//testNetwork(plugin)
-	testLog(plugin)
+	//testLog(plugin)
+	testEvent(plugin)
+}
+
+func testEvent(plugin *mockPlugin) {
+	event := plugin.resource.GetEventPublisher()
+	cnd := []string{"project.task", "project.user"}
+	er := event.Subscribe(cnd)
+	if er != nil {
+		panic(er)
+	}
+	er2 := event.Unsubscribe(cnd)
+	if er2 != nil {
+		panic(er2)
+	}
 }
 
 func testLog(plugin *mockPlugin) {

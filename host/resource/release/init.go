@@ -24,7 +24,7 @@ type Resource struct {
 func NewResource(plugin common_type.IPlugin) *Resource {
 	h := handler.Default(false)
 	resource := &Resource{
-		event:   local.NewEvent(plugin),
+		event:   NewEvent(plugin, h),
 		log:     NewLogger(plugin, h),
 		space:   NewSpace(plugin, h),
 		localDB: NewLocalDB(plugin, h),
