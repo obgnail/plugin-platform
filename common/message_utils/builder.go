@@ -26,7 +26,7 @@ func GetInitMessage() *protocol.PlatformMessage {
 				Tags: make(map[string]string),
 			},
 		},
-		//Control: &protocol.ControlMessage{},
+		Control: &protocol.ControlMessage{},
 	}
 	return message
 }

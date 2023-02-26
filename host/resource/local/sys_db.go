@@ -27,7 +27,7 @@ func NewSysDB(plugin common_type.IPlugin) common_type.SysDB {
 //}
 //
 //func (db *SysDBOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
-//	//return SyncSendToHost(db.plugin, platformMessage)
+//	//return SyncSendToHost(db.Plugin, platformMessage)
 //	return nil, nil
 //}
 //
@@ -101,7 +101,7 @@ func (d *SysDBOp) AsyncSelect(db, sql string, callback common_type.DBCallBack) {
 	//}
 	//asyncSysDb := new(AsyncSysDb)
 	//asyncSysDb.callBackHandler = callback
-	//AsyncSendToHost(db.plugin, db.buildMessage(databaseRequestMessage), asyncObj, asyncSysDb.callBack, nil)
+	//AsyncSendToHost(db.Plugin, db.buildMessage(databaseRequestMessage), asyncObj, asyncSysDb.callBack, nil)
 	return
 }
 

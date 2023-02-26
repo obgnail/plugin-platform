@@ -28,7 +28,7 @@ func NewNetwork(plugin common_type.IPlugin) common_type.Network {
 //}
 //
 //func (n *NetworkOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
-//	return SyncSendToHost(n.plugin, platformMessage)
+//	return SyncSendToHost(n.Plugin, platformMessage)
 //}
 
 func (n *NetworkOp) Fetch(httpRequest *common_type.HttpRequest) *common_type.HttpResponse {
@@ -116,6 +116,6 @@ func (n *NetworkOp) AsyncFetch(httpRequest *common_type.HttpRequest, callback co
 	//asyncNetwork := new(AsyncNetwork)
 	//asyncNetwork.callBackHandler = callback
 	//asyncNetwork.timeoutHandler = timeoutHandler
-	//AsyncSendToHost(n.plugin, n.buildMessage(httpRequestMessage), object, asyncNetwork.callBack, asyncNetwork.timeOutHandler)
+	//AsyncSendToHost(n.Plugin, n.buildMessage(httpRequestMessage), object, asyncNetwork.callBack, asyncNetwork.timeOutHandler)
 	return
 }

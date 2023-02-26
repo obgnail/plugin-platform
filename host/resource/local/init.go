@@ -2,63 +2,70 @@ package local
 
 import "github.com/obgnail/plugin-platform/common/common_type"
 
-var _ common_type.IResources = (*LocalResource)(nil)
+var _ common_type.IResources = (*Resource)(nil)
 
-type LocalResource struct {
-	plugin common_type.IPlugin
+type Resource struct {
+	Plugin common_type.IPlugin
 
-	log       common_type.PluginLogger
-	event     common_type.EventPublisher
-	space     common_type.Workspace
-	sysDBOp   common_type.SysDB
-	localDB   common_type.LocalDB
-	aPICoreOp common_type.APICore
-	network   common_type.Network
-	ability   common_type.Ability
+	log     common_type.PluginLogger
+	event   common_type.EventPublisher
+	space   common_type.Workspace
+	sysDB   common_type.SysDB
+	localDB common_type.LocalDB
+	apiCore common_type.APICore
+	network common_type.Network
+	ability common_type.Ability
 }
 
-func New(plugin common_type.IPlugin) *LocalResource {
-	l := &LocalResource{
-		log:       Logger,
-		event:     NewEvent(plugin),
-		space:     NewSpace(plugin),
-		sysDBOp:   NewSysDB(plugin),
-		localDB:   NewLocalDB(plugin),
-		aPICoreOp: NewAPICore(plugin),
-		network:   NewNetwork(plugin),
-		ability:   NewAbility(plugin),
+func (r *Resource) GetLogger() common_type.PluginLogger {
+	return Logger
+}
+
+func (r *Resource) GetEventPublisher() common_type.EventPublisher {
+	if r.event == nil {
+		r.event = NewEvent(r.Plugin)
 	}
-	return l
-}
-
-func (r *LocalResource) GetLogger() common_type.PluginLogger {
-	return r.log
-}
-
-func (r *LocalResource) GetEventPublisher() common_type.EventPublisher {
 	return r.event
 }
 
-func (r *LocalResource) GetWorkspace() common_type.Workspace {
+func (r *Resource) GetWorkspace() common_type.Workspace {
+	if r.space == nil {
+		r.space = NewSpace(r.Plugin)
+	}
 	return r.space
 }
 
-func (r *LocalResource) GetSysDB() common_type.SysDB {
-	return r.sysDBOp
+func (r *Resource) GetSysDB() common_type.SysDB {
+	if r.sysDB == nil {
+		r.sysDB = NewSysDB(r.Plugin)
+	}
+	return r.sysDB
 }
 
-func (r *LocalResource) GetLocalDB() common_type.LocalDB {
+func (r *Resource) GetLocalDB() common_type.LocalDB {
+	if r.localDB == nil {
+		r.localDB = NewLocalDB(r.Plugin)
+	}
 	return r.localDB
 }
 
-func (r *LocalResource) GetAPICore() common_type.APICore {
-	return r.aPICoreOp
+func (r *Resource) GetAPICore() common_type.APICore {
+	if r.apiCore == nil {
+		r.apiCore = NewAPICore(r.Plugin)
+	}
+	return r.apiCore
 }
 
-func (r *LocalResource) GetOutDoor() common_type.Network {
+func (r *Resource) GetOutDoor() common_type.Network {
+	if r.network == nil {
+		r.network = NewNetwork(r.Plugin)
+	}
 	return r.network
 }
 
-func (r *LocalResource) GetAbility() common_type.Ability {
+func (r *Resource) GetAbility() common_type.Ability {
+	if r.ability == nil {
+		r.ability = NewAbility(r.Plugin)
+	}
 	return r.ability
 }

@@ -30,6 +30,10 @@ func (s *BaseHandler) GetZmq() *ZmqEndpoint {
 	return s.Zmq
 }
 
+func (s *BaseHandler) Connect() common_type.PluginError {
+	return s.Zmq.Connect()
+}
+
 // Send 同步发送
 func (s *BaseHandler) Send(msg *protocol.PlatformMessage, timeout time.Duration) (
 	result *protocol.PlatformMessage, err common_type.PluginError) {

@@ -25,11 +25,11 @@ type IPlugin interface {
 }
 
 type IInstanceDescription interface {
-	PluginDescription() PluginDescriptor
+	PluginDescription() IPluginDescriptor
 	InstanceID() string
 }
 
-type PluginDescriptor interface {
+type IPluginDescriptor interface {
 	ApplicationID() string
 	Name() string
 	Language() string

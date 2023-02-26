@@ -198,7 +198,7 @@ func testWorkSpace(plugin *mockPlugin) {
 type mockInstanceDesc struct{}
 
 func (i *mockInstanceDesc) InstanceID() string { return "InstanceID123" }
-func (i *mockInstanceDesc) PluginDescription() common_type.PluginDescriptor {
+func (i *mockInstanceDesc) PluginDescription() common_type.IPluginDescriptor {
 	return &mockPluginDescriptor{}
 }
 
@@ -231,6 +231,7 @@ type mockPlugin struct {
 func GetPlugin() common_type.IPlugin {
 	return &mockPlugin{}
 }
+
 func (p *mockPlugin) GetPluginDescription() common_type.IInstanceDescription {
 	return p.descriptor
 }

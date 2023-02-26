@@ -13,9 +13,9 @@ type Ability struct {
 
 func NewAbility(plugin common_type.IPlugin) common_type.Ability {
 	//return &Ability{
-	//	LayoutCard: NewLayoutCard(plugin),
-	//	Notify:     NewNotify(plugin),
-	//	Field:      NewField(plugin),
+	//	LayoutCard: NewLayoutCard(Plugin),
+	//	Notify:     NewNotify(Plugin),
+	//	Field:      NewField(Plugin),
 	//}
 	return nil
 }

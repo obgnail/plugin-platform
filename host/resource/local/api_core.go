@@ -28,7 +28,7 @@ func NewAPICore(plugin common_type.IPlugin) common_type.APICore {
 //}
 //
 //func (n *APICoreOp) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
-//	return SyncSendToHost(n.plugin, platformMessage)
+//	return SyncSendToHost(n.Plugin, platformMessage)
 //}
 
 func (a *APICoreOp) Fetch(httpRequest *common_type.HttpRequest) *common_type.HttpResponse {
