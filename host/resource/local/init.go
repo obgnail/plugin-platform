@@ -1,11 +1,16 @@
 package local
 
-import "github.com/obgnail/plugin-platform/common/common_type"
+import (
+	"github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/host/resource/common"
+	"github.com/obgnail/plugin-platform/host/resource/release"
+)
 
 var _ common_type.IResources = (*Resource)(nil)
 
 type Resource struct {
 	Plugin common_type.IPlugin
+	Sender common.Sender
 
 	log     common_type.PluginLogger
 	event   common_type.EventPublisher
@@ -18,12 +23,15 @@ type Resource struct {
 }
 
 func (r *Resource) GetLogger() common_type.PluginLogger {
-	return Logger
+	if r.log == nil {
+		r.log = NewLog()
+	}
+	return r.log
 }
 
 func (r *Resource) GetEventPublisher() common_type.EventPublisher {
 	if r.event == nil {
-		r.event = NewEvent(r.Plugin)
+		r.event = release.NewEvent(r.Plugin, r.Sender)
 	}
 	return r.event
 }
@@ -37,7 +45,7 @@ func (r *Resource) GetWorkspace() common_type.Workspace {
 
 func (r *Resource) GetSysDB() common_type.SysDB {
 	if r.sysDB == nil {
-		r.sysDB = NewSysDB(r.Plugin)
+		r.sysDB = release.NewSysDB(r.Plugin, r.Sender)
 	}
 	return r.sysDB
 }
@@ -51,21 +59,21 @@ func (r *Resource) GetLocalDB() common_type.LocalDB {
 
 func (r *Resource) GetAPICore() common_type.APICore {
 	if r.apiCore == nil {
-		r.apiCore = NewAPICore(r.Plugin)
+		r.apiCore = release.NewAPICore(r.Plugin, r.Sender)
 	}
 	return r.apiCore
 }
 
 func (r *Resource) GetOutDoor() common_type.Network {
 	if r.network == nil {
-		r.network = NewNetwork(r.Plugin)
+		r.network = release.NewOutdoor(r.Plugin, r.Sender)
 	}
 	return r.network
 }
 
 func (r *Resource) GetAbility() common_type.Ability {
 	if r.ability == nil {
-		r.ability = NewAbility(r.Plugin)
+		r.ability = release.NewAbility(r.Plugin)
 	}
 	return r.ability
 }

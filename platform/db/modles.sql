@@ -96,26 +96,3 @@ CREATE TABLE `plugin_user`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = latin1
   COLLATE = latin1_bin;
-
-
--- ----------------------------------
--- Table structure for plugin_message
--- ----------------------------------
--- notify能力用的业务表(resource.GetAbility.GetNotify用到的表)
-DROP TABLE IF EXISTS `plugin_message`;
-CREATE TABLE `plugin_message`
-(
-    `id`           bigint(20)                     NOT NULL AUTO_INCREMENT,
-    `message_body` text CHARACTER SET utf8mb4     NOT NULL,
-    `message_id`   bigint(11)                     NOT NULL DEFAULT '0' COMMENT '消息id',
-    `to_uuids`     varchar(255) COLLATE latin1_bin         DEFAULT NULL,
-    `source`       varchar(16) COLLATE latin1_bin NOT NULL COMMENT '消息来源',
-    `distinct`     varchar(16) COLLATE latin1_bin NOT NULL COMMENT '消息去向',
-    `status`       tinyint(4)                     NOT NULL DEFAULT '0' COMMENT '状态(1:成功 2:失败)',
-    `create_time`  bigint(20)                     NULL     DEFAULT NULL COMMENT '创建时间',
-    `update_time`  bigint(20)                     NULL     DEFAULT NULL COMMENT '更新时间',
-    `deleted`      tinyint(1)                     NULL     DEFAULT NULL COMMENT '删除状态',
-    PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB
-  DEFAULT CHARSET = latin1
-  COLLATE = latin1_bin;

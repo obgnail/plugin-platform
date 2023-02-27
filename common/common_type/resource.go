@@ -113,6 +113,5 @@ type LocalDB interface {
 }
 
 type Ability interface {
-	GetNotify() Notify
-	GetLayoutCard() LayoutCard
+	Call(kind string, req []byte) ([]byte, PluginError)
 }

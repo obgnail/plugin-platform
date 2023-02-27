@@ -52,10 +52,11 @@ func (d *DataBase) onSql() {
 	var data *protocol.TableMessage
 	var err common_type.PluginError
 
+	defer d.buildMsg(data, err)
+
 	db := GetDB(d.db)
 	stmt, realSql, err := db.prepare(d.sql, d.instanceID, d.isLocalDB)
 	if err != nil {
-		d.buildMsg(data, err)
 		return
 	}
 
@@ -64,7 +65,6 @@ func (d *DataBase) onSql() {
 	} else if stmt == StmtRow {
 		err = db.Exec(realSql)
 	}
-	d.buildMsg(data, err)
 }
 
 func (d *DataBase) importSql() {

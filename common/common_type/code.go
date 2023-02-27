@@ -53,7 +53,7 @@ const (
 	SysDbImportSqlFailure       = 11044
 	DataBaseNameFailure         = 11045
 	NotifyEventFailure          = 11046
-	AddLayoutCardPluginFailure  = 11047
+	CallAbilityFailure          = 11047
 	UnmarshalFailure            = 11048
 	ItemsAddFailure             = 11049
 	FieldsAddFailure            = 11050
@@ -114,7 +114,7 @@ var (
 	SysDbImportSqlError              = fmt.Errorf("SysDbImportSqlFailure %d", SysDbImportSqlFailure)
 	DataBaseNameError                = fmt.Errorf("DataBaseNameFailure %d", DataBaseNameFailure)
 	NotifyEventError                 = fmt.Errorf("NotifyEventFailure %d", NotifyEventFailure)
-	AddLayoutCardPluginEventError    = fmt.Errorf("AddLayoutCardPluginEventFailure %d", AddLayoutCardPluginFailure)
+	CallAbilityError                 = fmt.Errorf("CallAbilityFailure %d", CallAbilityFailure)
 	UnmarshalError                   = fmt.Errorf("UnmarshalFailure %d", UnmarshalFailure)
 	ItemsAddError                    = fmt.Errorf("ItemsAddFailure %d", ItemsAddFailure)
 	FieldsAddError                   = fmt.Errorf("FieldsAddFailure %d", FieldsAddFailure)

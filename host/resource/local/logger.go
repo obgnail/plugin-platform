@@ -12,8 +12,6 @@ import (
 
 var _ common_type.PluginLogger = (*Log)(nil)
 
-var Logger *Log
-
 type Log struct {
 	Logger *zap.SugaredLogger
 }
@@ -46,7 +44,7 @@ func (log *Log) Fatal(format string) {
 	log.Logger.Fatalf(format)
 }
 
-func init() {
+func NewLog() *Log {
 	logPath := filepath.Join(config.StringOrPanic("host.plugin_log_dir"), time.Now().Format("2006-01-02"))
 	hook := lumberjack.Logger{
 		Filename: logPath, // 日志文件路径
@@ -97,5 +95,5 @@ func init() {
 	logger := ZapLogger.Sugar()
 	//ZapLogger.Info("log 初始化成功")
 
-	Logger = &Log{Logger: logger}
+	return &Log{Logger: logger}
 }

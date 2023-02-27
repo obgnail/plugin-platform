@@ -668,6 +668,69 @@ func (x *EventMessage) GetError() *ErrorMessage {
 	return nil
 }
 
+type AbilityMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Ability string        `protobuf:"bytes,1,opt,name=Ability,proto3" json:"Ability,omitempty"`
+	Content []byte        `protobuf:"bytes,2,opt,name=Content,proto3" json:"Content,omitempty"`
+	Error   *ErrorMessage `protobuf:"bytes,3,opt,name=Error,proto3" json:"Error,omitempty"`
+}
+
+func (x *AbilityMessage) Reset() {
+	*x = AbilityMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_resources_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AbilityMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AbilityMessage) ProtoMessage() {}
+
+func (x *AbilityMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_resources_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AbilityMessage.ProtoReflect.Descriptor instead.
+func (*AbilityMessage) Descriptor() ([]byte, []int) {
+	return file_resources_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *AbilityMessage) GetAbility() string {
+	if x != nil {
+		return x.Ability
+	}
+	return ""
+}
+
+func (x *AbilityMessage) GetContent() []byte {
+	if x != nil {
+		return x.Content
+	}
+	return nil
+}
+
+func (x *AbilityMessage) GetError() *ErrorMessage {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
 type ResourceMessage struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -682,12 +745,13 @@ type ResourceMessage struct {
 	Http      *HttpResourceMessage `protobuf:"bytes,22,opt,name=Http,proto3" json:"Http,omitempty"`
 	Workspace *WorkspaceMessage    `protobuf:"bytes,23,opt,name=Workspace,proto3" json:"Workspace,omitempty"`
 	Event     *EventMessage        `protobuf:"bytes,24,opt,name=Event,proto3" json:"Event,omitempty"`
+	Ability   *AbilityMessage      `protobuf:"bytes,25,opt,name=Ability,proto3" json:"Ability,omitempty"`
 }
 
 func (x *ResourceMessage) Reset() {
 	*x = ResourceMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_resources_proto_msgTypes[8]
+		mi := &file_resources_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -700,7 +764,7 @@ func (x *ResourceMessage) String() string {
 func (*ResourceMessage) ProtoMessage() {}
 
 func (x *ResourceMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_resources_proto_msgTypes[8]
+	mi := &file_resources_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -713,7 +777,7 @@ func (x *ResourceMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceMessage.ProtoReflect.Descriptor instead.
 func (*ResourceMessage) Descriptor() ([]byte, []int) {
-	return file_resources_proto_rawDescGZIP(), []int{8}
+	return file_resources_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ResourceMessage) GetSender() *PluginInstanceDescriptor {
@@ -765,6 +829,13 @@ func (x *ResourceMessage) GetEvent() *EventMessage {
 	return nil
 }
 
+func (x *ResourceMessage) GetAbility() *AbilityMessage {
+	if x != nil {
+		return x.Ability
+	}
+	return nil
+}
+
 type DatabaseMessage_DatabaseRequestMessage struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -778,7 +849,7 @@ type DatabaseMessage_DatabaseRequestMessage struct {
 func (x *DatabaseMessage_DatabaseRequestMessage) Reset() {
 	*x = DatabaseMessage_DatabaseRequestMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_resources_proto_msgTypes[9]
+		mi := &file_resources_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -791,7 +862,7 @@ func (x *DatabaseMessage_DatabaseRequestMessage) String() string {
 func (*DatabaseMessage_DatabaseRequestMessage) ProtoMessage() {}
 
 func (x *DatabaseMessage_DatabaseRequestMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_resources_proto_msgTypes[9]
+	mi := &file_resources_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -844,7 +915,7 @@ type DatabaseMessage_DatabaseResponseMessage struct {
 func (x *DatabaseMessage_DatabaseResponseMessage) Reset() {
 	*x = DatabaseMessage_DatabaseResponseMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_resources_proto_msgTypes[10]
+		mi := &file_resources_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -857,7 +928,7 @@ func (x *DatabaseMessage_DatabaseResponseMessage) String() string {
 func (*DatabaseMessage_DatabaseResponseMessage) ProtoMessage() {}
 
 func (x *DatabaseMessage_DatabaseResponseMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_resources_proto_msgTypes[10]
+	mi := &file_resources_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -951,7 +1022,7 @@ type WorkspaceMessage_IORequestMessage struct {
 func (x *WorkspaceMessage_IORequestMessage) Reset() {
 	*x = WorkspaceMessage_IORequestMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_resources_proto_msgTypes[11]
+		mi := &file_resources_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -964,7 +1035,7 @@ func (x *WorkspaceMessage_IORequestMessage) String() string {
 func (*WorkspaceMessage_IORequestMessage) ProtoMessage() {}
 
 func (x *WorkspaceMessage_IORequestMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_resources_proto_msgTypes[11]
+	mi := &file_resources_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1100,7 +1171,7 @@ type WorkspaceMessage_IOResponseMessage struct {
 func (x *WorkspaceMessage_IOResponseMessage) Reset() {
 	*x = WorkspaceMessage_IOResponseMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_resources_proto_msgTypes[12]
+		mi := &file_resources_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1113,7 +1184,7 @@ func (x *WorkspaceMessage_IOResponseMessage) String() string {
 func (*WorkspaceMessage_IOResponseMessage) ProtoMessage() {}
 
 func (x *WorkspaceMessage_IOResponseMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_resources_proto_msgTypes[12]
+	mi := &file_resources_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1348,32 +1419,43 @@ var file_resources_proto_rawDesc = []byte{
 	0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0d, 0x0a, 0x09, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69,
 	0x62, 0x65, 0x10, 0x00, 0x12, 0x17, 0x0a, 0x13, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62,
 	0x65, 0x57, 0x69, 0x74, 0x68, 0x46, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x10, 0x01, 0x12, 0x0f, 0x0a,
-	0x0b, 0x55, 0x6e, 0x73, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x10, 0x02, 0x22, 0xf5,
-	0x02, 0x0a, 0x0f, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61,
-	0x67, 0x65, 0x12, 0x3a, 0x0a, 0x06, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x22, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x50, 0x6c,
-	0x75, 0x67, 0x69, 0x6e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x44, 0x65, 0x73, 0x63,
-	0x72, 0x69, 0x70, 0x74, 0x6f, 0x72, 0x52, 0x06, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x2c,
-	0x0a, 0x04, 0x48, 0x6f, 0x73, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x48, 0x6f, 0x73, 0x74, 0x44, 0x65, 0x73, 0x63,
-	0x72, 0x69, 0x70, 0x74, 0x6f, 0x72, 0x52, 0x04, 0x48, 0x6f, 0x73, 0x74, 0x12, 0x26, 0x0a, 0x03,
-	0x4c, 0x6f, 0x67, 0x18, 0x14, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x4c, 0x6f, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52,
-	0x03, 0x4c, 0x6f, 0x67, 0x12, 0x35, 0x0a, 0x08, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65,
-	0x18, 0x15, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
-	0x6c, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
-	0x65, 0x52, 0x08, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x12, 0x31, 0x0a, 0x04, 0x48,
-	0x74, 0x74, 0x70, 0x18, 0x16, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x48, 0x74, 0x74, 0x70, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x04, 0x48, 0x74, 0x74, 0x70, 0x12, 0x38,
-	0x0a, 0x09, 0x57, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x17, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x57, 0x6f, 0x72,
-	0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x09, 0x57,
-	0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x2c, 0x0a, 0x05, 0x45, 0x76, 0x65, 0x6e,
-	0x74, 0x18, 0x18, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63,
-	0x6f, 0x6c, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52,
-	0x05, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x42, 0x0d, 0x5a, 0x0b, 0x2e, 0x2e, 0x3b, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x0b, 0x55, 0x6e, 0x73, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x10, 0x02, 0x22, 0x72,
+	0x0a, 0x0e, 0x41, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x12, 0x18, 0x0a, 0x07, 0x41, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x41, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x12, 0x18, 0x0a, 0x07, 0x43, 0x6f,
+	0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x43, 0x6f, 0x6e,
+	0x74, 0x65, 0x6e, 0x74, 0x12, 0x2c, 0x0a, 0x05, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x45,
+	0x72, 0x72, 0x6f, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x05, 0x45, 0x72, 0x72,
+	0x6f, 0x72, 0x22, 0xa9, 0x03, 0x0a, 0x0f, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x3a, 0x0a, 0x06, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
+	0x6c, 0x2e, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65,
+	0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x6f, 0x72, 0x52, 0x06, 0x53, 0x65, 0x6e, 0x64,
+	0x65, 0x72, 0x12, 0x2c, 0x0a, 0x04, 0x48, 0x6f, 0x73, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x18, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x48, 0x6f, 0x73, 0x74,
+	0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x6f, 0x72, 0x52, 0x04, 0x48, 0x6f, 0x73, 0x74,
+	0x12, 0x26, 0x0a, 0x03, 0x4c, 0x6f, 0x67, 0x18, 0x14, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x4c, 0x6f, 0x67, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x52, 0x03, 0x4c, 0x6f, 0x67, 0x12, 0x35, 0x0a, 0x08, 0x44, 0x61, 0x74, 0x61,
+	0x62, 0x61, 0x73, 0x65, 0x18, 0x15, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x08, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x12,
+	0x31, 0x0a, 0x04, 0x48, 0x74, 0x74, 0x70, 0x18, 0x16, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x48, 0x74, 0x74, 0x70, 0x52, 0x65, 0x73,
+	0x6f, 0x75, 0x72, 0x63, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x04, 0x48, 0x74,
+	0x74, 0x70, 0x12, 0x38, 0x0a, 0x09, 0x57, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18,
+	0x17, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x52, 0x09, 0x57, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x2c, 0x0a, 0x05,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x18, 0x18, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x52, 0x05, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x32, 0x0a, 0x07, 0x41, 0x62,
+	0x69, 0x6c, 0x69, 0x74, 0x79, 0x18, 0x19, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x41, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x07, 0x41, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x42, 0x0d,
+	0x5a, 0x0b, 0x2e, 0x2e, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1389,7 +1471,7 @@ func file_resources_proto_rawDescGZIP() []byte {
 }
 
 var file_resources_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_resources_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_resources_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_resources_proto_goTypes = []interface{}{
 	(WorkspaceMessage_IOOperationType)(0),           // 0: protocol.WorkspaceMessage.IOOperationType
 	(HttpResourceMessage_HttpResourceType)(0),       // 1: protocol.HttpResourceMessage.HttpResourceType
@@ -1402,51 +1484,54 @@ var file_resources_proto_goTypes = []interface{}{
 	(*HttpResourceMessage)(nil),                     // 8: protocol.HttpResourceMessage
 	(*Filter)(nil),                                  // 9: protocol.Filter
 	(*EventMessage)(nil),                            // 10: protocol.EventMessage
-	(*ResourceMessage)(nil),                         // 11: protocol.ResourceMessage
-	(*DatabaseMessage_DatabaseRequestMessage)(nil),  // 12: protocol.DatabaseMessage.DatabaseRequestMessage
-	(*DatabaseMessage_DatabaseResponseMessage)(nil), // 13: protocol.DatabaseMessage.DatabaseResponseMessage
-	(*WorkspaceMessage_IORequestMessage)(nil),       // 14: protocol.WorkspaceMessage.IORequestMessage
-	(*WorkspaceMessage_IOResponseMessage)(nil),      // 15: protocol.WorkspaceMessage.IOResponseMessage
-	nil,                              // 16: protocol.EventMessage.SubscribeFilterEntry
-	(*HttpRequestMessage)(nil),       // 17: protocol.HttpRequestMessage
-	(*HttpResponseMessage)(nil),      // 18: protocol.HttpResponseMessage
-	(*ErrorMessage)(nil),             // 19: protocol.ErrorMessage
-	(*PluginInstanceDescriptor)(nil), // 20: protocol.PluginInstanceDescriptor
-	(*HostDescriptor)(nil),           // 21: protocol.HostDescriptor
-	(*LogMessage)(nil),               // 22: protocol.LogMessage
+	(*AbilityMessage)(nil),                          // 11: protocol.AbilityMessage
+	(*ResourceMessage)(nil),                         // 12: protocol.ResourceMessage
+	(*DatabaseMessage_DatabaseRequestMessage)(nil),  // 13: protocol.DatabaseMessage.DatabaseRequestMessage
+	(*DatabaseMessage_DatabaseResponseMessage)(nil), // 14: protocol.DatabaseMessage.DatabaseResponseMessage
+	(*WorkspaceMessage_IORequestMessage)(nil),       // 15: protocol.WorkspaceMessage.IORequestMessage
+	(*WorkspaceMessage_IOResponseMessage)(nil),      // 16: protocol.WorkspaceMessage.IOResponseMessage
+	nil,                              // 17: protocol.EventMessage.SubscribeFilterEntry
+	(*HttpRequestMessage)(nil),       // 18: protocol.HttpRequestMessage
+	(*HttpResponseMessage)(nil),      // 19: protocol.HttpResponseMessage
+	(*ErrorMessage)(nil),             // 20: protocol.ErrorMessage
+	(*PluginInstanceDescriptor)(nil), // 21: protocol.PluginInstanceDescriptor
+	(*HostDescriptor)(nil),           // 22: protocol.HostDescriptor
+	(*LogMessage)(nil),               // 23: protocol.LogMessage
 }
 var file_resources_proto_depIdxs = []int32{
 	3,  // 0: protocol.TableMessage.RowData:type_name -> protocol.RowMessage
 	4,  // 1: protocol.TableMessage.Column:type_name -> protocol.ColumnDesc
-	12, // 2: protocol.DatabaseMessage.DBRequest:type_name -> protocol.DatabaseMessage.DatabaseRequestMessage
-	13, // 3: protocol.DatabaseMessage.DBResponse:type_name -> protocol.DatabaseMessage.DatabaseResponseMessage
-	14, // 4: protocol.WorkspaceMessage.IORequest:type_name -> protocol.WorkspaceMessage.IORequestMessage
-	15, // 5: protocol.WorkspaceMessage.IOResponse:type_name -> protocol.WorkspaceMessage.IOResponseMessage
+	13, // 2: protocol.DatabaseMessage.DBRequest:type_name -> protocol.DatabaseMessage.DatabaseRequestMessage
+	14, // 3: protocol.DatabaseMessage.DBResponse:type_name -> protocol.DatabaseMessage.DatabaseResponseMessage
+	15, // 4: protocol.WorkspaceMessage.IORequest:type_name -> protocol.WorkspaceMessage.IORequestMessage
+	16, // 5: protocol.WorkspaceMessage.IOResponse:type_name -> protocol.WorkspaceMessage.IOResponseMessage
 	1,  // 6: protocol.HttpResourceMessage.ResourceType:type_name -> protocol.HttpResourceMessage.HttpResourceType
-	17, // 7: protocol.HttpResourceMessage.ResourceHttpRequest:type_name -> protocol.HttpRequestMessage
-	18, // 8: protocol.HttpResourceMessage.ResourceHttpResponse:type_name -> protocol.HttpResponseMessage
+	18, // 7: protocol.HttpResourceMessage.ResourceHttpRequest:type_name -> protocol.HttpRequestMessage
+	19, // 8: protocol.HttpResourceMessage.ResourceHttpResponse:type_name -> protocol.HttpResponseMessage
 	2,  // 9: protocol.EventMessage.SubscribeOperation:type_name -> protocol.EventMessage.SubscribeOperationType
-	16, // 10: protocol.EventMessage.SubscribeFilter:type_name -> protocol.EventMessage.SubscribeFilterEntry
-	19, // 11: protocol.EventMessage.Error:type_name -> protocol.ErrorMessage
-	20, // 12: protocol.ResourceMessage.Sender:type_name -> protocol.PluginInstanceDescriptor
-	21, // 13: protocol.ResourceMessage.Host:type_name -> protocol.HostDescriptor
-	22, // 14: protocol.ResourceMessage.Log:type_name -> protocol.LogMessage
-	6,  // 15: protocol.ResourceMessage.Database:type_name -> protocol.DatabaseMessage
-	8,  // 16: protocol.ResourceMessage.Http:type_name -> protocol.HttpResourceMessage
-	7,  // 17: protocol.ResourceMessage.Workspace:type_name -> protocol.WorkspaceMessage
-	10, // 18: protocol.ResourceMessage.Event:type_name -> protocol.EventMessage
-	19, // 19: protocol.DatabaseMessage.DatabaseResponseMessage.Error:type_name -> protocol.ErrorMessage
-	19, // 20: protocol.DatabaseMessage.DatabaseResponseMessage.DBError:type_name -> protocol.ErrorMessage
-	5,  // 21: protocol.DatabaseMessage.DatabaseResponseMessage.Data:type_name -> protocol.TableMessage
-	0,  // 22: protocol.WorkspaceMessage.IORequestMessage.Operation:type_name -> protocol.WorkspaceMessage.IOOperationType
-	0,  // 23: protocol.WorkspaceMessage.IOResponseMessage.Operation:type_name -> protocol.WorkspaceMessage.IOOperationType
-	19, // 24: protocol.WorkspaceMessage.IOResponseMessage.Error:type_name -> protocol.ErrorMessage
-	9,  // 25: protocol.EventMessage.SubscribeFilterEntry.value:type_name -> protocol.Filter
-	26, // [26:26] is the sub-list for method output_type
-	26, // [26:26] is the sub-list for method input_type
-	26, // [26:26] is the sub-list for extension type_name
-	26, // [26:26] is the sub-list for extension extendee
-	0,  // [0:26] is the sub-list for field type_name
+	17, // 10: protocol.EventMessage.SubscribeFilter:type_name -> protocol.EventMessage.SubscribeFilterEntry
+	20, // 11: protocol.EventMessage.Error:type_name -> protocol.ErrorMessage
+	20, // 12: protocol.AbilityMessage.Error:type_name -> protocol.ErrorMessage
+	21, // 13: protocol.ResourceMessage.Sender:type_name -> protocol.PluginInstanceDescriptor
+	22, // 14: protocol.ResourceMessage.Host:type_name -> protocol.HostDescriptor
+	23, // 15: protocol.ResourceMessage.Log:type_name -> protocol.LogMessage
+	6,  // 16: protocol.ResourceMessage.Database:type_name -> protocol.DatabaseMessage
+	8,  // 17: protocol.ResourceMessage.Http:type_name -> protocol.HttpResourceMessage
+	7,  // 18: protocol.ResourceMessage.Workspace:type_name -> protocol.WorkspaceMessage
+	10, // 19: protocol.ResourceMessage.Event:type_name -> protocol.EventMessage
+	11, // 20: protocol.ResourceMessage.Ability:type_name -> protocol.AbilityMessage
+	20, // 21: protocol.DatabaseMessage.DatabaseResponseMessage.Error:type_name -> protocol.ErrorMessage
+	20, // 22: protocol.DatabaseMessage.DatabaseResponseMessage.DBError:type_name -> protocol.ErrorMessage
+	5,  // 23: protocol.DatabaseMessage.DatabaseResponseMessage.Data:type_name -> protocol.TableMessage
+	0,  // 24: protocol.WorkspaceMessage.IORequestMessage.Operation:type_name -> protocol.WorkspaceMessage.IOOperationType
+	0,  // 25: protocol.WorkspaceMessage.IOResponseMessage.Operation:type_name -> protocol.WorkspaceMessage.IOOperationType
+	20, // 26: protocol.WorkspaceMessage.IOResponseMessage.Error:type_name -> protocol.ErrorMessage
+	9,  // 27: protocol.EventMessage.SubscribeFilterEntry.value:type_name -> protocol.Filter
+	28, // [28:28] is the sub-list for method output_type
+	28, // [28:28] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_resources_proto_init() }
@@ -1553,7 +1638,7 @@ func file_resources_proto_init() {
 			}
 		}
 		file_resources_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResourceMessage); i {
+			switch v := v.(*AbilityMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1565,7 +1650,7 @@ func file_resources_proto_init() {
 			}
 		}
 		file_resources_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DatabaseMessage_DatabaseRequestMessage); i {
+			switch v := v.(*ResourceMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1577,7 +1662,7 @@ func file_resources_proto_init() {
 			}
 		}
 		file_resources_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DatabaseMessage_DatabaseResponseMessage); i {
+			switch v := v.(*DatabaseMessage_DatabaseRequestMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1589,7 +1674,7 @@ func file_resources_proto_init() {
 			}
 		}
 		file_resources_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WorkspaceMessage_IORequestMessage); i {
+			switch v := v.(*DatabaseMessage_DatabaseResponseMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1601,6 +1686,18 @@ func file_resources_proto_init() {
 			}
 		}
 		file_resources_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*WorkspaceMessage_IORequestMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_resources_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*WorkspaceMessage_IOResponseMessage); i {
 			case 0:
 				return &v.state
@@ -1619,7 +1716,7 @@ func file_resources_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_resources_proto_rawDesc,
 			NumEnums:      3,
-			NumMessages:   14,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

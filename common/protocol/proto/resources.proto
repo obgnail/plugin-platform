@@ -148,6 +148,12 @@ message EventMessage{
   ErrorMessage Error = 4;
 }
 
+message AbilityMessage{
+  string Ability = 1;
+  bytes Content = 2;
+  ErrorMessage Error = 3;
+}
+
 message ResourceMessage{
   // 添加消息头，路由数据
   PluginInstanceDescriptor Sender = 1;
@@ -159,4 +165,5 @@ message ResourceMessage{
   HttpResourceMessage Http = 22;
   WorkspaceMessage Workspace = 23;
   EventMessage Event = 24;
+  AbilityMessage Ability = 25;
 }

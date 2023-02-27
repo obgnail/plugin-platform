@@ -3,7 +3,6 @@ package release
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/host/resource/common"
-	"github.com/obgnail/plugin-platform/host/resource/local"
 )
 
 var _ common_type.IResources = (*Resource)(nil)
@@ -73,7 +72,7 @@ func (r *Resource) GetOutDoor() common_type.Network {
 
 func (r *Resource) GetAbility() common_type.Ability {
 	if r.ability == nil {
-		r.ability = local.NewAbility(r.Plugin)
+		r.ability = NewAbility(r.Plugin, r.Sender)
 	}
 	return r.ability
 }

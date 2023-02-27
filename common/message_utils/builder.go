@@ -124,6 +124,10 @@ func BuildResourceEventMessage(distinctMessage *protocol.PlatformMessage, resp *
 	distinctMessage.Resource.Event = resp
 }
 
+func BuildResourceAbilityMessage(distinctMessage *protocol.PlatformMessage, resp *protocol.AbilityMessage) {
+	distinctMessage.Resource.Ability = resp
+}
+
 func BuildInstanceDescriptor(plugin common_type.IPlugin, hostID string) *protocol.PluginInstanceDescriptor {
 	desc := plugin.GetPluginDescription().PluginDescription()
 	return &protocol.PluginInstanceDescriptor{

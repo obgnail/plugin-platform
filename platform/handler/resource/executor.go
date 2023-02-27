@@ -3,6 +3,7 @@ package resource
 import (
 	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/platform/handler/resource/ability"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/db"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/event_publisher"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/log"
@@ -46,6 +47,10 @@ func (r *Executor) Execute() (resp *protocol.PlatformMessage) {
 	// event
 	if resource.GetEvent() != nil {
 		event_publisher.NewEvent(r.Request, r.Response).Execute()
+	}
+	// ability
+	if resource.GetAbility() != nil {
+		ability.NewAbility(r.Request, r.Response).Execute()
 	}
 
 	return r.Response
