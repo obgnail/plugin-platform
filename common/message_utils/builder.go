@@ -141,6 +141,14 @@ func BuildInstanceDescriptor(plugin common_type.IPlugin, hostID string) *protoco
 	}
 }
 
+func BuildReportInitMessage(hostInfo *protocol.HostDescriptor) *protocol.PlatformMessage {
+	msg := BuildHostToPlatFormMessageWithHeader()
+	msg.Control.Report = &protocol.ControlMessage_HostReportMessage{
+		Host: hostInfo,
+	}
+	return msg
+}
+
 //func BuildReportMessage(newMsg, comeMsg *protocol.PlatformMessage, instanceList map[string]*protocol.PluginInstanceDescriptor, hostDesc *protocol.HostDescriptor) {
 //	swapMessageHeader(newMsg, comeMsg)
 //
@@ -153,13 +161,3 @@ func BuildInstanceDescriptor(plugin common_type.IPlugin, hostID string) *protoco
 //	newMsg.Control = control
 //}
 //
-//func BuildReportInitMessage(hostConfig *golangcommon.HostConfig, hostInfo *protocol.HostDescriptor) *protocol.PlatformMessage {
-//	msg := GetInitMessage()
-//	msg.Header.Source = GetHostInfo(hostConfig)
-//	msg.Header.Distinct = GetPlatformInfo(hostConfig)
-//	msg.Header.SeqNo = utils.CreateCaptcha()
-//	msg.Control.Report = &protocol.ControlMessage_HostReportMessage{
-//		Host: hostInfo,
-//	}
-//	return msg
-//}

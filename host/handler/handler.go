@@ -7,6 +7,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/host/resource/common"
 	"os"
 	"time"
 )
@@ -14,6 +15,7 @@ import (
 // TODO
 var defaultTimeout = 30 * time.Second
 
+var _ common.Sender = (*HostHandler)(nil)
 var _ connect.FurtherHandler = (*HostHandler)(nil)
 
 type HostHandler struct {
@@ -31,9 +33,9 @@ func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, i
 			HostID:           id,
 			Name:             name,
 			Language:         lang,
-			HostVersion:      message_utils.SplitVersion(hostVersion),
-			MinSystemVersion: message_utils.SplitVersion(minSysVersion),
-			LanguageVersion:  message_utils.SplitVersion(langVersion),
+			HostVersion:      message_utils.VersionString2Pb(hostVersion),
+			MinSystemVersion: message_utils.VersionString2Pb(minSysVersion),
+			LanguageVersion:  message_utils.VersionString2Pb(langVersion),
 		},
 	}
 
@@ -60,6 +62,15 @@ func (h *HostHandler) GetDescriptor() *protocol.HostDescriptor {
 	return h.descriptor
 }
 
+// InitReport 向platform报告，启动消息循环，等待control指令与其他消息
+func (h *HostHandler) InitReport() {
+	time.Sleep(time.Second * 1)
+	msg := message_utils.BuildReportInitMessage(h.descriptor)
+	if err := h.SendOnly(msg); err != nil {
+		log.ErrorDetails(err)
+	}
+}
+
 func (h *HostHandler) OnConnect() common_type.PluginError {
 	log.Info("OnConnect: %s", h.descriptor.Name)
 	return nil
@@ -79,6 +90,7 @@ func (h *HostHandler) OnError(err common_type.PluginError) {
 	if e := h.conn.Connect(); e != nil {
 		os.Exit(1)
 	}
+	h.InitReport()
 }
 
 func (h *HostHandler) OnKill(message *protocol.PlatformMessage) {
@@ -123,10 +135,10 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 			appID:     app.ApplicationID,
 			name:      app.Name,
 			lang:      app.Language,
-			langVer:   message_utils.GetVersionString(app.LanguageVersion),
-			appVer:    message_utils.GetVersionString(app.ApplicationVersion),
-			hostVer:   message_utils.GetVersionString(app.HostVersion),
-			minSysVer: message_utils.GetVersionString(app.MinSystemVersion),
+			langVer:   message_utils.VersionPb2String(app.LanguageVersion),
+			appVer:    message_utils.VersionPb2String(app.ApplicationVersion),
+			hostVer:   message_utils.VersionPb2String(app.HostVersion),
+			minSysVer: message_utils.VersionPb2String(app.MinSystemVersion),
 		},
 	}
 
@@ -244,9 +256,9 @@ func (h *HostHandler) getLifeCycleRequest() common_type.LifeCycleRequest {
 		"HostID":           {[]string{h.descriptor.HostID}},
 		"HostName":         {[]string{h.descriptor.Name}},
 		"HostLanguage":     {[]string{h.descriptor.Language}},
-		"LanguageVersion":  {[]string{message_utils.GetVersionString(h.descriptor.LanguageVersion)}},
-		"HostVersion":      {[]string{message_utils.GetVersionString(h.descriptor.HostVersion)}},
-		"MinSystemVersion": {[]string{message_utils.GetVersionString(h.descriptor.MinSystemVersion)}},
+		"LanguageVersion":  {[]string{message_utils.VersionPb2String(h.descriptor.LanguageVersion)}},
+		"HostVersion":      {[]string{message_utils.VersionPb2String(h.descriptor.HostVersion)}},
+		"MinSystemVersion": {[]string{message_utils.VersionPb2String(h.descriptor.MinSystemVersion)}},
 	}
 
 	req := common_type.LifeCycleRequest{Headers: headers}
@@ -288,6 +300,10 @@ func (h *HostHandler) SendAsync(sender common_type.IPlugin, msg *protocol.Platfo
 	h.conn.SendAsync(msg, defaultTimeout, callback)
 }
 
+func (h *HostHandler) SendOnly(msg *protocol.PlatformMessage) (err common_type.PluginError) {
+	return h.conn.SendOnly(msg)
+}
+
 // fillMsg 添加路由信息
 func (h *HostHandler) fillMsg(sender common_type.IPlugin, msg *protocol.PlatformMessage) {
 	if msg.GetResource() != nil {
@@ -302,5 +318,9 @@ func (h *HostHandler) fillMsg(sender common_type.IPlugin, msg *protocol.Platform
 }
 
 func (h *HostHandler) Run() common_type.PluginError {
-	return h.conn.Connect()
+	if err := h.conn.Connect(); err != nil {
+		return err
+	}
+	h.InitReport()
+	return nil
 }

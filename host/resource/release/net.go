@@ -4,30 +4,30 @@ import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
-	"github.com/obgnail/plugin-platform/host/handler"
+	"github.com/obgnail/plugin-platform/host/resource/common"
 )
 
 var _ common_type.APICore = (*APICore)(nil)
 var _ common_type.Network = (*Outdoor)(nil)
 
 type CommonNetwork struct {
-	Type    protocol.HttpResourceMessage_HttpResourceType
-	msg     *protocol.HttpRequestMessage
-	plugin  common_type.IPlugin
-	handler *handler.HostHandler
+	Type   protocol.HttpResourceMessage_HttpResourceType
+	msg    *protocol.HttpRequestMessage
+	plugin common_type.IPlugin
+	sender common.Sender
 }
 
-func newNetworkCommon(plugin common_type.IPlugin, handler *handler.HostHandler, Type protocol.HttpResourceMessage_HttpResourceType) *CommonNetwork {
-	return &CommonNetwork{plugin: plugin, handler: handler, Type: Type}
+func newNetworkCommon(plugin common_type.IPlugin, sender common.Sender, Type protocol.HttpResourceMessage_HttpResourceType) *CommonNetwork {
+	return &CommonNetwork{plugin: plugin, sender: sender, Type: Type}
 }
 
 func (c *CommonNetwork) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
-	return c.handler.Send(c.plugin, platformMessage)
+	return c.sender.Send(c.plugin, platformMessage)
 }
 
 func (c *CommonNetwork) sendToHostAsync(platformMessage *protocol.PlatformMessage, callback common_type.NetworkCallBack) {
 	cb := &networkCallbackWrapper{Func: callback}
-	c.handler.SendAsync(c.plugin, platformMessage, cb.callBack)
+	c.sender.SendAsync(c.plugin, platformMessage, cb.callBack)
 }
 
 func (c *CommonNetwork) buildMessage(httpRequestMessage *protocol.HttpRequestMessage) *protocol.PlatformMessage {
@@ -92,8 +92,8 @@ type APICore struct {
 	common *CommonNetwork
 }
 
-func NewAPICore(plugin common_type.IPlugin, handler *handler.HostHandler) *APICore {
-	return &APICore{common: newNetworkCommon(plugin, handler, protocol.HttpResourceMessage_API)}
+func NewAPICore(plugin common_type.IPlugin, sender common.Sender) *APICore {
+	return &APICore{common: newNetworkCommon(plugin, sender, protocol.HttpResourceMessage_API)}
 }
 
 func (a *APICore) buildMsg(httpRequest *common_type.HttpRequest) *protocol.PlatformMessage {
@@ -122,8 +122,8 @@ type Outdoor struct {
 	common *CommonNetwork
 }
 
-func NewOutdoor(plugin common_type.IPlugin, handler *handler.HostHandler) *Outdoor {
-	return &Outdoor{common: newNetworkCommon(plugin, handler, protocol.HttpResourceMessage_Outdoor)}
+func NewOutdoor(plugin common_type.IPlugin, sender common.Sender) *Outdoor {
+	return &Outdoor{common: newNetworkCommon(plugin, sender, protocol.HttpResourceMessage_Outdoor)}
 }
 
 func (o *Outdoor) buildMsg(httpRequest *common_type.HttpRequest) *protocol.PlatformMessage {

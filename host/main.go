@@ -5,13 +5,25 @@ import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/log"
+	"github.com/obgnail/plugin-platform/host/handler"
 	"github.com/obgnail/plugin-platform/host/resource/release"
 	"time"
 )
 
 func main() {
+	h := handler.Default(false)
+	h.Run()
+
+	time.Sleep(time.Hour)
+}
+
+func main2() {
 	plugin := &mockPlugin{}
-	resource := release.NewResource(plugin)
+
+	h := handler.Default(false)
+	h.Run()
+	resource := &release.Resource{Plugin: plugin, Sender: h}
+
 	instanceDesc := &mockInstanceDesc{}
 
 	log.Info("OK")
@@ -37,6 +49,7 @@ func testEvent(plugin *mockPlugin) {
 	if er2 != nil {
 		panic(er2)
 	}
+	fmt.Println("----", cnd)
 }
 
 func testLog(plugin *mockPlugin) {

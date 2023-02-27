@@ -6,6 +6,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/connect"
 	"github.com/obgnail/plugin-platform/common/log"
+	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/platform/handler/resource"
 	"time"
@@ -52,6 +53,14 @@ func (ph *PlatformHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.P
 		return
 	}
 
+	// 控制流
+	if msg.GetControl() != nil {
+		if msg.GetControl().GetReport() != nil {
+			ph.onHostReport(msg)
+		}
+	}
+
+	// 资源
 	if msg.GetResource() != nil {
 		log.Info("【GET】message.GetResource() GetSeqNo: %d", msg.GetHeader().GetSeqNo())
 		resp := resource.NewExecutor(msg).Execute()
@@ -61,6 +70,42 @@ func (ph *PlatformHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.P
 				log.ErrorDetails(err)
 			}
 		}
+	}
+}
+
+func (ph *PlatformHandler) onHostReport(msg *protocol.PlatformMessage) {
+	// TODO
+	resp := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    msg.Header.SeqNo,
+			Source:   msg.Header.Distinct,
+			Distinct: msg.Header.Source,
+		},
+		Control: &protocol.ControlMessage{
+			LifeCycleRequest: &protocol.ControlMessage_PluginLifeCycleRequestMessage{
+				Host: msg.Control.Report.Host,
+				Instance: &protocol.PluginInstanceDescriptor{
+					Application: &protocol.PluginDescriptor{
+						ApplicationID:      "lt1ZZuMd",
+						Name:               "上传文件的安全提示",
+						Language:           "golang",
+						LanguageVersion:    message_utils.VersionString2Pb("1.14.0"),
+						ApplicationVersion: message_utils.VersionString2Pb("1.0.0"),
+						HostVersion:        message_utils.VersionString2Pb("0.2.0"),
+						MinSystemVersion:   message_utils.VersionString2Pb("3.2.0"),
+					},
+					InstanceID: "InstanceID123",
+					HostID:     msg.Control.Report.Host.HostID,
+				},
+				Action:     protocol.ControlMessage_Install,
+				Reason:     "",
+				OldVersion: nil,
+			},
+		},
+	}
+	err := ph.SendOnly(resp)
+	if err != nil {
+		panic(err)
 	}
 }
 

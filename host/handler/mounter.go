@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/host/resource/common"
 	"github.com/obgnail/plugin-platform/host/resource/local"
 	"github.com/obgnail/plugin-platform/host/resource/release"
 	"github.com/obgnail/plugin-platform/platform/service/utils"
@@ -10,12 +11,12 @@ import (
 )
 
 type PluginMounter struct {
-	handler *HostHandler
+	sender  common.Sender
 	isLocal bool
 }
 
-func NewMounter(handler *HostHandler, isLocal bool) *PluginMounter {
-	return &PluginMounter{isLocal: isLocal, handler: handler}
+func NewMounter(sender common.Sender, isLocal bool) *PluginMounter {
+	return &PluginMounter{isLocal: isLocal, sender: sender}
 }
 
 func (m *PluginMounter) Mount(Plugin common_type.IPlugin, instanceDesc common_type.IInstanceDescription) (common_type.IPlugin, common_type.PluginError) {
@@ -55,7 +56,7 @@ func (m *PluginMounter) GetResources(plugin common_type.IPlugin) common_type.IRe
 	if m.isLocal {
 		return &local.Resource{Plugin: plugin}
 	}
-	return &release.Resource{Plugin: plugin, Handler: m.handler}
+	return &release.Resource{Plugin: plugin, Sender: m.sender}
 }
 
 func getPlugin(path string) (common_type.IPlugin, error) {

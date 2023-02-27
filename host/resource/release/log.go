@@ -4,18 +4,18 @@ import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
-	"github.com/obgnail/plugin-platform/host/handler"
+	"github.com/obgnail/plugin-platform/host/resource/common"
 )
 
 var _ common_type.PluginLogger = (*Logger)(nil)
 
 type Logger struct {
-	plugin  common_type.IPlugin
-	handler *handler.HostHandler
+	plugin common_type.IPlugin
+	sender common.Sender
 }
 
-func NewLogger(plugin common_type.IPlugin, handler *handler.HostHandler) *Logger {
-	l := &Logger{plugin: plugin, handler: handler}
+func NewLogger(plugin common_type.IPlugin, sender common.Sender) *Logger {
+	l := &Logger{plugin: plugin, sender: sender}
 	return l
 }
 
@@ -28,7 +28,7 @@ func (l *Logger) buildMessage(logMsg *protocol.LogMessage) *protocol.PlatformMes
 }
 
 func (l *Logger) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
-	return l.handler.Send(l.plugin, platformMessage)
+	return l.sender.Send(l.plugin, platformMessage)
 }
 
 func (l *Logger) send(level protocol.LogMessage_LogLevel, content string) {

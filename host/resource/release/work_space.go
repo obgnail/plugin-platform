@@ -4,18 +4,18 @@ import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
-	"github.com/obgnail/plugin-platform/host/handler"
+	"github.com/obgnail/plugin-platform/host/resource/common"
 )
 
 var _ common_type.Workspace = (*Space)(nil)
 
 type Space struct {
-	plugin  common_type.IPlugin
-	handler *handler.HostHandler
+	plugin common_type.IPlugin
+	sender common.Sender
 }
 
-func NewSpace(plugin common_type.IPlugin, handler *handler.HostHandler) common_type.Workspace {
-	return &Space{plugin: plugin, handler: handler}
+func NewSpace(plugin common_type.IPlugin, sender common.Sender) common_type.Workspace {
+	return &Space{plugin: plugin, sender: sender}
 }
 
 func (s *Space) buildMessage(ioRequest *protocol.WorkspaceMessage_IORequestMessage) *protocol.PlatformMessage {
@@ -27,12 +27,12 @@ func (s *Space) buildMessage(ioRequest *protocol.WorkspaceMessage_IORequestMessa
 }
 
 func (s *Space) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
-	return s.handler.Send(s.plugin, platformMessage)
+	return s.sender.Send(s.plugin, platformMessage)
 }
 
 func (s *Space) sendToHostAsync(platformMessage *protocol.PlatformMessage, callback common_type.AsyncInvokeCallbackParams) {
 	cb := &spaceCallbackWrapper{Func: callback}
-	s.handler.SendAsync(s.plugin, platformMessage, cb.callBack)
+	s.sender.SendAsync(s.plugin, platformMessage, cb.callBack)
 }
 
 func (s *Space) CreateFile(name string) common_type.PluginError {

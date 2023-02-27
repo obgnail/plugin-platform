@@ -82,6 +82,17 @@ func (p *mockPlugin) CheckCompatibility() common_type.PluginError {
 }
 
 func (p *mockPlugin) Install(common_type.LifeCycleRequest) common_type.PluginError {
+	event := p.resource.GetEventPublisher()
+	cnd := []string{"project.task", "project.user"}
+	er := event.Subscribe(cnd)
+	if er != nil {
+		panic(er)
+	}
+	er2 := event.Unsubscribe(cnd)
+	if er2 != nil {
+		panic(er2)
+	}
+	fmt.Println("-- Install --", cnd)
 	return nil
 }
 

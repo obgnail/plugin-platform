@@ -6,7 +6,6 @@ import (
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
-	"github.com/obgnail/plugin-platform/host/handler"
 	"github.com/obgnail/plugin-platform/host/resource/common"
 )
 
@@ -14,13 +13,13 @@ var _ common_type.LocalDB = (*LocalDB)(nil)
 var _ common_type.SysDB = (*SysDB)(nil)
 
 type CommonDB struct {
-	db      *sql.DB
-	plugin  common_type.IPlugin
-	handler *handler.HostHandler
+	db     *sql.DB
+	plugin common_type.IPlugin
+	sender common.Sender
 }
 
-func NewCommonDB(plugin common_type.IPlugin, handler *handler.HostHandler) *CommonDB {
-	return &CommonDB{plugin: plugin, handler: handler}
+func NewCommonDB(plugin common_type.IPlugin, sender common.Sender) *CommonDB {
+	return &CommonDB{plugin: plugin, sender: sender}
 }
 
 func (d *CommonDB) buildMessage(databaseRequestMessage *protocol.DatabaseMessage_DatabaseRequestMessage) *protocol.PlatformMessage {
@@ -32,12 +31,12 @@ func (d *CommonDB) buildMessage(databaseRequestMessage *protocol.DatabaseMessage
 }
 
 func (d *CommonDB) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
-	return d.handler.Send(d.plugin, platformMessage)
+	return d.sender.Send(d.plugin, platformMessage)
 }
 
 func (d *CommonDB) sendToHostAsync(platformMessage *protocol.PlatformMessage, callback common_type.DBCallBack) {
 	cb := &dbCallbackWrapper{Func: callback}
-	d.handler.SendAsync(d.plugin, platformMessage, cb.callBack)
+	d.sender.SendAsync(d.plugin, platformMessage, cb.callBack)
 }
 
 func (d *CommonDB) CommonSelect(db, sql string) ([]*common_type.RawData, []*common_type.ColumnDesc, common_type.PluginError) {
@@ -108,9 +107,9 @@ type LocalDB struct {
 	common *CommonDB
 }
 
-func NewLocalDB(plugin common_type.IPlugin, handler *handler.HostHandler) common_type.LocalDB {
+func NewLocalDB(plugin common_type.IPlugin, sender common.Sender) common_type.LocalDB {
 	db := config.String("platform.mysql_user_plugin_db_name", "plugins")
-	return &LocalDB{common: NewCommonDB(plugin, handler), db: db}
+	return &LocalDB{common: NewCommonDB(plugin, sender), db: db}
 }
 
 func (d *LocalDB) Select(sql string) ([]*common_type.RawData, []*common_type.ColumnDesc, common_type.PluginError) {
@@ -146,8 +145,8 @@ type SysDB struct {
 	common *CommonDB
 }
 
-func NewSysDB(plugin common_type.IPlugin, handler *handler.HostHandler) *SysDB {
-	return &SysDB{common: NewCommonDB(plugin, handler)}
+func NewSysDB(plugin common_type.IPlugin, sender common.Sender) *SysDB {
+	return &SysDB{common: NewCommonDB(plugin, sender)}
 }
 
 func (d *SysDB) Select(db, sql string) ([]*common_type.RawData, []*common_type.ColumnDesc, common_type.PluginError) {

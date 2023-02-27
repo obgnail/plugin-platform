@@ -4,18 +4,18 @@ import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
-	"github.com/obgnail/plugin-platform/host/handler"
+	"github.com/obgnail/plugin-platform/host/resource/common"
 )
 
 var _ common_type.EventPublisher = (*EventPublisher)(nil)
 
 type EventPublisher struct {
-	plugin  common_type.IPlugin
-	handler *handler.HostHandler
+	plugin common_type.IPlugin
+	sender common.Sender
 }
 
-func NewEvent(plugin common_type.IPlugin, handler *handler.HostHandler) common_type.EventPublisher {
-	return &EventPublisher{plugin: plugin, handler: handler}
+func NewEvent(plugin common_type.IPlugin, sender common.Sender) common_type.EventPublisher {
+	return &EventPublisher{plugin: plugin, sender: sender}
 }
 
 func (event *EventPublisher) buildMessage(eventMsg *protocol.EventMessage) *protocol.PlatformMessage {
@@ -25,7 +25,7 @@ func (event *EventPublisher) buildMessage(eventMsg *protocol.EventMessage) *prot
 }
 
 func (event *EventPublisher) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
-	return event.handler.Send(event.plugin, platformMessage)
+	return event.sender.Send(event.plugin, platformMessage)
 }
 
 func (event *EventPublisher) send(eventMsg *protocol.EventMessage) common_type.PluginError {

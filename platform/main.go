@@ -15,6 +15,8 @@ func main() {
 	h := handler.Default()
 	h.Run()
 
+	//h.Send(&protocol.PlatformMessage{}, 30*time.Second)
+
 	log.Info("PlatformHandler OK")
 
 	time.Sleep(time.Hour)

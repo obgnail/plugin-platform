@@ -68,7 +68,7 @@ func (d *DataBase) onSql() {
 }
 
 func (d *DataBase) importSql() {
-	version := message_utils.GetVersionString(d.Source.GetResource().GetSender().GetApplication().GetApplicationVersion())
+	version := message_utils.VersionPb2String(d.Source.GetResource().GetSender().GetApplication().GetApplicationVersion())
 	appId := d.Source.GetResource().GetSender().GetApplication().GetApplicationID()
 	db := GetDB(d.db)
 	err := db.ImportSql(d.importSqlPath, appId, version, d.instanceID)

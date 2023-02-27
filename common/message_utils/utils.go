@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func SplitVersion(version string) *protocol.Version {
+func VersionString2Pb(version string) *protocol.Version {
 	versionSlice := strings.Split(version, ".")
 	major, _ := strconv.ParseInt(versionSlice[0], 10, 32)
 	minor, _ := strconv.ParseInt(versionSlice[1], 10, 32)
@@ -20,7 +20,7 @@ func NewProtocolVersion(version common_type.IVersion) *protocol.Version {
 	return &protocol.Version{Major: int32(version.Major()), Minor: int32(version.Minor()), Revision: int32(version.Revision())}
 }
 
-func GetVersionString(version *protocol.Version) string {
+func VersionPb2String(version *protocol.Version) string {
 	major := version.GetMajor()
 	minor := version.GetMinor()
 	revision := version.GetRevision()
