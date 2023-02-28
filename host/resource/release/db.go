@@ -23,7 +23,7 @@ func NewCommonDB(plugin common_type.IPlugin, sender common.Sender) *CommonDB {
 }
 
 func (d *CommonDB) buildMessage(databaseRequestMessage *protocol.DatabaseMessage_DatabaseRequestMessage) *protocol.PlatformMessage {
-	msg := message_utils.BuildHostToPlatFormMessageWithHeader()
+	msg := message_utils.GetInitMessage(nil, nil)
 	msg.Resource = &protocol.ResourceMessage{
 		Database: &protocol.DatabaseMessage{DBRequest: databaseRequestMessage},
 	}

@@ -23,7 +23,7 @@ func (a *Ability) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*pro
 }
 
 func (a *Ability) buildMessage(abilityMessageMessage *protocol.AbilityMessage) *protocol.PlatformMessage {
-	msg := message_utils.BuildHostToPlatFormMessageWithHeader()
+	msg := message_utils.GetInitMessage(nil, nil)
 	msg.Resource = &protocol.ResourceMessage{Ability: abilityMessageMessage}
 	return msg
 }

@@ -60,5 +60,5 @@ func (a *Ability) buildMsg(content []byte, err error) {
 			common_type.CallAbilityError.Error())
 		msg.Error = message_utils.BuildErrorMessage(e)
 	}
-	message_utils.BuildResourceAbilityMessage(a.distinct, msg)
+	a.distinct.Resource.Ability = msg
 }

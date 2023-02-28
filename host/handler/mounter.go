@@ -32,7 +32,7 @@ func (m *PluginMounter) Mount(Plugin common_type.IPlugin, instanceDesc common_ty
 
 	resources := m.GetResources(Plugin)
 
-	setupPlugin, err := SetupPlugin(Plugin, instanceDesc, resources)
+	setupPlugin, err := common_type.SetupPlugin(Plugin, instanceDesc, resources)
 	if err != nil {
 		return nil, err
 	}

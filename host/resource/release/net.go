@@ -31,7 +31,7 @@ func (c *CommonNetwork) sendToHostAsync(platformMessage *protocol.PlatformMessag
 }
 
 func (c *CommonNetwork) buildMessage(httpRequestMessage *protocol.HttpRequestMessage) *protocol.PlatformMessage {
-	msg := message_utils.BuildHostToPlatFormMessageWithHeader()
+	msg := message_utils.GetInitMessage(nil, nil)
 	msg.Resource = &protocol.ResourceMessage{
 		Http: &protocol.HttpResourceMessage{
 			ResourceType:        c.Type,

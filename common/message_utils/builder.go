@@ -9,37 +9,23 @@ import (
 )
 
 var (
-	hostID       = config.StringOrPanic("host.id")
-	hostName     = config.StringOrPanic("host.name")
 	platformID   = config.StringOrPanic("platform.id")
 	platformName = config.StringOrPanic("platform.name")
 )
 
-func GetInitMessage() *protocol.PlatformMessage {
+func GetInitMessage(source, distinct *protocol.RouterNode) *protocol.PlatformMessage {
 	message := &protocol.PlatformMessage{
 		Header: &protocol.RouterMessage{
-			SeqNo: math.CreateCaptcha(),
-			Source: &protocol.RouterNode{
-				Tags: make(map[string]string),
-			},
-			Distinct: &protocol.RouterNode{
-				Tags: make(map[string]string),
-			},
+			SeqNo:    math.CreateCaptcha(),
+			Source:   source,
+			Distinct: distinct,
 		},
 		Control: &protocol.ControlMessage{},
 	}
 	return message
 }
 
-func BuildHostToPlatFormMessageWithHeader() *protocol.PlatformMessage {
-	msg := GetInitMessage()
-	msg.Header.Source = GetHostInfo()
-	msg.Header.Distinct = GetPlatformInfo()
-	msg.Header.SeqNo = math.CreateCaptcha()
-	return msg
-}
-
-func GetHostInfo() *protocol.RouterNode {
+func GetHostInfo(hostID, hostName string) *protocol.RouterNode {
 	return &protocol.RouterNode{
 		ID: hostID,
 		Tags: map[string]string{
@@ -61,26 +47,24 @@ func GetPlatformInfo() *protocol.RouterNode {
 	}
 }
 
-func GetResourceInitMessage(sourceMessage *protocol.PlatformMessage) *protocol.PlatformMessage {
-	message := &protocol.PlatformMessage{
-		Header: &protocol.RouterMessage{
-			Source: &protocol.RouterNode{
-				Tags: make(map[string]string),
-			},
-			Distinct: &protocol.RouterNode{
-				Tags: make(map[string]string),
-			},
-		},
-		Resource: &protocol.ResourceMessage{},
-	}
-	swapMessageHeader(message, sourceMessage)
-	message.Resource.Sender = sourceMessage.Resource.Sender
-	message.Resource.Host = sourceMessage.Resource.Host
-	return message
+// host -> platform
+func BuildP2HDefaultMessage(hostID, hostName string) *protocol.PlatformMessage {
+	p := GetPlatformInfo()
+	h := GetHostInfo(hostID, hostName)
+	msg := GetInitMessage(p, h)
+	return msg
 }
 
-//消息头 来源/去向 调换
-func swapMessageHeader(newMsg, comeMsg *protocol.PlatformMessage) {
+// platform -> host
+func BuildH2PDefaultMessage(hostID, hostName string) *protocol.PlatformMessage {
+	p := GetPlatformInfo()
+	h := GetHostInfo(hostID, hostName)
+	msg := GetInitMessage(h, p)
+	return msg
+}
+
+// SwapMessageHeader 消息头 来源/去向 调换
+func SwapMessageHeader(newMsg, comeMsg *protocol.PlatformMessage) {
 	newMsg.Header.Source.ID = comeMsg.Header.Distinct.ID
 	newMsg.Header.Source.Tags = comeMsg.Header.Distinct.Tags
 	newMsg.Header.Distinct.ID = comeMsg.Header.Source.ID
@@ -100,36 +84,8 @@ func BuildErrorMessage(err common_type.PluginError) *protocol.ErrorMessage {
 	}
 }
 
-func BuildResourceFileMessage(distinctMessage *protocol.PlatformMessage, resp *protocol.WorkspaceMessage_IOResponseMessage) {
-	// workspaceMessage
-	workspaceMessage := &protocol.WorkspaceMessage{}
-	workspaceMessage.IOResponse = resp
-	distinctMessage.Resource.Workspace = workspaceMessage
-}
-
-func BuildResourceDbMessage(distinctMessage *protocol.PlatformMessage, resp *protocol.DatabaseMessage_DatabaseResponseMessage) {
-	// dataBaseMsgResp
-	dataBaseMsg := &protocol.DatabaseMessage{}
-	dataBaseMsg.DBResponse = resp
-	distinctMessage.Resource.Database = dataBaseMsg
-}
-
-func BuildResourceNetworkMessage(distinctMessage *protocol.PlatformMessage, resp *protocol.HttpResponseMessage) {
-	httpMessage := &protocol.HttpResourceMessage{}
-	httpMessage.ResourceHttpResponse = resp
-	distinctMessage.Resource.Http = httpMessage
-}
-
-func BuildResourceEventMessage(distinctMessage *protocol.PlatformMessage, resp *protocol.EventMessage) {
-	distinctMessage.Resource.Event = resp
-}
-
-func BuildResourceAbilityMessage(distinctMessage *protocol.PlatformMessage, resp *protocol.AbilityMessage) {
-	distinctMessage.Resource.Ability = resp
-}
-
-func BuildInstanceDescriptor(plugin common_type.IPlugin, hostID string) *protocol.PluginInstanceDescriptor {
-	desc := plugin.GetPluginDescription().PluginDescription()
+func BuildInstanceDescriptor(description common_type.IInstanceDescription, hostID string) *protocol.PluginInstanceDescriptor {
+	desc := description.PluginDescription()
 	return &protocol.PluginInstanceDescriptor{
 		Application: &protocol.PluginDescriptor{
 			ApplicationID:      desc.ApplicationID(),
@@ -140,28 +96,72 @@ func BuildInstanceDescriptor(plugin common_type.IPlugin, hostID string) *protoco
 			HostVersion:        NewProtocolVersion(desc.HostVersion()),
 			MinSystemVersion:   NewProtocolVersion(desc.MinSystemVersion()),
 		},
-		InstanceID: plugin.GetPluginDescription().InstanceID(),
+		InstanceID: description.InstanceID(),
 		HostID:     hostID,
 	}
 }
 
-func BuildReportInitMessage(hostInfo *protocol.HostDescriptor) *protocol.PlatformMessage {
-	msg := BuildHostToPlatFormMessageWithHeader()
-	msg.Control.Report = &protocol.ControlMessage_HostReportMessage{
-		Host: hostInfo,
-	}
+func BuildHostReportInitMessage(hostInfo *protocol.HostDescriptor) *protocol.PlatformMessage {
+	msg := BuildH2PDefaultMessage(hostInfo.HostID, hostInfo.Name)
+	msg.Control.Report = &protocol.ControlMessage_HostReportMessage{Host: hostInfo}
 	return msg
 }
 
-//func BuildReportMessage(newMsg, comeMsg *protocol.PlatformMessage, instanceList map[string]*protocol.PluginInstanceDescriptor, hostDesc *protocol.HostDescriptor) {
-//	swapMessageHeader(newMsg, comeMsg)
-//
-//	reportMsg := &protocol.ControlMessage_HostReportMessage{
-//		Host:         hostDesc,
-//		InstanceList: instanceList,
-//	}
-//	control := &protocol.ControlMessage{}
-//	control.Report = reportMsg
-//	newMsg.Control = control
-//}
-//
+func GetResourceInitMessage(source *protocol.PlatformMessage) *protocol.PlatformMessage {
+	message := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    source.Header.SeqNo,
+			Source:   source.Header.Distinct,
+			Distinct: source.Header.Source,
+		},
+		Resource: &protocol.ResourceMessage{
+			Sender: source.Resource.Sender,
+			Host:   source.Resource.Host,
+		},
+	}
+	return message
+}
+
+func BuildHostReportMessage(source *protocol.PlatformMessage, instances map[string]*protocol.PluginInstanceDescriptor,
+	hostDesc *protocol.HostDescriptor,
+) *protocol.PlatformMessage {
+	resp := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    source.Header.SeqNo,
+			Source:   source.Header.Distinct,
+			Distinct: source.Header.Source,
+		},
+		Control: &protocol.ControlMessage{
+			Report: &protocol.ControlMessage_HostReportMessage{
+				Host:         hostDesc,
+				InstanceList: instances,
+			},
+		},
+	}
+	return resp
+}
+
+func BuildLifeCycleResponseMessage(source *protocol.PlatformMessage) *protocol.PlatformMessage {
+	resp := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    source.Header.SeqNo,
+			Source:   source.Header.Distinct,
+			Distinct: source.Header.Source,
+		},
+		Control: &protocol.ControlMessage{
+			LifeCycleResponse: &protocol.ControlMessage_PluginLifeCycleResponseMessage{
+				Host:     source.Control.LifeCycleRequest.Host,
+				Instance: source.Control.LifeCycleRequest.Instance,
+				Result:   true, // 这个值后面可能会被修改
+				Error:    nil,  // 这个值后面可能会被修改
+			},
+		},
+	}
+	return resp
+}
+
+func BuildPlatform2HostHeartbeatMessage(hostID, hostName string) *protocol.PlatformMessage {
+	msg := BuildP2HDefaultMessage(hostID, hostName)
+	msg.Control = &protocol.ControlMessage{Heartbeat: math.CreateCaptcha()}
+	return msg
+}

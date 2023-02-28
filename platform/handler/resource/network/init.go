@@ -53,6 +53,7 @@ func (n *Network) Execute() {
 		HttpReq = n.mapper.Map(HttpReq, sender)
 	}
 
+	sender = n.source.GetResource().GetSender() // 再获取一次,防止被mapper修改
 	method := strings.ToUpper(HttpReq.GetMethod())
 	url := HttpReq.GetUrl()
 	data := HttpReq.GetBody()
@@ -67,7 +68,6 @@ func (n *Network) Execute() {
 
 	if !n.outdoor {
 		url = fmt.Sprintf("%s%s", config.StringOrPanic("main_system.addr"), url)
-
 		// 给插件的请求打上标记
 		val := fmt.Sprintf("plugin:%s.%s", appUUID, instanceID)
 		reqHeaders[RolePluginHeader] = append(reqHeaders[RolePluginHeader], val)
@@ -96,7 +96,7 @@ func (n *Network) buildMsg(status int64, body []byte, headers map[string]*protoc
 			common_type.CallMainSystemAPIFailureError.Error())
 		msg.Error = message_utils.BuildErrorMessage(e)
 	}
-	message_utils.BuildResourceNetworkMessage(n.distinct, msg)
+	n.distinct.Resource.Http = &protocol.HttpResourceMessage{ResourceHttpResponse: msg}
 }
 
 func Request(method, url string, data []byte, headers map[string][]string) (*http.Response, error) {

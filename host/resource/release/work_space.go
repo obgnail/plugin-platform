@@ -19,7 +19,7 @@ func NewSpace(plugin common_type.IPlugin, sender common.Sender) common_type.Work
 }
 
 func (s *Space) buildMessage(ioRequest *protocol.WorkspaceMessage_IORequestMessage) *protocol.PlatformMessage {
-	msg := message_utils.BuildHostToPlatFormMessageWithHeader()
+	msg := message_utils.GetInitMessage(nil, nil)
 	msg.Resource = &protocol.ResourceMessage{
 		Workspace: &protocol.WorkspaceMessage{IORequest: ioRequest},
 	}

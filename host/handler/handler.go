@@ -5,6 +5,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/connect"
 	"github.com/obgnail/plugin-platform/common/log"
+	"github.com/obgnail/plugin-platform/common/math"
 	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/host/resource/common"
@@ -12,8 +13,7 @@ import (
 	"time"
 )
 
-// TODO
-var defaultTimeout = 30 * time.Second
+var Timeout = time.Duration(config.Int("host.timeout_sec", 30)) * time.Second
 
 var _ common.Sender = (*HostHandler)(nil)
 var _ connect.FurtherHandler = (*HostHandler)(nil)
@@ -65,7 +65,7 @@ func (h *HostHandler) GetDescriptor() *protocol.HostDescriptor {
 // InitReport 向platform报告，启动消息循环，等待control指令与其他消息
 func (h *HostHandler) InitReport() {
 	time.Sleep(time.Second * 1)
-	msg := message_utils.BuildReportInitMessage(h.descriptor)
+	msg := message_utils.BuildHostReportInitMessage(h.descriptor)
 	if err := h.SendOnly(msg); err != nil {
 		log.ErrorDetails(err)
 	}
@@ -93,34 +93,22 @@ func (h *HostHandler) OnError(err common_type.PluginError) {
 	h.InitReport()
 }
 
-func (h *HostHandler) OnKill(message *protocol.PlatformMessage) {
+func (h *HostHandler) OnKill(msg *protocol.PlatformMessage) {
 	log.Info("kill handler")
 	os.Exit(1)
 }
 
 func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
-	resp := &protocol.PlatformMessage{
-		Header: &protocol.RouterMessage{
-			SeqNo:    msg.Header.SeqNo,
-			Source:   msg.Header.Distinct,
-			Distinct: msg.Header.Source,
-		},
-		Control: &protocol.ControlMessage{
-			LifeCycleResponse: &protocol.ControlMessage_PluginLifeCycleResponseMessage{
-				Host:     msg.Control.LifeCycleRequest.Host,
-				Instance: msg.Control.LifeCycleRequest.Instance,
-				Result:   true, // 这个值后面可能会被setLifeCycleRespError()修改
-				Error:    nil,  // 这个值后面可能会被setLifeCycleRespError()修改
-			},
-		},
-	}
+	appID := msg.Control.LifeCycleRequest.Instance.Application.ApplicationID
+	appVer := msg.Control.LifeCycleRequest.Instance.Application.ApplicationVersion
+	log.Info("【GET】message.HostReport. GetSeqNo: %d. appID: %s(%s)", msg.GetHeader().GetSeqNo(), appID, appVer)
+
+	resp := message_utils.BuildLifeCycleResponseMessage(msg)
 
 	// 发送响应数据
 	defer func() {
-		if err := h.conn.SendOnly(resp); err != nil {
-			log.Error("appId: %s appVersion: %s hh.SendMessage err: %s",
-				msg.Control.LifeCycleRequest.Instance.Application.ApplicationID,
-				msg.Control.LifeCycleRequest.Instance.Application.ApplicationVersion, err.Error())
+		if err := h.SendOnly(resp); err != nil {
+			log.Error("appId: %s appVersion: %s hh.SendMessage err: %s", appID, appVer, err.Error())
 		}
 	}()
 
@@ -129,16 +117,16 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 	oldVersion := msg.Control.LifeCycleRequest.OldVersion
 	app := instance.Application
 
-	instanceDesc := &MockInstanceDesc{
-		instanceID: instance.InstanceID,
-		pluginDescriptor: &MockPluginDescriptor{
-			appID:     app.ApplicationID,
-			name:      app.Name,
-			lang:      app.Language,
-			langVer:   message_utils.VersionPb2String(app.LanguageVersion),
-			appVer:    message_utils.VersionPb2String(app.ApplicationVersion),
-			hostVer:   message_utils.VersionPb2String(app.HostVersion),
-			minSysVer: message_utils.VersionPb2String(app.MinSystemVersion),
+	instanceDesc := &common_type.MockInstanceDesc{
+		PluginInstanceID: instance.InstanceID,
+		PluginDescriptor: &common_type.MockPluginDescriptor{
+			AppID:      app.ApplicationID,
+			PluginName: app.Name,
+			Lang:       app.Language,
+			LangVer:    message_utils.VersionPb2String(app.LanguageVersion),
+			AppVer:     message_utils.VersionPb2String(app.ApplicationVersion),
+			HostVer:    message_utils.VersionPb2String(app.HostVersion),
+			MinSysVer:  message_utils.VersionPb2String(app.MinSystemVersion),
 		},
 	}
 
@@ -207,7 +195,7 @@ func (h *HostHandler) doAction(
 	return err
 }
 
-func (h *HostHandler) mountPlugin(instanceDesc *MockInstanceDesc) (common_type.IPlugin, common_type.PluginError) {
+func (h *HostHandler) mountPlugin(instanceDesc *common_type.MockInstanceDesc) (common_type.IPlugin, common_type.PluginError) {
 	_plugin, _, _ := h.instancePool.GetPlugin(instanceDesc.InstanceID())
 
 	setupPlugin, err := h.mounter.Mount(_plugin, instanceDesc)
@@ -215,7 +203,7 @@ func (h *HostHandler) mountPlugin(instanceDesc *MockInstanceDesc) (common_type.I
 		return nil, err
 	}
 
-	h.instancePool.Add(instanceDesc.instanceID, setupPlugin) // 此插件已经成功挂载
+	h.instancePool.Add(instanceDesc.PluginInstanceID, setupPlugin) // 此插件已经成功挂载
 	return setupPlugin, nil
 }
 
@@ -265,55 +253,87 @@ func (h *HostHandler) getLifeCycleRequest() common_type.LifeCycleRequest {
 	return req
 }
 
+func (h *HostHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
+	var instances = make(map[string]*protocol.PluginInstanceDescriptor)
+	for _, v := range h.instancePool.ListInstances() {
+		instance := message_utils.BuildInstanceDescriptor(v, h.descriptor.HostID)
+		instances[v.InstanceID()] = instance
+	}
+
+	toPlatform := message_utils.BuildHostReportMessage(msg, instances, h.descriptor)
+	if err := h.SendOnly(toPlatform); err != nil {
+		log.ErrorDetails(err)
+	}
+}
+
 func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
 	if err != nil {
 		log.ErrorDetails(err)
 		return
 	}
+	h.OnControlMessage(endpoint, msg)
+	h.OnResourceMessage(endpoint, msg)
+}
 
+func (h *HostHandler) OnControlMessage(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage) {
 	control := msg.GetControl()
-	if control != nil {
-		// 插件的生命周期管理
-		if control.GetLifeCycleRequest() != nil {
-			h.OnLifeCycle(msg)
-		}
-		// kill 自己
-		if control.GetKill() != nil {
-			h.OnKill(msg)
-		}
+	if control == nil {
+		return
 	}
 
-	// 资源请求的应答
-	if msg.GetResource() != nil {
-		log.Info("%+v", msg)
+	// 处理HB消息 - 返回应答
+	if control.Heartbeat > 0 {
+		h.OnHeartbeat(msg)
 	}
+
+	// 插件的生命周期管理
+	if control.GetLifeCycleRequest() != nil {
+		h.OnLifeCycle(msg)
+	}
+	// kill 自己
+	if control.GetKill() != nil {
+		h.OnKill(msg)
+	}
+}
+
+func (h *HostHandler) OnResourceMessage(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage) {
+	// 资源请求的应答
+	resource := msg.GetResource()
+	if resource == nil {
+		return
+	}
+	log.Info("%+v", msg)
 }
 
 func (h *HostHandler) Send(sender common_type.IPlugin, msg *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
 	h.fillMsg(sender, msg)
-	result, err := h.conn.Send(msg, defaultTimeout)
+	result, err := h.conn.Send(msg, Timeout)
 	return result, err
 }
 
 func (h *HostHandler) SendAsync(sender common_type.IPlugin, msg *protocol.PlatformMessage, callback connect.CallBack) {
 	h.fillMsg(sender, msg)
-	h.conn.SendAsync(msg, defaultTimeout, callback)
+	h.conn.SendAsync(msg, Timeout, callback)
 }
 
 func (h *HostHandler) SendOnly(msg *protocol.PlatformMessage) (err common_type.PluginError) {
+	h.fillMsg(nil, msg)
 	return h.conn.SendOnly(msg)
 }
 
 // fillMsg 添加路由信息
 func (h *HostHandler) fillMsg(sender common_type.IPlugin, msg *protocol.PlatformMessage) {
-	if msg.GetResource() != nil {
-		msg.Resource.Sender = message_utils.BuildInstanceDescriptor(sender, h.descriptor.HostID)
+	if msg == nil {
+		msg = message_utils.GetInitMessage(nil, nil)
+	}
+	msg.Header.Source = message_utils.GetHostInfo(h.descriptor.HostID, h.descriptor.Name)
+	msg.Header.Distinct = message_utils.GetPlatformInfo()
+	if msg.Header.SeqNo == 0 {
+		msg.Header.SeqNo = math.CreateCaptcha()
+	}
+	if msg.Resource != nil && sender != nil {
+		msg.Resource.Sender = message_utils.BuildInstanceDescriptor(sender.GetPluginDescription(), h.descriptor.HostID)
 		msg.Resource.Host = h.descriptor
-		////补全日志信息
-		//if msg.GetResource().GetLog() != nil {
-		//	msg.Resource.Log.PluginInstanceDescriptor = pluginInstanceDescriptor
-		//	msg.Resource.Log.HostDescriptor = hh.hostDescriptor
-		//}
 	}
 }
 

@@ -1,10 +1,7 @@
 package log
 
 import (
-	"fmt"
-	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/errors"
-	"github.com/obgnail/plugin-platform/common/file_utils"
 	commonLog "github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"io"
@@ -15,16 +12,9 @@ type Logger struct {
 	*commonLog.Logger
 }
 
-func NewLogger(appID, instanceID string) (*Logger, error) {
+func NewLogger(file string) (*Logger, error) {
 	sep := "/github.com"
 	pathPrefix := "/github.com/obgnail/plugin-platform"
-
-	dirPath := config.StringOrPanic("platform.plugin_log_dir")
-	dirPath = file_utils.JoinPath(dirPath, appID)
-	if err := os.MkdirAll(dirPath, 0640); err != nil {
-		return nil, errors.Trace(err)
-	}
-	file := file_utils.JoinPath(dirPath, fmt.Sprintf("%s.log", instanceID))
 	logFile, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0640)
 	if err != nil {
 		return nil, errors.Trace(err)

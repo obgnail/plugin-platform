@@ -20,7 +20,7 @@ func NewLogger(plugin common_type.IPlugin, sender common.Sender) *Logger {
 }
 
 func (l *Logger) buildMessage(logMsg *protocol.LogMessage) *protocol.PlatformMessage {
-	msg := message_utils.BuildHostToPlatFormMessageWithHeader()
+	msg := message_utils.GetInitMessage(nil, nil)
 	msg.Resource = &protocol.ResourceMessage{
 		Log: logMsg,
 	}

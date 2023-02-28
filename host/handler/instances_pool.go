@@ -6,7 +6,7 @@ import (
 )
 
 type InstancePool struct {
-	plugins sync.Map // map[instanceID]common_type.IPlugin
+	mounted sync.Map // 已经挂载了的插件 map[instanceID]common_type.IPlugin
 	running sync.Map // 在业务上host运行的插件 map[instanceID]common_type.IInstanceDescription
 }
 
@@ -21,7 +21,7 @@ func (pool *InstancePool) ListInstances() []common_type.IInstanceDescription {
 }
 
 func (pool *InstancePool) Add(instanceID string, plugin common_type.IPlugin) {
-	pool.plugins.Store(instanceID, plugin)
+	pool.mounted.Store(instanceID, plugin)
 }
 
 func (pool *InstancePool) StartInstance(target common_type.IInstanceDescription) {
@@ -34,7 +34,7 @@ func (pool *InstancePool) StopInstance(instanceID string) {
 }
 
 func (pool *InstancePool) DeleteInstance(instanceID string) {
-	pool.plugins.Delete(instanceID)
+	pool.mounted.Delete(instanceID)
 	pool.running.Delete(instanceID)
 }
 
@@ -46,7 +46,7 @@ func (pool *InstancePool) GetInstance(instanceID string) bool {
 }
 
 func (pool *InstancePool) GetPlugin(instanceID string) (plugin common_type.IPlugin, pluginDesc common_type.IInstanceDescription, exist bool) {
-	val1, ok1 := pool.plugins.Load(instanceID)
+	val1, ok1 := pool.mounted.Load(instanceID)
 	val2, ok2 := pool.running.Load(instanceID)
 
 	if !(ok1 && ok2) {

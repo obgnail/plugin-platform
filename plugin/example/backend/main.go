@@ -16,6 +16,7 @@ type mockPlugin struct {
 func GetPlugin() common_type.IPlugin {
 	return &mockPlugin{}
 }
+
 func (p *mockPlugin) GetPluginDescription() common_type.IInstanceDescription {
 	return p.descriptor
 }

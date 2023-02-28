@@ -1,9 +1,13 @@
 package log
 
 import (
+	"fmt"
+	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/errors"
+	"github.com/obgnail/plugin-platform/common/file_utils"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"os"
 )
 
 type Log struct {
@@ -24,11 +28,27 @@ func NewLog(sourceMessage *protocol.PlatformMessage, distinctMessage *protocol.P
 }
 
 func (l *Log) Execute() {
-	logger, err := NewLogger(l.appID, l.instanceID)
+	path, err := l.getPath()
+	if err != nil {
+		log.ErrorDetails(errors.Trace(err))
+		return
+	}
+
+	logger, err := NewLogger(path)
 	if err != nil {
 		log.ErrorDetails(errors.Trace(err))
 		return
 	}
 	logMsg := l.Source.GetResource().GetLog()
 	logger.Log(logMsg)
+}
+
+func (l *Log) getPath() (string, error) {
+	dirPath := config.StringOrPanic("platform.plugin_log_dir")
+	dirPath = file_utils.JoinPath(dirPath, l.appID)
+	if err := os.MkdirAll(dirPath, 0640); err != nil {
+		return "", errors.Trace(err)
+	}
+	file := file_utils.JoinPath(dirPath, fmt.Sprintf("%s.log", l.instanceID))
+	return file, nil
 }

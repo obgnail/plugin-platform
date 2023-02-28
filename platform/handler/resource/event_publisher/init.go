@@ -75,5 +75,5 @@ func (e *Event) buildMsg(err error) {
 		e := common_type.NewPluginError(common_type.NotifyEventFailure, err.Error(), common_type.NotifyEventError.Error())
 		msg.Error = message_utils.BuildErrorMessage(e)
 	}
-	message_utils.BuildResourceEventMessage(e.distinct, msg)
+	e.distinct.Resource.Event = msg
 }

@@ -73,7 +73,7 @@ func (r *Resource) GetOutDoor() common_type.Network {
 
 func (r *Resource) GetAbility() common_type.Ability {
 	if r.ability == nil {
-		r.ability = release.NewAbility(r.Plugin)
+		r.ability = release.NewAbility(r.Plugin, r.Sender)
 	}
 	return r.ability
 }

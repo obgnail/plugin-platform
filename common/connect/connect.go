@@ -66,8 +66,9 @@ func (p *ZmqEndpoint) Close() error {
 	p.cancel()
 	if p.socket != nil {
 		if err := p.socket.Close(); err != nil {
-			log.ErrorDetails(err)
-			return errors.Trace(err)
+			e := errors.Trace(err)
+			log.ErrorDetails(e)
+			return errors.Trace(e)
 		}
 	}
 	p.socket = nil
@@ -180,7 +181,7 @@ func (p *ZmqEndpoint) startReceiver() {
 		default:
 			raw, err := p.socket.Recv()
 			if err != nil {
-				log.ErrorDetails(err)
+				log.ErrorDetails(errors.Trace(err))
 				p.handler.OnError(common_type.NewPluginError(common_type.EndpointReceiveErr,
 					common_type.EndpointReceiveError.Error(), err.Error()))
 				continue
@@ -190,7 +191,7 @@ func (p *ZmqEndpoint) startReceiver() {
 
 			source, _, processData, err := p.packer.Unpack(rawData)
 			if err != nil {
-				log.ErrorDetails(err)
+				log.ErrorDetails(errors.Trace(err))
 				p.handler.OnError(common_type.NewPluginError(common_type.EndpointIdentifyErr,
 					common_type.EndpointIdentifyError.Error(), err.Error()))
 				continue
@@ -211,7 +212,7 @@ func (p *ZmqEndpoint) startSender() {
 			content := zmq4.NewMsgFrom([]byte(msg.endpointID), msg.data)
 			err := p.socket.Send(content)
 			if err != nil {
-				log.ErrorDetails(err)
+				log.ErrorDetails(errors.Trace(err))
 				p.handler.OnError(common_type.NewPluginError(common_type.EndpointSendErr,
 					common_type.EndpointSendError.Error(), err.Error()))
 				continue

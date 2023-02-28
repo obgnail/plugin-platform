@@ -80,5 +80,5 @@ func (d *DataBase) buildMsg(data *protocol.TableMessage, err common_type.PluginE
 		Data:    data,
 		DBError: message_utils.BuildErrorMessage(err),
 	}
-	message_utils.BuildResourceDbMessage(d.Distinct, resp)
+	d.Distinct.Resource.Database = &protocol.DatabaseMessage{DBResponse: resp}
 }

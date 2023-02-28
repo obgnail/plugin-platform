@@ -19,6 +19,12 @@ func main() {
 
 	log.Info("PlatformHandler OK")
 
+	go func() {
+		time.Sleep(13 * time.Second)
+		log.Info("StartPlugin...")
+		h.StartPlugin("InstanceID123")
+	}()
+
 	time.Sleep(time.Hour)
 }
 

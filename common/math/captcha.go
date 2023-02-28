@@ -3,6 +3,7 @@ package math
 import (
 	crand "crypto/rand"
 	"encoding/binary"
+	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"math/rand"
 )
@@ -25,7 +26,7 @@ func (s cryptoSource) Int63() int64 {
 func (s cryptoSource) Uint64() (v uint64) {
 	err := binary.Read(crand.Reader, binary.BigEndian, &v)
 	if err != nil {
-		log.ErrorDetails(err)
+		log.ErrorDetails(errors.Trace(err))
 	}
 	return v
 }

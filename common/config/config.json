@@ -29,6 +29,7 @@
     "log_path": "/d/golang/src/github.com/obgnail/plugin-platform/common/storage_files/plugin_platform.log",
     "log_level": "debug",
     "timeout_sec": 30,
+    "heartbeat_sec": 5,
     "debug_mode": true
   },
   "host": {

@@ -81,5 +81,5 @@ func (w *WorkSpace) Execute() {
 		Data:      fileByte,
 		FileTree:  fileTree,
 	}
-	message_utils.BuildResourceFileMessage(w.distinct, ioResponseMessage)
+	w.distinct.Resource.Workspace = &protocol.WorkspaceMessage{IOResponse: ioResponseMessage}
 }

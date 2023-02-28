@@ -19,7 +19,7 @@ func NewEvent(plugin common_type.IPlugin, sender common.Sender) common_type.Even
 }
 
 func (event *EventPublisher) buildMessage(eventMsg *protocol.EventMessage) *protocol.PlatformMessage {
-	msg := message_utils.BuildHostToPlatFormMessageWithHeader()
+	msg := message_utils.GetInitMessage(nil, nil)
 	msg.Resource = &protocol.ResourceMessage{Event: eventMsg}
 	return msg
 }
