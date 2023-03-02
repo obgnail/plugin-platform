@@ -1,4 +1,4 @@
-package host
+package handler
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
@@ -7,32 +7,36 @@ import (
 	"sync"
 )
 
-type Pool struct {
+type HostPool struct {
 	alive sync.Map // 在业务上运行的host map[hostID]common_type.IHost
 }
 
-func NewPool() *Pool {
-	return &Pool{}
+func NewHostPool() *HostPool {
+	return &HostPool{}
 }
 
-func (pool *Pool) Add(host common_type.IHost) {
+func (pool *HostPool) Add(host common_type.IHost) {
 	id := host.GetInfo().ID
 	pool.alive.Store(id, host)
 }
 
-func (pool *Pool) Delete(host common_type.IHost) {
+func (pool *HostPool) Delete(host common_type.IHost) {
 	id := host.GetInfo().ID
 	pool.alive.Delete(id)
 }
 
-func (pool *Pool) Exist(hostID string) bool {
-	if _, ok := pool.alive.Load(hostID); ok {
-		return true
-	}
-	return false
+func (pool *HostPool) DeleteByID(id string) {
+	pool.alive.Delete(id)
 }
 
-func (pool *Pool) GetAll() []common_type.IHost {
+func (pool *HostPool) Exist(hostID string) (common_type.IHost, bool) {
+	if host, ok := pool.alive.Load(hostID); ok {
+		return host.(common_type.IHost), true
+	}
+	return nil, false
+}
+
+func (pool *HostPool) GetAll() []common_type.IHost {
 	var result []common_type.IHost
 	pool.alive.Range(func(key, value any) bool {
 		result = append(result, value.(common_type.IHost))
@@ -41,7 +45,7 @@ func (pool *Pool) GetAll() []common_type.IHost {
 	return result
 }
 
-func (pool *Pool) Range(f func(hostID string, host common_type.IHost) bool) {
+func (pool *HostPool) Range(f func(hostID string, host common_type.IHost) bool) {
 	pool.alive.Range(func(key, value any) bool {
 		return f(key.(string), value.(common_type.IHost))
 	})

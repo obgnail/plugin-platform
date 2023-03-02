@@ -18,6 +18,12 @@ message HostDescriptor{
   Version LanguageVersion = 6;
 }
 
+message HostBootDescriptor{
+  string BootID = 1;
+  string Name = 2;
+  Version BootVersion = 3;
+}
+
 message PluginDescriptor{
   string ApplicationID = 1;
   string Name = 2;

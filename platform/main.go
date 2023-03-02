@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/log"
-	"github.com/obgnail/plugin-platform/platform/handler"
+	"github.com/obgnail/plugin-platform/platform/handler/handler"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/model/redis"
 	"github.com/obgnail/plugin-platform/platform/pool/plugin_pool"
@@ -20,9 +20,10 @@ func main() {
 	log.Info("PlatformHandler OK")
 
 	go func() {
-		time.Sleep(13 * time.Second)
-		log.Info("StartPlugin...")
-		h.StartPlugin("InstanceID123")
+		time.Sleep(15 * time.Second)
+		log.Info("InstallPlugin...")
+		h.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+			"golang", "1.14.0", "1.0.0")
 	}()
 
 	time.Sleep(time.Hour)

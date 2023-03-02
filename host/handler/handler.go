@@ -39,6 +39,8 @@ func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, i
 		},
 	}
 
+	log.Info("new host: %+v", handler.descriptor)
+
 	zmq := connect.NewZmq(id, name, addr, connect.SocketTypeDealer, connect.RoleHost).SetPacker(&connect.ProtoPacker{})
 	handler.conn = connect.NewBaseHandler(zmq, handler)
 	handler.mounter = NewMounter(handler, isLocal)
@@ -64,7 +66,6 @@ func (h *HostHandler) GetDescriptor() *protocol.HostDescriptor {
 
 // InitReport 向platform报告，启动消息循环，等待control指令与其他消息
 func (h *HostHandler) InitReport() {
-	time.Sleep(time.Second * 1)
 	msg := message_utils.BuildHostReportInitMessage(h.descriptor)
 	if err := h.SendOnly(msg); err != nil {
 		log.ErrorDetails(err)
@@ -341,6 +342,9 @@ func (h *HostHandler) Run() common_type.PluginError {
 	if err := h.conn.Connect(); err != nil {
 		return err
 	}
-	h.InitReport()
+	go func() {
+		time.Sleep(time.Second * 1)
+		h.InitReport()
+	}()
 	return nil
 }

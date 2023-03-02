@@ -87,3 +87,16 @@ func (h *MockHost) GetStatus() HostStatus {
 //func (h *MockHost) KillPlugin(instanceUUID string) {
 //	return
 //}
+
+type MockHostBoot struct {
+	Info   HostBootInfo
+	Status HostBootStatus
+}
+
+func (b *MockHostBoot) GetInfo() HostBootInfo {
+	return b.Info
+}
+
+func (b *MockHostBoot) GetStatus() HostBootStatus {
+	return b.Status
+}

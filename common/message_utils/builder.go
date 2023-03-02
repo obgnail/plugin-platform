@@ -25,6 +25,17 @@ func GetInitMessage(source, distinct *protocol.RouterNode) *protocol.PlatformMes
 	return message
 }
 
+func GetHostBootInfo(bootID, bootName string) *protocol.RouterNode {
+	return &protocol.RouterNode{
+		ID: bootID,
+		Tags: map[string]string{
+			"role": connect.RoleHostBoot,
+			"id":   bootID,
+			"name": bootName,
+		},
+	}
+}
+
 func GetHostInfo(hostID, hostName string) *protocol.RouterNode {
 	return &protocol.RouterNode{
 		ID: hostID,
@@ -47,7 +58,7 @@ func GetPlatformInfo() *protocol.RouterNode {
 	}
 }
 
-// host -> platform
+// platform -> host
 func BuildP2HDefaultMessage(hostID, hostName string) *protocol.PlatformMessage {
 	p := GetPlatformInfo()
 	h := GetHostInfo(hostID, hostName)
@@ -55,11 +66,27 @@ func BuildP2HDefaultMessage(hostID, hostName string) *protocol.PlatformMessage {
 	return msg
 }
 
-// platform -> host
+// host -> platform
 func BuildH2PDefaultMessage(hostID, hostName string) *protocol.PlatformMessage {
 	p := GetPlatformInfo()
 	h := GetHostInfo(hostID, hostName)
 	msg := GetInitMessage(h, p)
+	return msg
+}
+
+// platform -> boot
+func BuildP2BDefaultMessage(bootID, bootName string) *protocol.PlatformMessage {
+	p := GetPlatformInfo()
+	b := GetHostBootInfo(bootID, bootName)
+	msg := GetInitMessage(p, b)
+	return msg
+}
+
+// boot -> platform
+func BuildB2PDefaultMessage(bootID, bootName string) *protocol.PlatformMessage {
+	p := GetPlatformInfo()
+	b := GetHostBootInfo(bootID, bootName)
+	msg := GetInitMessage(b, p)
 	return msg
 }
 
@@ -103,7 +130,13 @@ func BuildInstanceDescriptor(description common_type.IInstanceDescription, hostI
 
 func BuildHostReportInitMessage(hostInfo *protocol.HostDescriptor) *protocol.PlatformMessage {
 	msg := BuildH2PDefaultMessage(hostInfo.HostID, hostInfo.Name)
-	msg.Control.Report = &protocol.ControlMessage_HostReportMessage{Host: hostInfo}
+	msg.Control.HostReport = &protocol.ControlMessage_HostReportMessage{Host: hostInfo}
+	return msg
+}
+
+func BuildHostBootReportInitMessage(bootInfo *protocol.HostBootDescriptor) *protocol.PlatformMessage {
+	msg := BuildB2PDefaultMessage(bootInfo.BootID, bootInfo.Name)
+	msg.Control.BootReport = &protocol.ControlMessage_HostBootReportMessage{Boot: bootInfo}
 	return msg
 }
 
@@ -132,7 +165,7 @@ func BuildHostReportMessage(source *protocol.PlatformMessage, instances map[stri
 			Distinct: source.Header.Source,
 		},
 		Control: &protocol.ControlMessage{
-			Report: &protocol.ControlMessage_HostReportMessage{
+			HostReport: &protocol.ControlMessage_HostReportMessage{
 				Host:         hostDesc,
 				InstanceList: instances,
 			},
@@ -160,8 +193,14 @@ func BuildLifeCycleResponseMessage(source *protocol.PlatformMessage) *protocol.P
 	return resp
 }
 
-func BuildPlatform2HostHeartbeatMessage(hostID, hostName string) *protocol.PlatformMessage {
+func BuildP2HHeartbeatMessage(hostID, hostName string) *protocol.PlatformMessage {
 	msg := BuildP2HDefaultMessage(hostID, hostName)
+	msg.Control = &protocol.ControlMessage{Heartbeat: math.CreateCaptcha()}
+	return msg
+}
+
+func BuildP2BHeartbeatMessage(bootID, bootName string) *protocol.PlatformMessage {
+	msg := BuildP2BDefaultMessage(bootID, bootName)
 	msg.Control = &protocol.ControlMessage{Heartbeat: math.CreateCaptcha()}
 	return msg
 }

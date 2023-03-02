@@ -19,6 +19,14 @@ message ControlMessage{
     map<string, PluginInstanceDescriptor> InstanceList = 21;
   }
 
+  message HostBootReportMessage{
+    HostBootDescriptor Boot = 1;
+
+    // 从HostBoot传递过来的错误报告
+    repeated ErrorMessage ErrorReport = 2;
+    repeated LogMessage Log = 3;
+  }
+
   message SupportCheckRequestMessage{
     // 请求体
     string ApplicationID = 1;
@@ -65,6 +73,12 @@ message ControlMessage{
     ErrorMessage Error = 5;
   }
 
+  message StartHostMessage {
+    HostDescriptor Host = 1;
+    bool Result = 2;
+    ErrorMessage Error = 3;
+  }
+
   message KillPluginHostMessage{
     bool Kill = 1;
   }
@@ -76,17 +90,20 @@ message ControlMessage{
   // 发起的心跳消息
   uint64 Heartbeat = 10;
 
-  // 干掉host
-  KillPluginHostMessage Kill = 12;
-  // 干掉插件
-  KillPluginMessage killPlugin = 13;
-
   // 从Host传递过来的报告
-  HostReportMessage Report = 11;
+  HostReportMessage HostReport = 11;
+  HostBootReportMessage BootReport = 12;
 
-  SupportCheckRequestMessage CheckPlugin = 21;
-  SupportCheckResponseMessage CheckPluginResult = 22;
+  // 干掉host
+  KillPluginHostMessage Kill = 13;
+  // 干掉插件
+  KillPluginMessage killPlugin = 14;
 
-  PluginLifeCycleRequestMessage LifeCycleRequest = 31;
-  PluginLifeCycleResponseMessage LifeCycleResponse = 32;
+  SupportCheckRequestMessage CheckPlugin = 15;
+  SupportCheckResponseMessage CheckPluginResult = 16;
+
+  PluginLifeCycleRequestMessage LifeCycleRequest = 17;
+  PluginLifeCycleResponseMessage LifeCycleResponse = 18;
+
+  StartHostMessage StartHost = 19;
 }

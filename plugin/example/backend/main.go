@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/common/log"
 )
 
 var _ common_type.IPlugin = (*mockPlugin)(nil)
@@ -55,7 +54,7 @@ func (p *mockPlugin) Enable(common_type.LifeCycleRequest) common_type.PluginErro
 func (p *mockPlugin) Disable(common_type.LifeCycleRequest) common_type.PluginError {
 	err := p.resource.GetWorkspace().CreateFile("mack_plugin_test.txt")
 	if err != nil {
-		log.ErrorDetails(err)
+		panic(err)
 	}
 	return nil
 }
@@ -63,7 +62,7 @@ func (p *mockPlugin) Disable(common_type.LifeCycleRequest) common_type.PluginErr
 func (p *mockPlugin) Start(common_type.LifeCycleRequest) common_type.PluginError {
 	err := p.resource.GetWorkspace().WriteBytes("mack_plugin_test.txt", []byte("1234567654321"))
 	if err != nil {
-		log.ErrorDetails(err)
+		panic(err)
 	}
 	return nil
 }
