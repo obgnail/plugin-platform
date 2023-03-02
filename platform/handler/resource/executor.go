@@ -1,8 +1,8 @@
 package resource
 
 import (
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/ability"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/db"
 	"github.com/obgnail/plugin-platform/platform/handler/resource/event_publisher"
@@ -19,7 +19,7 @@ type Executor struct {
 func NewExecutor(request *protocol.PlatformMessage) *Executor {
 	resource := &Executor{
 		Request:  request,
-		Response: message_utils.GetResourceInitMessage(request),
+		Response: message.GetResourceInitMessage(request),
 	}
 	return resource
 }

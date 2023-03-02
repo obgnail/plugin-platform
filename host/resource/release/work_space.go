@@ -2,8 +2,8 @@ package release
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	"github.com/obgnail/plugin-platform/host/resource/common"
 )
 
@@ -19,7 +19,7 @@ func NewSpace(plugin common_type.IPlugin, sender common.Sender) common_type.Work
 }
 
 func (s *Space) buildMessage(ioRequest *protocol.WorkspaceMessage_IORequestMessage) *protocol.PlatformMessage {
-	msg := message_utils.GetInitMessage(nil, nil)
+	msg := message.GetInitMessage(nil, nil)
 	msg.Resource = &protocol.ResourceMessage{
 		Workspace: &protocol.WorkspaceMessage{IORequest: ioRequest},
 	}

@@ -3,8 +3,8 @@ package ability
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/log"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	"io/ioutil"
 	"net/http"
 )
@@ -58,7 +58,7 @@ func (a *Ability) buildMsg(content []byte, err error) {
 		log.ErrorDetails(err)
 		e := common_type.NewPluginError(common_type.CallAbilityFailure, err.Error(),
 			common_type.CallAbilityError.Error())
-		msg.Error = message_utils.BuildErrorMessage(e)
+		msg.Error = message.BuildErrorMessage(e)
 	}
 	a.distinct.Resource.Ability = msg
 }

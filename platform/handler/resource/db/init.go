@@ -3,8 +3,8 @@ package db
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/config"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 )
 
 type DataBase struct {
@@ -22,7 +22,7 @@ type DataBase struct {
 func NewDataBase(sourceMessage *protocol.PlatformMessage, distinctMessage *protocol.PlatformMessage) *DataBase {
 	dataBaseReqMsg := sourceMessage.GetResource().GetDatabase().GetDBRequest()
 
-	isLocalDB := message_utils.IsLocalDB(dataBaseReqMsg.GetDB())
+	isLocalDB := message.IsLocalDB(dataBaseReqMsg.GetDB())
 	db := dataBaseReqMsg.GetDB()
 	if isLocalDB {
 		db = config.String("platform.mysql_user_plugin_db_name", "plugins")
@@ -68,7 +68,7 @@ func (d *DataBase) onSql() {
 }
 
 func (d *DataBase) importSql() {
-	version := message_utils.VersionPb2String(d.Source.GetResource().GetSender().GetApplication().GetApplicationVersion())
+	version := message.VersionPb2String(d.Source.GetResource().GetSender().GetApplication().GetApplicationVersion())
 	appId := d.Source.GetResource().GetSender().GetApplication().GetApplicationID()
 	db := GetDB(d.db)
 	err := db.ImportSql(d.importSqlPath, appId, version, d.instanceID)
@@ -78,7 +78,7 @@ func (d *DataBase) importSql() {
 func (d *DataBase) buildMsg(data *protocol.TableMessage, err common_type.PluginError) {
 	resp := &protocol.DatabaseMessage_DatabaseResponseMessage{
 		Data:    data,
-		DBError: message_utils.BuildErrorMessage(err),
+		DBError: message.BuildErrorMessage(err),
 	}
 	d.Distinct.Resource.Database = &protocol.DatabaseMessage{DBResponse: resp}
 }

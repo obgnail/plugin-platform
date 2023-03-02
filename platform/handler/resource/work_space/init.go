@@ -2,8 +2,8 @@ package work_space
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 )
 
 type WorkSpace struct {
@@ -75,7 +75,7 @@ func (w *WorkSpace) Execute() {
 	}
 
 	ioResponseMessage := &protocol.WorkspaceMessage_IOResponseMessage{
-		Error:     message_utils.BuildErrorMessage(err),
+		Error:     message.BuildErrorMessage(err),
 		Operation: IOReqMsg.GetOperation(),
 		Result:    ok,
 		Data:      fileByte,

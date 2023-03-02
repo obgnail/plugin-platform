@@ -9,9 +9,9 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/config"
-	"github.com/obgnail/plugin-platform/common/file_utils"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/file"
 	"github.com/obgnail/plugin-platform/platform/service/utils"
 	"io/ioutil"
 	"math"
@@ -187,9 +187,9 @@ func (d *DB) ImportSql(sqlFileName, appUUID, version, instanceUUID string) commo
 		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
 	}
 	pluginDir := utils.GetPluginDir(appUUID, version)
-	sqlFilePath := file_utils.JoinPath(pluginDir, sqlFileName)
+	sqlFilePath := file.JoinPath(pluginDir, sqlFileName)
 
-	if ok, err := file_utils.PathExists(sqlFilePath); !ok || err != nil {
+	if ok, err := file.PathExists(sqlFilePath); !ok || err != nil {
 		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
 	}
 	sqlFilePath = filepath.Clean(sqlFilePath)

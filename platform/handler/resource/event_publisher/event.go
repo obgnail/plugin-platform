@@ -3,7 +3,7 @@ package event_publisher
 import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/errors"
-	"github.com/obgnail/plugin-platform/common/math"
+	"github.com/obgnail/plugin-platform/common/utils/math"
 	"github.com/obgnail/plugin-platform/platform/model/redis"
 )
 

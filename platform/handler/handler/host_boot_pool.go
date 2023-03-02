@@ -2,8 +2,8 @@ package handler
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	"sync"
 )
 
@@ -66,7 +66,7 @@ func NewHostBoot(msg *protocol.ControlMessage_HostBootReportMessage, status comm
 		Info: common_type.HostBootInfo{
 			ID:      hostBoot.BootID,
 			Name:    hostBoot.Name,
-			Version: message_utils.VersionPb2String(hostBoot.BootVersion),
+			Version: message.VersionPb2String(hostBoot.BootVersion),
 		},
 		Status: status,
 	}

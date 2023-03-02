@@ -2,8 +2,8 @@ package release
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	"github.com/obgnail/plugin-platform/host/resource/common"
 )
 
@@ -31,7 +31,7 @@ func (c *CommonNetwork) sendToHostAsync(platformMessage *protocol.PlatformMessag
 }
 
 func (c *CommonNetwork) buildMessage(httpRequestMessage *protocol.HttpRequestMessage) *protocol.PlatformMessage {
-	msg := message_utils.GetInitMessage(nil, nil)
+	msg := message.GetInitMessage(nil, nil)
 	msg.Resource = &protocol.ResourceMessage{
 		Http: &protocol.HttpResourceMessage{
 			ResourceType:        c.Type,

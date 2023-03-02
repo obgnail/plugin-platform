@@ -8,7 +8,7 @@ import (
 	. "github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/errors"
-	"github.com/obgnail/plugin-platform/common/file_utils"
+	"github.com/obgnail/plugin-platform/common/utils/file"
 	"io"
 	"io/ioutil"
 	"os"
@@ -496,7 +496,7 @@ func GetFilePath(appID, instanceID, name string) (path string, err error) {
 		fileDirName := fileSlice[:len(fileSlice)-1]
 		pathPrefix = append(pathPrefix, fileDirName...)
 		dirPrefix := filepath.Join(pathPrefix...)
-		exist, err := file_utils.PathExists(dirPrefix)
+		exist, err := file.PathExists(dirPrefix)
 		if err != nil {
 			return "", errors.Trace(err)
 		}
@@ -506,7 +506,7 @@ func GetFilePath(appID, instanceID, name string) (path string, err error) {
 			}
 		}
 	} else {
-		exist, err := file_utils.PathExists(filepath.Join(pathPrefix...))
+		exist, err := file.PathExists(filepath.Join(pathPrefix...))
 		if err != nil {
 			return "", errors.Trace(err)
 		}

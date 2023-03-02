@@ -7,9 +7,9 @@ import (
 	"github.com/obgnail/plugin-platform/common/connect"
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
-	"github.com/obgnail/plugin-platform/common/math"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/math"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	"github.com/obgnail/plugin-platform/platform/handler/resource"
 	resourceLog "github.com/obgnail/plugin-platform/platform/handler/resource/log"
 	"time"
@@ -73,7 +73,7 @@ func (h *PlatformHandler) Heartbeat() {
 		hosts := h.hostPool.GetAll()
 		for _, _host := range hosts {
 			info := _host.GetInfo()
-			msg := message_utils.BuildP2HHeartbeatMessage(info.ID, info.Name)
+			msg := message.BuildP2HHeartbeatMessage(info.ID, info.Name)
 			h.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
 				if err == nil {
 					return
@@ -89,7 +89,7 @@ func (h *PlatformHandler) Heartbeat() {
 		boots := h.hostBootPool.GetAll()
 		for _, boot := range boots {
 			info := boot.GetInfo()
-			msg := message_utils.BuildP2BHeartbeatMessage(info.ID, info.Name)
+			msg := message.BuildP2BHeartbeatMessage(info.ID, info.Name)
 			h.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
 				if err == nil {
 					return
@@ -217,17 +217,17 @@ func (h *PlatformHandler) lifeCycleReq(action protocol.ControlMessage_PluginActi
 
 		info := host.GetInfo()
 
-		msg := message_utils.BuildP2HDefaultMessage(info.ID, info.Name)
+		msg := message.BuildP2HDefaultMessage(info.ID, info.Name)
 		msg.Control.LifeCycleRequest = &protocol.ControlMessage_PluginLifeCycleRequestMessage{
 			Instance: &protocol.PluginInstanceDescriptor{
 				Application: &protocol.PluginDescriptor{
 					ApplicationID:      appID,
 					Name:               name,
 					Language:           lang,
-					LanguageVersion:    message_utils.VersionString2Pb(langVer),
-					ApplicationVersion: message_utils.VersionString2Pb(appVer),
-					HostVersion:        message_utils.VersionString2Pb(info.Version),
-					MinSystemVersion:   message_utils.VersionString2Pb(info.MinSystemVersion),
+					LanguageVersion:    message.VersionString2Pb(langVer),
+					ApplicationVersion: message.VersionString2Pb(appVer),
+					HostVersion:        message.VersionString2Pb(info.Version),
+					MinSystemVersion:   message.VersionString2Pb(info.MinSystemVersion),
 				},
 				InstanceID: instanceID,
 			},
@@ -294,7 +294,7 @@ func (h *PlatformHandler) _createHost() common_type.IHost {
 	id := fmt.Sprintf("Host-%d", math.CreateCaptcha())
 	name := id
 
-	msg := message_utils.BuildP2BDefaultMessage(info.ID, info.Name)
+	msg := message.BuildP2BDefaultMessage(info.ID, info.Name)
 	msg.Control.StartHost = &protocol.ControlMessage_StartHostMessage{
 		Host: &protocol.HostDescriptor{HostID: id, Name: name},
 	}

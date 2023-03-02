@@ -2,8 +2,8 @@ package release
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	"github.com/obgnail/plugin-platform/host/resource/common"
 )
 
@@ -20,7 +20,7 @@ func NewLogger(plugin common_type.IPlugin, sender common.Sender) *Logger {
 }
 
 func (l *Logger) buildMessage(logMsg *protocol.LogMessage) *protocol.PlatformMessage {
-	msg := message_utils.GetInitMessage(nil, nil)
+	msg := message.GetInitMessage(nil, nil)
 	msg.Resource = &protocol.ResourceMessage{
 		Log: logMsg,
 	}

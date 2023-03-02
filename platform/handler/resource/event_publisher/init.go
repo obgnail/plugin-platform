@@ -4,8 +4,8 @@ import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 )
 
 type Event struct {
@@ -73,7 +73,7 @@ func (e *Event) buildMsg(err error) {
 	if err != nil {
 		log.ErrorDetails(err)
 		e := common_type.NewPluginError(common_type.NotifyEventFailure, err.Error(), common_type.NotifyEventError.Error())
-		msg.Error = message_utils.BuildErrorMessage(e)
+		msg.Error = message.BuildErrorMessage(e)
 	}
 	e.distinct.Resource.Event = msg
 }

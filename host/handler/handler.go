@@ -5,9 +5,9 @@ import (
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/connect"
 	"github.com/obgnail/plugin-platform/common/log"
-	"github.com/obgnail/plugin-platform/common/math"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/math"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	"github.com/obgnail/plugin-platform/host/resource/common"
 	"os"
 	"time"
@@ -33,9 +33,9 @@ func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, i
 			HostID:           id,
 			Name:             name,
 			Language:         lang,
-			HostVersion:      message_utils.VersionString2Pb(hostVersion),
-			MinSystemVersion: message_utils.VersionString2Pb(minSysVersion),
-			LanguageVersion:  message_utils.VersionString2Pb(langVersion),
+			HostVersion:      message.VersionString2Pb(hostVersion),
+			MinSystemVersion: message.VersionString2Pb(minSysVersion),
+			LanguageVersion:  message.VersionString2Pb(langVersion),
 		},
 	}
 
@@ -66,7 +66,7 @@ func (h *HostHandler) GetDescriptor() *protocol.HostDescriptor {
 
 // InitReport 向platform报告，启动消息循环，等待control指令与其他消息
 func (h *HostHandler) InitReport() {
-	msg := message_utils.BuildHostReportInitMessage(h.descriptor)
+	msg := message.BuildHostReportInitMessage(h.descriptor)
 	if err := h.SendOnly(msg); err != nil {
 		log.ErrorDetails(err)
 	}
@@ -104,7 +104,7 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 	appVer := msg.Control.LifeCycleRequest.Instance.Application.ApplicationVersion
 	log.Info("【GET】message.HostReport. GetSeqNo: %d. appID: %s(%s)", msg.GetHeader().GetSeqNo(), appID, appVer)
 
-	resp := message_utils.BuildLifeCycleResponseMessage(msg)
+	resp := message.BuildLifeCycleResponseMessage(msg)
 
 	// 发送响应数据
 	defer func() {
@@ -124,10 +124,10 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 			AppID:      app.ApplicationID,
 			PluginName: app.Name,
 			Lang:       app.Language,
-			LangVer:    message_utils.VersionPb2String(app.LanguageVersion),
-			AppVer:     message_utils.VersionPb2String(app.ApplicationVersion),
-			HostVer:    message_utils.VersionPb2String(app.HostVersion),
-			MinSysVer:  message_utils.VersionPb2String(app.MinSystemVersion),
+			LangVer:    message.VersionPb2String(app.LanguageVersion),
+			AppVer:     message.VersionPb2String(app.ApplicationVersion),
+			HostVer:    message.VersionPb2String(app.HostVersion),
+			MinSysVer:  message.VersionPb2String(app.MinSystemVersion),
 		},
 	}
 
@@ -245,9 +245,9 @@ func (h *HostHandler) getLifeCycleRequest() common_type.LifeCycleRequest {
 		"HostID":           {[]string{h.descriptor.HostID}},
 		"HostName":         {[]string{h.descriptor.Name}},
 		"HostLanguage":     {[]string{h.descriptor.Language}},
-		"LanguageVersion":  {[]string{message_utils.VersionPb2String(h.descriptor.LanguageVersion)}},
-		"HostVersion":      {[]string{message_utils.VersionPb2String(h.descriptor.HostVersion)}},
-		"MinSystemVersion": {[]string{message_utils.VersionPb2String(h.descriptor.MinSystemVersion)}},
+		"LanguageVersion":  {[]string{message.VersionPb2String(h.descriptor.LanguageVersion)}},
+		"HostVersion":      {[]string{message.VersionPb2String(h.descriptor.HostVersion)}},
+		"MinSystemVersion": {[]string{message.VersionPb2String(h.descriptor.MinSystemVersion)}},
 	}
 
 	req := common_type.LifeCycleRequest{Headers: headers}
@@ -257,11 +257,11 @@ func (h *HostHandler) getLifeCycleRequest() common_type.LifeCycleRequest {
 func (h *HostHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
 	var instances = make(map[string]*protocol.PluginInstanceDescriptor)
 	for _, v := range h.instancePool.ListInstances() {
-		instance := message_utils.BuildInstanceDescriptor(v, h.descriptor.HostID)
+		instance := message.BuildInstanceDescriptor(v, h.descriptor.HostID)
 		instances[v.InstanceID()] = instance
 	}
 
-	toPlatform := message_utils.BuildHostReportMessage(msg, instances, h.descriptor)
+	toPlatform := message.BuildHostReportMessage(msg, instances, h.descriptor)
 	if err := h.SendOnly(toPlatform); err != nil {
 		log.ErrorDetails(err)
 	}
@@ -325,15 +325,15 @@ func (h *HostHandler) SendOnly(msg *protocol.PlatformMessage) (err common_type.P
 // fillMsg 添加路由信息
 func (h *HostHandler) fillMsg(sender common_type.IPlugin, msg *protocol.PlatformMessage) {
 	if msg == nil {
-		msg = message_utils.GetInitMessage(nil, nil)
+		msg = message.GetInitMessage(nil, nil)
 	}
-	msg.Header.Source = message_utils.GetHostInfo(h.descriptor.HostID, h.descriptor.Name)
-	msg.Header.Distinct = message_utils.GetPlatformInfo()
+	msg.Header.Source = message.GetHostInfo(h.descriptor.HostID, h.descriptor.Name)
+	msg.Header.Distinct = message.GetPlatformInfo()
 	if msg.Header.SeqNo == 0 {
 		msg.Header.SeqNo = math.CreateCaptcha()
 	}
 	if msg.Resource != nil && sender != nil {
-		msg.Resource.Sender = message_utils.BuildInstanceDescriptor(sender.GetPluginDescription(), h.descriptor.HostID)
+		msg.Resource.Sender = message.BuildInstanceDescriptor(sender.GetPluginDescription(), h.descriptor.HostID)
 		msg.Resource.Host = h.descriptor
 	}
 }

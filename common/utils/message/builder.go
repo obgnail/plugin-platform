@@ -1,11 +1,11 @@
-package message_utils
+package message
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/connect"
-	"github.com/obgnail/plugin-platform/common/math"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/math"
 )
 
 var (

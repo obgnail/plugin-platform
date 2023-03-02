@@ -2,8 +2,8 @@ package handler
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	"sync"
 )
 
@@ -66,10 +66,10 @@ func NewHost(msg *protocol.ControlMessage_HostReportMessage, status common_type.
 				AppID:      appDesc.ApplicationID,
 				PluginName: appDesc.Name,
 				Lang:       appDesc.Language,
-				LangVer:    message_utils.VersionPb2String(appDesc.LanguageVersion),
-				AppVer:     message_utils.VersionPb2String(appDesc.ApplicationVersion),
-				HostVer:    message_utils.VersionPb2String(appDesc.HostVersion),
-				MinSysVer:  message_utils.VersionPb2String(appDesc.MinSystemVersion),
+				LangVer:    message.VersionPb2String(appDesc.LanguageVersion),
+				AppVer:     message.VersionPb2String(appDesc.ApplicationVersion),
+				HostVer:    message.VersionPb2String(appDesc.HostVersion),
+				MinSysVer:  message.VersionPb2String(appDesc.MinSystemVersion),
 			},
 		}
 	}
@@ -78,10 +78,10 @@ func NewHost(msg *protocol.ControlMessage_HostReportMessage, status common_type.
 		Info: common_type.HostInfo{
 			ID:               _host.GetHostID(),
 			Name:             _host.GetName(),
-			Version:          message_utils.VersionPb2String(_host.GetHostVersion()),
-			MinSystemVersion: message_utils.VersionPb2String(_host.GetMinSystemVersion()),
+			Version:          message.VersionPb2String(_host.GetHostVersion()),
+			MinSystemVersion: message.VersionPb2String(_host.GetMinSystemVersion()),
 			Language:         _host.GetLanguage(),
-			LanguageVersion:  message_utils.VersionPb2String(_host.GetLanguageVersion()),
+			LanguageVersion:  message.VersionPb2String(_host.GetLanguageVersion()),
 			Plugins:          _plugins,
 		},
 		Status: status,

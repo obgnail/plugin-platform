@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/errors"
-	"github.com/obgnail/plugin-platform/common/file_utils"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/file"
 	"os"
 )
 
@@ -45,10 +45,10 @@ func (l *Log) Execute() {
 
 func (l *Log) getPath() (string, error) {
 	dirPath := config.StringOrPanic("platform.plugin_log_dir")
-	dirPath = file_utils.JoinPath(dirPath, l.appID)
+	dirPath = file.JoinPath(dirPath, l.appID)
 	if err := os.MkdirAll(dirPath, 0640); err != nil {
 		return "", errors.Trace(err)
 	}
-	file := file_utils.JoinPath(dirPath, fmt.Sprintf("%s.log", l.instanceID))
+	file := file.JoinPath(dirPath, fmt.Sprintf("%s.log", l.instanceID))
 	return file, nil
 }

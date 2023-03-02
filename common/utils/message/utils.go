@@ -1,4 +1,4 @@
-package message_utils
+package message
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"

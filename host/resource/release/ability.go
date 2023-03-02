@@ -2,8 +2,8 @@ package release
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	"github.com/obgnail/plugin-platform/host/resource/common"
 )
 
@@ -23,7 +23,7 @@ func (a *Ability) sendMsgToHost(platformMessage *protocol.PlatformMessage) (*pro
 }
 
 func (a *Ability) buildMessage(abilityMessageMessage *protocol.AbilityMessage) *protocol.PlatformMessage {
-	msg := message_utils.GetInitMessage(nil, nil)
+	msg := message.GetInitMessage(nil, nil)
 	msg.Resource = &protocol.ResourceMessage{Ability: abilityMessageMessage}
 	return msg
 }

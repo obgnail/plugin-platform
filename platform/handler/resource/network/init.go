@@ -7,8 +7,8 @@ import (
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -94,7 +94,7 @@ func (n *Network) buildMsg(status int64, body []byte, headers map[string]*protoc
 		log.ErrorDetails(err)
 		e := common_type.NewPluginError(common_type.CallMainSystemAPIFailure, err.Error(),
 			common_type.CallMainSystemAPIFailureError.Error())
-		msg.Error = message_utils.BuildErrorMessage(e)
+		msg.Error = message.BuildErrorMessage(e)
 	}
 	n.distinct.Resource.Http = &protocol.HttpResourceMessage{ResourceHttpResponse: msg}
 }

@@ -5,9 +5,9 @@ import (
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/connect"
 	"github.com/obgnail/plugin-platform/common/log"
-	"github.com/obgnail/plugin-platform/common/math"
-	"github.com/obgnail/plugin-platform/common/message_utils"
 	"github.com/obgnail/plugin-platform/common/protocol"
+	"github.com/obgnail/plugin-platform/common/utils/math"
+	"github.com/obgnail/plugin-platform/common/utils/message"
 	host_handler "github.com/obgnail/plugin-platform/host/handler"
 	"os"
 	"time"
@@ -25,7 +25,7 @@ func New(id, name, addr, version string) *HostBootHandler {
 		descriptor: &protocol.HostBootDescriptor{
 			BootID:      id,
 			Name:        name,
-			BootVersion: message_utils.VersionString2Pb(version),
+			BootVersion: message.VersionString2Pb(version),
 		},
 	}
 	zmq := connect.NewZmq(id, name, addr, connect.SocketTypeDealer, connect.RoleHost).SetPacker(&connect.ProtoPacker{})
@@ -128,7 +128,7 @@ func (h *HostBootHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
 
 // Report 向platform报告，启动消息循环，等待control指令与其他消息
 func (h *HostBootHandler) Report() {
-	msg := message_utils.BuildHostBootReportInitMessage(h.descriptor)
+	msg := message.BuildHostBootReportInitMessage(h.descriptor)
 	if err := h.SendOnly(msg); err != nil {
 		log.ErrorDetails(err)
 	}
@@ -153,10 +153,10 @@ func (h *HostBootHandler) SendOnly(msg *protocol.PlatformMessage) (err common_ty
 // fillMsg 添加路由信息
 func (h *HostBootHandler) fillMsg(msg *protocol.PlatformMessage) {
 	if msg == nil {
-		msg = message_utils.GetInitMessage(nil, nil)
+		msg = message.GetInitMessage(nil, nil)
 	}
-	msg.Header.Source = message_utils.GetHostBootInfo(h.descriptor.BootID, h.descriptor.Name)
-	msg.Header.Distinct = message_utils.GetPlatformInfo()
+	msg.Header.Source = message.GetHostBootInfo(h.descriptor.BootID, h.descriptor.Name)
+	msg.Header.Distinct = message.GetPlatformInfo()
 	if msg.Header.SeqNo == 0 {
 		msg.Header.SeqNo = math.CreateCaptcha()
 	}
