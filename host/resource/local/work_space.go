@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/config"
-	"github.com/obgnail/plugin-platform/common/utils/file"
+	"github.com/obgnail/plugin-platform/common/utils/file_path"
 	"io"
 	"io/ioutil"
 	"os"
@@ -439,7 +439,7 @@ func (s *Space) getSpacePath(name string) string {
 	instanceUUID := s.plugin.GetPluginDescription().InstanceID()
 	_dir := filepath.Join(config.StringOrPanic("host.plugin_workspace_dir"), appUUID, instanceUUID)
 
-	exist, err := file.PathExists(_dir)
+	exist, err := file_path.PathExists(_dir)
 	if err != nil {
 		fmt.Printf("get dir error![%v]\n", err)
 	}
