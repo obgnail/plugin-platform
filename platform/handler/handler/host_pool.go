@@ -53,8 +53,26 @@ func (pool *HostPool) Range(f func(hostID string, host common_type.IHost) bool) 
 
 func NewHost(msg *protocol.ControlMessage_HostReportMessage, status common_type.HostStatus) *common_type.MockHost {
 	_host := msg.GetHost()
-	plugins := msg.GetInstanceList()
+	running := msg.GetInstanceList()
+	support := msg.GetSupportedList()
 
+	h := &common_type.MockHost{
+		Info: common_type.HostInfo{
+			ID:               _host.GetHostID(),
+			Name:             _host.GetName(),
+			Version:          message.VersionPb2String(_host.GetHostVersion()),
+			MinSystemVersion: message.VersionPb2String(_host.GetMinSystemVersion()),
+			Language:         _host.GetLanguage(),
+			LanguageVersion:  message.VersionPb2String(_host.GetLanguageVersion()),
+			RunningPlugins:   convert(running),
+			SupportPlugins:   convert(support),
+		},
+		Status: status,
+	}
+	return h
+}
+
+func convert(plugins map[string]*protocol.PluginInstanceDescriptor) map[string]common_type.IInstanceDescription {
 	_plugins := make(map[string]common_type.IInstanceDescription, len(plugins))
 	for _, info := range plugins {
 		instanceID := info.GetInstanceID()
@@ -73,18 +91,5 @@ func NewHost(msg *protocol.ControlMessage_HostReportMessage, status common_type.
 			},
 		}
 	}
-
-	h := &common_type.MockHost{
-		Info: common_type.HostInfo{
-			ID:               _host.GetHostID(),
-			Name:             _host.GetName(),
-			Version:          message.VersionPb2String(_host.GetHostVersion()),
-			MinSystemVersion: message.VersionPb2String(_host.GetMinSystemVersion()),
-			Language:         _host.GetLanguage(),
-			LanguageVersion:  message.VersionPb2String(_host.GetLanguageVersion()),
-			Plugins:          _plugins,
-		},
-		Status: status,
-	}
-	return h
+	return _plugins
 }

@@ -28,8 +28,8 @@ func Run() {
 
 	// life cycle
 	plugin.POST("/upload", controllers.Upload)
+	plugin.POST("/delete", controllers.Delete)
 	plugin.POST("/install", controllers.Install)
-	//plugin.POST("/delete_opk", controllers.DeleteOpk)
 	//plugin.POST("/uninstall", controllers.UnInstall)
 	//plugin.POST("/enable", controllers.Enable)
 	//plugin.POST("/disable", controllers.Disable)
@@ -47,7 +47,7 @@ func Run() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Info("Shutting down server...")
+	log.Warn("Shutting down server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
@@ -56,5 +56,5 @@ func Run() {
 	}
 	//common.RemoveAllHosts() TODO
 
-	log.Info("Server exiting")
+	log.Warn("Server exiting")
 }

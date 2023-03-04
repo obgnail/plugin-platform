@@ -28,7 +28,7 @@
     "plugin_runtime_dir": "/d/golang/src/github.com/obgnail/plugin-platform/common/storage_files/platform_runtime",
     "plugin_log_dir": "/d/golang/src/github.com/obgnail/plugin-platform/common/storage_files/platform_plugin_log",
     "log_path": "/d/golang/src/github.com/obgnail/plugin-platform/common/storage_files/plugin_platform.log",
-    "log_level": "debug",
+    "log_level": "trace",
     "timeout_sec": 30,
     "heartbeat_sec": 5,
     "debug_mode": true

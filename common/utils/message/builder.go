@@ -155,44 +155,6 @@ func GetResourceInitMessage(source *protocol.PlatformMessage) *protocol.Platform
 	return message
 }
 
-func BuildHostReportMessage(source *protocol.PlatformMessage, instances map[string]*protocol.PluginInstanceDescriptor,
-	hostDesc *protocol.HostDescriptor,
-) *protocol.PlatformMessage {
-	resp := &protocol.PlatformMessage{
-		Header: &protocol.RouterMessage{
-			SeqNo:    source.Header.SeqNo,
-			Source:   source.Header.Distinct,
-			Distinct: source.Header.Source,
-		},
-		Control: &protocol.ControlMessage{
-			HostReport: &protocol.ControlMessage_HostReportMessage{
-				Host:         hostDesc,
-				InstanceList: instances,
-			},
-		},
-	}
-	return resp
-}
-
-func BuildLifeCycleResponseMessage(source *protocol.PlatformMessage) *protocol.PlatformMessage {
-	resp := &protocol.PlatformMessage{
-		Header: &protocol.RouterMessage{
-			SeqNo:    source.Header.SeqNo,
-			Source:   source.Header.Distinct,
-			Distinct: source.Header.Source,
-		},
-		Control: &protocol.ControlMessage{
-			LifeCycleResponse: &protocol.ControlMessage_PluginLifeCycleResponseMessage{
-				Host:     source.Control.LifeCycleRequest.Host,
-				Instance: source.Control.LifeCycleRequest.Instance,
-				Result:   true, // 这个值后面可能会被修改
-				Error:    nil,  // 这个值后面可能会被修改
-			},
-		},
-	}
-	return resp
-}
-
 func BuildP2HHeartbeatMessage(hostID, hostName string) *protocol.PlatformMessage {
 	msg := BuildP2HDefaultMessage(hostID, hostName)
 	msg.Control = &protocol.ControlMessage{Heartbeat: math.CreateCaptcha()}

@@ -10,6 +10,15 @@ func Upload(c *gin.Context) {
 	RenderJSON(c, result, resp)
 }
 
+func Delete(c *gin.Context) {
+	req := &lifecycle.DeleteReq{}
+	if err := c.BindJSON(&req); err != nil {
+		return
+	}
+	resp, result := lifecycle.Delete(req)
+	RenderJSON(c, result, resp)
+}
+
 func Install(c *gin.Context) {
 	req := &lifecycle.InstallReq{}
 	if err := c.BindJSON(&req); err != nil {

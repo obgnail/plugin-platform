@@ -14,8 +14,9 @@ message ControlMessage{
     // 从Host传递的日志消息
     repeated LogMessage Log = 11;
 
+    // Host上支持/已经挂载的插件实例
+    map<string, PluginInstanceDescriptor> SupportedList = 20;
     // Host上执行的插件实例列表
-    map<string, PluginDescriptor> SupportedList = 20;
     map<string, PluginInstanceDescriptor> InstanceList = 21;
   }
 

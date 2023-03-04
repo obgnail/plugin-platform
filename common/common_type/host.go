@@ -23,5 +23,6 @@ type HostInfo struct {
 	MinSystemVersion string
 	Language         string
 	LanguageVersion  string
-	Plugins          map[string]IInstanceDescription
+	RunningPlugins   map[string]IInstanceDescription
+	SupportPlugins   map[string]IInstanceDescription
 }

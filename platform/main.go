@@ -3,17 +3,34 @@ package main
 import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/log"
+	hotboot_handler "github.com/obgnail/plugin-platform/host_boot/handler"
 	"github.com/obgnail/plugin-platform/platform/handler/handler"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/model/redis"
 	"github.com/obgnail/plugin-platform/platform/pool/plugin_pool"
+	"github.com/obgnail/plugin-platform/platform/router"
 	"time"
 )
 
 func main() {
 	Init()
-	h := handler.Default()
-	h.Run()
+	log.Info("run")
+
+	go func() {
+		time.Sleep(12 * time.Second)
+		log.Info("InstallPlugin...")
+		handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+			"golang", "1.14.0", "1.0.0")
+		time.Sleep(10 * time.Second)
+		handler.StartPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+			"golang", "1.14.0", "1.0.0")
+	}()
+
+	router.Run()
+}
+
+func main2() {
+	Init()
 
 	//h.Send(&protocol.PlatformMessage{}, 30*time.Second)
 
@@ -22,14 +39,14 @@ func main() {
 	go func() {
 		time.Sleep(15 * time.Second)
 		log.Info("InstallPlugin...")
-		h.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+		handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
 			"golang", "1.14.0", "1.0.0")
-		h.StartPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+		handler.StartPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
 			"golang", "1.14.0", "1.0.0")
 
 		time.Sleep(time.Second * 20)
 		log.Info("kill Plugin")
-		h.KillPlugin("InstanceID123")
+		handler.KillPlugin("InstanceID123")
 	}()
 	time.Sleep(time.Hour)
 }
@@ -41,9 +58,11 @@ func onStart(fn func() error) {
 }
 
 func Init() {
+	onStart(handler.InitPlatformHandler)
 	onStart(plugin_pool.InitPluginPool)
 	onStart(mysql.InitDB)
 	onStart(redis.InitRedis)
+	onStart(hotboot_handler.InitHostBoot)
 }
 
 //func RunServer() {

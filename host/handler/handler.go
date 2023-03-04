@@ -97,15 +97,30 @@ func (h *HostHandler) OnError(err common_type.PluginError) {
 func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 	appID := msg.Control.LifeCycleRequest.Instance.Application.ApplicationID
 	appVer := msg.Control.LifeCycleRequest.Instance.Application.ApplicationVersion
-	log.Info("【GET】message.HostReport. GetSeqNo: %d. appID: %s(%s)", msg.GetHeader().GetSeqNo(), appID, appVer)
+	log.Trace("【GET】message.LifeCycle. GetSeqNo: %d. appID: %s(%+v)", msg.GetHeader().GetSeqNo(), appID, appVer)
 
-	resp := message.BuildLifeCycleResponseMessage(msg)
+	resp := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    msg.Header.SeqNo,
+			Source:   msg.Header.Distinct,
+			Distinct: msg.Header.Source,
+		},
+		Control: &protocol.ControlMessage{
+			LifeCycleResponse: &protocol.ControlMessage_PluginLifeCycleResponseMessage{
+				Host:     msg.Control.LifeCycleRequest.Host,
+				Instance: msg.Control.LifeCycleRequest.Instance, // 这个值后面可能会被修改
+				Result:   true,                                  // 这个值后面可能会被修改
+				Error:    nil,                                   // 这个值后面可能会被修改
+			},
+		},
+	}
 
 	// 发送响应数据
 	defer func() {
 		if err := h.SendOnly(resp); err != nil {
 			log.Error("appId: %s appVersion: %s hh.SendMessage err: %s", appID, appVer, err.Error())
 		}
+		h.OnHeartbeat(msg) // 立即触发心跳,及时报告
 	}()
 
 	instance := msg.Control.LifeCycleRequest.Instance
@@ -250,25 +265,46 @@ func (h *HostHandler) getLifeCycleRequest() common_type.LifeCycleRequest {
 }
 
 func (h *HostHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
-	var instances = make(map[string]*protocol.PluginInstanceDescriptor)
-	for _, v := range h.instancePool.ListInstances() {
-		instance := message.BuildInstanceDescriptor(v, h.descriptor.HostID)
-		instances[v.InstanceID()] = instance
+	var running = make(map[string]*protocol.PluginInstanceDescriptor)
+	for _, _running := range h.instancePool.ListRunningInstances() {
+		instance := message.BuildInstanceDescriptor(_running, h.descriptor.HostID)
+		running[_running.InstanceID()] = instance
 	}
 
-	toPlatform := message.BuildHostReportMessage(msg, instances, h.descriptor)
+	var support = make(map[string]*protocol.PluginInstanceDescriptor)
+	for _, _mount := range h.instancePool.ListMountedPlugin() {
+		description := _mount.GetPluginDescription()
+		descriptor := message.BuildInstanceDescriptor(description, h.descriptor.HostID)
+		// Q:明明是挂载插件还没有运行,为什么有instanceID? A:由platform生成,接着再传过来
+		support[description.InstanceID()] = descriptor
+	}
+
+	toPlatform := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    msg.Header.SeqNo,
+			Source:   msg.Header.Distinct,
+			Distinct: msg.Header.Source,
+		},
+		Control: &protocol.ControlMessage{
+			HostReport: &protocol.ControlMessage_HostReportMessage{
+				Host:          h.descriptor,
+				InstanceList:  running,
+				SupportedList: support,
+			},
+		},
+	}
 	if err := h.SendOnly(toPlatform); err != nil {
 		log.ErrorDetails(err)
 	}
 }
 
 func (h *HostHandler) OnKillSelf(msg *protocol.PlatformMessage) {
-	log.Info("kill handler")
+	log.Warn("kill handler")
 	os.Exit(1)
 }
 
 func (h *HostHandler) OnKillPlugin(msg *protocol.PlatformMessage) {
-	log.Info("kill plugin: %+v", msg)
+	log.Warn("kill plugin: %+v", msg)
 	instanceID := msg.Control.KillPlugin.InstanceID
 	_, _, exist := h.instancePool.GetPlugin(instanceID)
 
@@ -296,7 +332,6 @@ func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.Platfo
 		return
 	}
 	h.OnControlMessage(endpoint, msg)
-	h.OnResourceMessage(endpoint, msg)
 }
 
 func (h *HostHandler) OnControlMessage(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage) {
@@ -323,15 +358,6 @@ func (h *HostHandler) OnControlMessage(endpoint *connect.EndpointInfo, msg *prot
 	if control.GetKillPlugin() != nil {
 		h.OnKillPlugin(msg)
 	}
-}
-
-func (h *HostHandler) OnResourceMessage(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage) {
-	// 资源请求的应答
-	resource := msg.GetResource()
-	if resource == nil {
-		return
-	}
-	log.Info("%+v", msg)
 }
 
 func (h *HostHandler) Send(sender common_type.IPlugin, msg *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {

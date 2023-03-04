@@ -10,11 +10,20 @@ type InstancePool struct {
 	running sync.Map // 在业务上host运行的插件 map[instanceID]common_type.IInstanceDescription
 }
 
-// ListInstances 列出所有的插件实例
-func (pool *InstancePool) ListInstances() []common_type.IInstanceDescription {
+// ListRunningInstances 列出所有运行的插件实例
+func (pool *InstancePool) ListRunningInstances() []common_type.IInstanceDescription {
 	var resp []common_type.IInstanceDescription
 	pool.running.Range(func(k, v interface{}) bool {
 		resp = append(resp, v.(common_type.IInstanceDescription))
+		return true
+	})
+	return resp
+}
+
+func (pool *InstancePool) ListMountedPlugin() []common_type.IPlugin {
+	var resp []common_type.IPlugin
+	pool.mounted.Range(func(k, v interface{}) bool {
+		resp = append(resp, v.(common_type.IPlugin))
 		return true
 	})
 	return resp

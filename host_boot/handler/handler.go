@@ -100,7 +100,7 @@ func (h *HostBootHandler) OnStartHost(msg *protocol.PlatformMessage) {
 			},
 		},
 	}
-	log.Info("start host: %+v", resp)
+	log.Trace("start host: %+v", resp)
 	if err := h.SendOnly(resp); err != nil {
 		log.ErrorDetails(err)
 	}
@@ -123,7 +123,11 @@ func (h *HostBootHandler) newHost(msg *protocol.PlatformMessage) *host_handler.H
 }
 
 func (h *HostBootHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
-	h.Report()
+	resp := message.BuildHostBootReportInitMessage(h.descriptor)
+	resp.Header.SeqNo = msg.Header.SeqNo
+	if err := h.SendOnly(msg); err != nil {
+		log.ErrorDetails(err)
+	}
 }
 
 // Report 向platform报告，启动消息循环，等待control指令与其他消息
