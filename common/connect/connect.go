@@ -76,7 +76,9 @@ func (p *ZmqEndpoint) Close() error {
 		p.endpoints.Delete(key)
 		return true
 	})
-	p.handler.OnDisconnect()
+	if err := p.handler.OnDisconnect(); err != nil {
+		return fmt.Errorf(err.Error())
+	}
 	return nil
 }
 
@@ -164,7 +166,7 @@ func (p *ZmqEndpoint) Connect() common_type.PluginError {
 	if err != nil {
 		p.Close()
 		return common_type.NewPluginError(common_type.SocketListenOrDialFailure,
-			common_type.SocketListenOrDialFailureError.Error(), "socketListenOrDialFailureError")
+			common_type.SocketListenOrDialFailureError.Error(), err.Error())
 	}
 
 	go p.startReceiver()

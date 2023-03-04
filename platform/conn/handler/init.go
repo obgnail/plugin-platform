@@ -5,7 +5,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/protocol"
 )
 
-var platformHandler *Handler
+var platformHandler *PlatformHandler
 
 func InitPlatformHandler() error {
 	platformHandler = Default()

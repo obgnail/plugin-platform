@@ -10,48 +10,40 @@ import (
 	"time"
 )
 
-var _ MessageHandler = (*BaseHandler)(nil)
+var _ MessageHandler = (*Connection)(nil)
 
-// BaseHandler 改造了 MessageHandler 中的核心函数 OnMessage, 并且为 send 函数添加了同异步发送, 超时功能。
-// 其余函数委托给 FurtherHandler 实现。
-type BaseHandler struct {
+// Connection 改造了 MessageHandler 中的核心函数 OnMessage, 并且为 send 函数添加了同异步发送, 超时功能。
+// 其余函数委托给 ConnectionHandler 实现。
+type Connection struct {
 	Zmq *ZmqEndpoint
-	FurtherHandler
+	ConnectionHandler
 
 	spins sync.Map
 }
 
-func NewBaseHandler(zmq *ZmqEndpoint, handler FurtherHandler) *BaseHandler {
-	s := &BaseHandler{Zmq: zmq, FurtherHandler: handler}
+func NewConnection(zmq *ZmqEndpoint, handler ConnectionHandler) *Connection {
+	s := &Connection{Zmq: zmq, ConnectionHandler: handler}
 	s.Zmq.SetHandler(s)
 	return s
 }
 
-func (s *BaseHandler) GetZmq() *ZmqEndpoint {
-	return s.Zmq
+func (c *Connection) GetZmq() *ZmqEndpoint {
+	return c.Zmq
 }
 
-func (s *BaseHandler) Connect() common_type.PluginError {
-	return s.Zmq.Connect()
+func (c *Connection) Connect() common_type.PluginError {
+	return c.Zmq.Connect()
 }
 
 // Send 同步发送
-func (s *BaseHandler) Send(msg *protocol.PlatformMessage, timeout time.Duration) (
+func (c *Connection) Send(msg *protocol.PlatformMessage, timeout time.Duration) (
 	result *protocol.PlatformMessage, err common_type.PluginError) {
-
 	spin := newSpin(msg.Header.SeqNo, msg, timeout, nil)
-	s.spins.Store(spin.id, spin)
-	defer s.spins.Delete(spin.id)
+	c.spins.Store(spin.id, spin)
 
-	msgBytes, e := proto.Marshal(msg)
-	if e != nil {
-		log.ErrorDetails(errors.Trace(e))
-		err = common_type.NewPluginError(common_type.ProtoMarshalFailure, common_type.ProtoMarshalFailureError.Error(), e.Error())
-		return nil, err
-	}
-	if e = s.Zmq.Send(msgBytes); e != nil {
-		log.ErrorDetails(errors.Trace(e))
-		err = common_type.NewPluginError(common_type.EndpointSendErr, common_type.EndpointSendError.Error(), e.Error())
+	defer c.spins.Delete(spin.id)
+
+	if err = c.SendOnly(msg); err != nil {
 		return nil, err
 	}
 
@@ -61,52 +53,44 @@ func (s *BaseHandler) Send(msg *protocol.PlatformMessage, timeout time.Duration)
 }
 
 // SendAsync 异步发送
-func (s *BaseHandler) SendAsync(msg *protocol.PlatformMessage, timeout time.Duration, callback CallBack) {
+func (c *Connection) SendAsync(msg *protocol.PlatformMessage, timeout time.Duration, callback CallBack) {
 	spin := newSpin(msg.Header.SeqNo, msg, timeout, callback)
-	s.spins.Store(spin.id, spin)
+	c.spins.Store(spin.id, spin)
 
 	go func() {
 		spin.wait()
-		s.spins.Delete(spin.id)
+		c.spins.Delete(spin.id)
 	}()
 
-	msgBytes, e := proto.Marshal(msg)
-	if e != nil {
-		log.ErrorDetails(errors.Trace(e))
-		err := common_type.NewPluginError(common_type.ProtoMarshalFailure, common_type.ProtoMarshalFailureError.Error(), e.Error())
+	if err := c.SendOnly(msg); err != nil {
 		spin.onError(err)
-		return
-	}
-	if e = s.Zmq.Send(msgBytes); e != nil {
-		log.ErrorDetails(errors.Trace(e))
-		err := common_type.NewPluginError(common_type.EndpointSendErr, common_type.EndpointSendError.Error(), e.Error())
-		spin.onError(err)
-		return
 	}
 }
 
-func (s *BaseHandler) SendOnly(msg *protocol.PlatformMessage) (err common_type.PluginError) {
+func (c *Connection) SendOnly(msg *protocol.PlatformMessage) (err common_type.PluginError) {
 	msgBytes, e := proto.Marshal(msg)
 	if e != nil {
+		log.ErrorDetails(errors.Trace(e))
 		return common_type.NewPluginError(common_type.ProtoMarshalFailure, common_type.ProtoMarshalFailureError.Error(), e.Error())
 	}
-	if e = s.Zmq.Send(msgBytes); e != nil {
+	if e = c.Zmq.Send(msgBytes); e != nil {
+		log.ErrorDetails(errors.Trace(e))
 		return common_type.NewPluginError(common_type.EndpointSendErr, common_type.EndpointSendError.Error(), e.Error())
 	}
 	return nil
 }
 
-func (s *BaseHandler) OnMessage(endpoint *EndpointInfo, content []byte) {
+func (c *Connection) OnMessage(endpoint *EndpointInfo, content []byte) {
 	msg := &protocol.PlatformMessage{}
 	var e common_type.PluginError
 	if err := proto.Unmarshal(content, msg); err != nil {
 		log.ErrorDetails(errors.Trace(e))
 		e = common_type.NewPluginError(common_type.ProtoUnmarshalFailure, common_type.ProtoUnmarshalFailureError.Error(), err.Error())
 	}
-	if spin, ok := s.spins.Load(msg.Header.SeqNo); ok {
+	if spin, ok := c.spins.Load(msg.Header.SeqNo); ok {
 		spin.(*syncSpin).onResult(msg)
 	}
-	s.FurtherHandler.OnMsg(endpoint, msg, e)
+	c.ConnectionHandler.OnMsg(endpoint, msg, e)
 }
 
 type CallBack func(input, result *protocol.PlatformMessage, err common_type.PluginError)

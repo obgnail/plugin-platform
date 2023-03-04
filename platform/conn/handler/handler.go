@@ -23,21 +23,24 @@ const (
 
 var Timeout = time.Duration(config.Int("platform.timeout_sec", defaultTimeoutSec)) * time.Second
 var RetryInterval = time.Duration(config.Int("platform.retry_interval_sec", defaultRetryIntervalSec)) * time.Second
+var HeartbeatInterval = time.Duration(config.Int("platform.heartbeat_sec", defaultHeartbeatSec)) * time.Second
 
-type Handler struct {
+var _ connect.ConnectionHandler = (*PlatformHandler)(nil)
+
+type PlatformHandler struct {
 	hostPool     *HostPool
 	hostBootPool *HostBootPool
-	*connect.BaseHandler
+	conn         *connect.Connection // 负责和host、hostboot的通讯
 }
 
-func New(id, name, addr string) *Handler {
-	h := &Handler{hostPool: NewHostPool(), hostBootPool: NewHostBootPool()}
+func New(id, name, addr string) *PlatformHandler {
+	h := &PlatformHandler{hostPool: NewHostPool(), hostBootPool: NewHostBootPool()}
 	zmq := connect.NewZmq(id, name, addr, connect.SocketTypeRouter, connect.RolePlatform).SetPacker(&connect.ProtoPacker{})
-	h.BaseHandler = connect.NewBaseHandler(zmq, h)
+	h.conn = connect.NewConnection(zmq, h)
 	return h
 }
 
-func Default() *Handler {
+func Default() *PlatformHandler {
 	id := config.String("platform.id", "P0000001")
 	name := config.String("platform.name", "platform")
 	port := config.Int("platform.tcp_port", 9006)
@@ -48,21 +51,21 @@ func Default() *Handler {
 	return h
 }
 
-func (h *Handler) OnConnect() common_type.PluginError {
+func (h *PlatformHandler) OnConnect() common_type.PluginError {
 	log.Info("PlatformHandler OnConnect")
 	return nil
 }
 
-func (h *Handler) OnDisconnect() common_type.PluginError {
+func (h *PlatformHandler) OnDisconnect() common_type.PluginError {
 	log.Info("PlatformHandler OnDisconnect")
 	return nil
 }
 
-func (h *Handler) OnError(pluginError common_type.PluginError) {
-	log.ErrorDetails(pluginError)
+func (h *PlatformHandler) OnError(pluginError common_type.PluginError) {
+	log.Error("%+v", pluginError)
 }
 
-func (h *Handler) logSendSyncError(send *protocol.PlatformMessage, err common_type.PluginError) {
+func (h *PlatformHandler) logSendSyncError(send *protocol.PlatformMessage, err common_type.PluginError) {
 	if err.Code() != common_type.MsgTimeOut {
 		log.Error("Timeout: %+v", send)
 	} else {
@@ -70,18 +73,18 @@ func (h *Handler) logSendSyncError(send *protocol.PlatformMessage, err common_ty
 	}
 }
 
-func (h *Handler) Heartbeat() {
+func (h *PlatformHandler) Heartbeat() {
 	host := func() {
 		for _, _host := range h.hostPool.GetAll() {
 			info := _host.GetInfo()
 			msg := message.BuildP2HHeartbeatMessage(info.ID, info.Name)
-			h.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
+			h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
 				if err == nil {
 					return
 				}
 				h.logSendSyncError(msg, err)
 				h.hostPool.Delete(_host) // 过期失活
-				log.Warn("delete hostPool: %s", info.ID)
+				log.Warn("delete host: %s", info.ID)
 			})
 		}
 	}
@@ -90,19 +93,18 @@ func (h *Handler) Heartbeat() {
 		for _, boot := range h.hostBootPool.GetAll() {
 			info := boot.GetInfo()
 			msg := message.BuildP2BHeartbeatMessage(info.ID, info.Name)
-			h.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
+			h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
 				if err == nil {
 					return
 				}
 				h.logSendSyncError(msg, err)
 				h.hostBootPool.Delete(boot) // 过期失活
-				log.Warn("delete hostBootPool: %s", info.ID)
+				log.Warn("delete hostBoot: %s", info.ID)
 			})
 		}
 	}
 
-	sec := config.Int("platform.heartbeat_sec", defaultHeartbeatSec)
-	ticker := time.NewTicker(time.Second * time.Duration(sec))
+	ticker := time.NewTicker(HeartbeatInterval)
 	defer ticker.Stop()
 	for {
 		select {
@@ -113,7 +115,7 @@ func (h *Handler) Heartbeat() {
 	}
 }
 
-func (h *Handler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
+func (h *PlatformHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
 	if err != nil {
 		log.ErrorDetails(err)
 		return
@@ -124,7 +126,7 @@ func (h *Handler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMe
 }
 
 // OnControlMessage 控制流
-func (h *Handler) OnControlMessage(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage) {
+func (h *PlatformHandler) OnControlMessage(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage) {
 	control := msg.GetControl()
 	if control == nil {
 		return
@@ -140,28 +142,29 @@ func (h *Handler) OnControlMessage(endpoint *connect.EndpointInfo, msg *protocol
 }
 
 // OnResourceMessage 资源
-func (h *Handler) OnResourceMessage(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage) {
-	if msg.GetResource() == nil {
+func (h *PlatformHandler) OnResourceMessage(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage) {
+	req := msg.GetResource()
+	if req == nil {
 		return
 	}
 
-	log.Trace("【GET】message.GetResource() GetSeqNo: %d", msg.GetHeader().GetSeqNo())
+	log.Trace("【GET】message.GetResource. %+v", req)
 	resp := resource.NewExecutor(msg).Execute()
 	if resp != nil {
-		log.Trace("【SEND】message.GetResource() GetSeqNo: %d", resp.GetHeader().GetSeqNo())
-		if err := h.SendOnly(resp); err != nil {
+		log.Trace("【SND】message.GetResource. %+v", resp)
+		if err := h.conn.SendOnly(resp); err != nil {
 			log.ErrorDetails(errors.Trace(err))
 		}
 	}
 }
 
-func (h *Handler) onHostBootReport(msg *protocol.PlatformMessage) {
+func (h *PlatformHandler) onHostBootReport(msg *protocol.PlatformMessage) {
 	report := msg.GetControl().GetBootReport()
 	if report == nil {
 		return
 	}
 
-	log.Trace("【GET】message.HostBootReport. GetSeqNo: %d", msg.GetHeader().GetSeqNo())
+	log.Trace("【GET】message.HostBootReport. %+v", report)
 	h.logMsg(report.GetLog())
 
 	hostBootID := report.GetBoot().GetBootID()
@@ -173,7 +176,7 @@ func (h *Handler) onHostBootReport(msg *protocol.PlatformMessage) {
 	h.hostBootPool.Add(hostBoot)
 }
 
-func (h *Handler) onHostReport(msg *protocol.PlatformMessage) {
+func (h *PlatformHandler) onHostReport(msg *protocol.PlatformMessage) {
 	report := msg.GetControl().GetHostReport()
 	if report == nil {
 		return
@@ -191,7 +194,7 @@ func (h *Handler) onHostReport(msg *protocol.PlatformMessage) {
 	h.hostPool.Add(_host)
 }
 
-func (h *Handler) logMsg(logMsg []*protocol.LogMessage) {
+func (h *PlatformHandler) logMsg(logMsg []*protocol.LogMessage) {
 	if logMsg != nil {
 		go func() {
 			logger, err := resourceLog.NewLogger(config.StringOrPanic("platform.log_path"))
@@ -206,7 +209,7 @@ func (h *Handler) logMsg(logMsg []*protocol.LogMessage) {
 	}
 }
 
-func (h *Handler) lifeCycle(
+func (h *PlatformHandler) lifeCycle(
 	done chan common_type.PluginError,
 	action protocol.ControlMessage_PluginActionType,
 	appID, instanceID, name, lang, langVer, appVer string,
@@ -238,7 +241,7 @@ func (h *Handler) lifeCycle(
 			Reason:     "",
 			OldVersion: oldVersion,
 		}
-		h.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
+		h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
 			if done != nil {
 				done <- err
 			}
@@ -253,43 +256,43 @@ func (h *Handler) lifeCycle(
 	return done
 }
 
-func (h *Handler) EnablePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+func (h *PlatformHandler) EnablePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
 	return h.lifeCycle(done, protocol.ControlMessage_Enable, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) DisablePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+func (h *PlatformHandler) DisablePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
 	return h.lifeCycle(done, protocol.ControlMessage_Disable, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) StartPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+func (h *PlatformHandler) StartPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
 	return h.lifeCycle(done, protocol.ControlMessage_Start, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) StopPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+func (h *PlatformHandler) StopPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
 	return h.lifeCycle(done, protocol.ControlMessage_Stop, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) InstallPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+func (h *PlatformHandler) InstallPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
 	return h.lifeCycle(done, protocol.ControlMessage_Install, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) UnInstallPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+func (h *PlatformHandler) UnInstallPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
 	return h.lifeCycle(done, protocol.ControlMessage_UnInstall, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) UpgradePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string, oldVersion *protocol.PluginDescriptor) chan common_type.PluginError {
+func (h *PlatformHandler) UpgradePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string, oldVersion *protocol.PluginDescriptor) chan common_type.PluginError {
 	return h.lifeCycle(done, protocol.ControlMessage_Upgrade, appID, instanceID, name, lang, langVer, appVer, oldVersion)
 }
 
-func (h *Handler) CheckStatePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+func (h *PlatformHandler) CheckStatePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
 	return h.lifeCycle(done, protocol.ControlMessage_CheckState, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) CheckCompatibilityPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+func (h *PlatformHandler) CheckCompatibilityPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
 	return h.lifeCycle(done, protocol.ControlMessage_CheckCompatibility, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) KillHost(hostID string) {
+func (h *PlatformHandler) KillHost(hostID string) {
 	host, ok := h.hostPool.Exist(hostID)
 	if !ok {
 		return
@@ -297,12 +300,12 @@ func (h *Handler) KillHost(hostID string) {
 	info := host.GetInfo()
 	msg := message.BuildP2HDefaultMessage(info.ID, info.Name)
 	msg.Control.Kill = &protocol.ControlMessage_KillPluginHostMessage{Kill: true}
-	if err := h.SendOnly(msg); err != nil {
+	if err := h.conn.SendOnly(msg); err != nil {
 		log.ErrorDetails(err)
 	}
 }
 
-func (h *Handler) KillPlugin(instanceID string) {
+func (h *PlatformHandler) KillPlugin(instanceID string) {
 	host := h._findHostByPluginInstanceID(instanceID)
 	if host == nil {
 		return
@@ -313,7 +316,7 @@ func (h *Handler) KillPlugin(instanceID string) {
 
 	msg := message.BuildP2HDefaultMessage(info.ID, info.Name)
 	msg.Control.KillPlugin = &protocol.ControlMessage_KillPluginMessage{InstanceID: instanceID}
-	h.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
+	h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
 		if err == nil {
 			log.Warn("kill plugin: %s", instanceID)
 			return
@@ -324,15 +327,15 @@ func (h *Handler) KillPlugin(instanceID string) {
 	})
 }
 
-func (h *Handler) GetAllHost() []common_type.IHost {
+func (h *PlatformHandler) GetAllHost() []common_type.IHost {
 	return h.hostPool.GetAll()
 }
 
-func (h *Handler) GetAllHostBoot() []common_type.IHostBoot {
+func (h *PlatformHandler) GetAllHostBoot() []common_type.IHostBoot {
 	return h.hostBootPool.GetAll()
 }
 
-func (h *Handler) GetAllAlivePlugin() map[string]common_type.IInstanceDescription {
+func (h *PlatformHandler) GetAllAlivePlugin() map[string]common_type.IInstanceDescription {
 	ret := make(map[string]common_type.IInstanceDescription)
 	h.hostPool.Range(func(hostID string, host common_type.IHost) bool {
 		for _, plugin := range host.GetInfo().RunningPlugins {
@@ -343,7 +346,7 @@ func (h *Handler) GetAllAlivePlugin() map[string]common_type.IInstanceDescriptio
 	return ret
 }
 
-func (h *Handler) GetAllSupportPlugin() map[string]common_type.IInstanceDescription {
+func (h *PlatformHandler) GetAllSupportPlugin() map[string]common_type.IInstanceDescription {
 	ret := make(map[string]common_type.IInstanceDescription)
 	h.hostPool.Range(func(hostID string, host common_type.IHost) bool {
 		for _, plugin := range host.GetInfo().SupportPlugins {
@@ -354,7 +357,7 @@ func (h *Handler) GetAllSupportPlugin() map[string]common_type.IInstanceDescript
 	return ret
 }
 
-func (h *Handler) _createHost() common_type.IHost {
+func (h *PlatformHandler) _createHost() common_type.IHost {
 	boot := h.hostBootPool.One()
 	if boot == nil {
 		log.Error("has no host boot")
@@ -371,7 +374,7 @@ func (h *Handler) _createHost() common_type.IHost {
 		Host: &protocol.HostDescriptor{HostID: id, Name: name},
 	}
 
-	result, err := h.Send(msg, Timeout)
+	result, err := h.conn.Send(msg, Timeout)
 	if err != nil {
 		h.logSendSyncError(msg, err)
 		h.hostBootPool.Delete(boot)
@@ -397,7 +400,7 @@ func (h *Handler) _createHost() common_type.IHost {
 	return nil
 }
 
-func (h *Handler) _findHostByPluginInstanceID(instanceID string) common_type.IHost {
+func (h *PlatformHandler) _findHostByPluginInstanceID(instanceID string) common_type.IHost {
 	var ret common_type.IHost
 	h.hostPool.Range(func(hostID string, host common_type.IHost) bool {
 		plugins := host.GetInfo().RunningPlugins
@@ -426,7 +429,7 @@ func (h *Handler) _findHostByPluginInstanceID(instanceID string) common_type.IHo
 	return ret
 }
 
-func (h *Handler) _getHostByInstanceID(instanceID string, callback func(host common_type.IHost)) {
+func (h *PlatformHandler) _getHostByInstanceID(instanceID string, callback func(host common_type.IHost)) {
 	host := h._findHostByPluginInstanceID(instanceID)
 	if host != nil {
 		callback(host)
@@ -436,10 +439,10 @@ func (h *Handler) _getHostByInstanceID(instanceID string, callback func(host com
 	go callback(h._createHost())
 }
 
-func (h *Handler) Run() common_type.PluginError {
+func (h *PlatformHandler) Run() common_type.PluginError {
 	log.Info("PlatformHandler Run")
 
-	err := h.GetZmq().Connect()
+	err := h.conn.GetZmq().Connect()
 	if err != nil {
 		return err
 	}

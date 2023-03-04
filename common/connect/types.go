@@ -35,7 +35,7 @@ type MessageHandler interface {
 	OnError(pluginError common_type.PluginError) // EndpointReceiveErr、EndpointIdentifyErr、EndpointSendErr only
 }
 
-type FurtherHandler interface {
+type ConnectionHandler interface {
 	OnConnect() common_type.PluginError
 	OnDisconnect() common_type.PluginError
 	OnMsg(endpoint *EndpointInfo, content *protocol.PlatformMessage, unmarshalError common_type.PluginError)

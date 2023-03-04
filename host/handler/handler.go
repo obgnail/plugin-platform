@@ -22,11 +22,11 @@ var Timeout = time.Duration(config.Int("host.timeout_sec", defaultTimeoutSec)) *
 var RetryReconnectInterval = time.Duration(config.Int("host.retry_reconnect_sec", RetryReconnectSec)) * time.Second
 
 var _ common.Sender = (*HostHandler)(nil)
-var _ connect.FurtherHandler = (*HostHandler)(nil)
+var _ connect.ConnectionHandler = (*HostHandler)(nil)
 
 type HostHandler struct {
 	descriptor   *protocol.HostDescriptor // 存储host的信息
-	conn         *connect.BaseHandler     // 负责和platform的通讯
+	conn         *connect.Connection      // 负责和platform的通讯
 	mounter      *PluginMounter           // 负责挂载插件
 	instancePool *InstancePool            // 存储已经挂载的插件
 	isLocal      bool                     // host运行在测试环境/生产环境
@@ -48,7 +48,7 @@ func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, i
 	log.Info("new host: %+v", handler.descriptor)
 
 	zmq := connect.NewZmq(id, name, addr, connect.SocketTypeDealer, connect.RoleHost).SetPacker(&connect.ProtoPacker{})
-	handler.conn = connect.NewBaseHandler(zmq, handler)
+	handler.conn = connect.NewConnection(zmq, handler)
 	handler.mounter = NewMounter(handler, isLocal)
 	return handler
 }
@@ -102,9 +102,16 @@ func (h *HostHandler) OnError(err common_type.PluginError) {
 }
 
 func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
-	appID := msg.Control.LifeCycleRequest.Instance.Application.ApplicationID
-	appVer := msg.Control.LifeCycleRequest.Instance.Application.ApplicationVersion
-	log.Trace("【GET】message.LifeCycle. GetSeqNo: %d. appID: %s(%+v)", msg.GetHeader().GetSeqNo(), appID, appVer)
+	req := msg.Control.LifeCycleRequest
+	host := req.Host
+	oldVersion := req.OldVersion
+	action := req.Action
+	instance := req.Instance
+	app := instance.Application
+	appID := app.ApplicationID
+	appVer := app.ApplicationVersion
+
+	log.Trace("【GET】message.LifeCycle. [Action]: %d. [appID]: %s. [instanceID]: %s", int32(action), appID, instance)
 
 	resp := &protocol.PlatformMessage{
 		Header: &protocol.RouterMessage{
@@ -114,10 +121,10 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 		},
 		Control: &protocol.ControlMessage{
 			LifeCycleResponse: &protocol.ControlMessage_PluginLifeCycleResponseMessage{
-				Host:     msg.Control.LifeCycleRequest.Host,
-				Instance: msg.Control.LifeCycleRequest.Instance, // 这个值后面可能会被修改
-				Result:   true,                                  // 这个值后面可能会被修改
-				Error:    nil,                                   // 这个值后面可能会被修改
+				Host:     host,
+				Instance: instance,
+				Result:   true, // 这个值后面可能会被修改
+				Error:    nil,  // 这个值后面可能会被修改
 			},
 		},
 	}
@@ -125,15 +132,10 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 	// 发送响应数据
 	defer func() {
 		if err := h.SendOnly(resp); err != nil {
-			log.Error("appId: %s appVersion: %s hh.SendMessage err: %s", appID, appVer, err.Error())
+			log.Error("appID: %s appVersion: %s hh.SendMessage err: %s", appID, appVer, err.Error())
 		}
 		h.OnHeartbeat(msg) // 立即触发心跳,及时报告
 	}()
-
-	instance := msg.Control.LifeCycleRequest.Instance
-	action := msg.Control.LifeCycleRequest.Action
-	oldVersion := msg.Control.LifeCycleRequest.OldVersion
-	app := instance.Application
 
 	instanceDesc := &common_type.MockInstanceDesc{
 		PluginInstanceID: instance.InstanceID,
@@ -272,6 +274,8 @@ func (h *HostHandler) getLifeCycleRequest() common_type.LifeCycleRequest {
 }
 
 func (h *HostHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
+	log.Trace("【GET】message.Heartbeat. %d", msg.Control.Heartbeat)
+
 	var running = make(map[string]*protocol.PluginInstanceDescriptor)
 	for _, _running := range h.instancePool.ListRunningInstances() {
 		instance := message.BuildInstanceDescriptor(_running, h.descriptor.HostID)
@@ -300,6 +304,8 @@ func (h *HostHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
 			},
 		},
 	}
+
+	log.Trace("【SND】message.Heartbeat. %+v", toPlatform.Control.HostReport)
 	if err := h.SendOnly(toPlatform); err != nil {
 		log.ErrorDetails(err)
 	}

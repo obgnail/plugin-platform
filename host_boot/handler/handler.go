@@ -21,9 +21,11 @@ const (
 var Timeout = time.Duration(config.Int("host_boot.timeout_sec", defaultTimeoutSec)) * time.Second
 var RetryReconnectInterval = time.Duration(config.Int("host_boot.retry_reconnect_sec", RetryReconnectSec)) * time.Second
 
+var _ connect.ConnectionHandler = (*HostBootHandler)(nil)
+
 type HostBootHandler struct {
 	descriptor *protocol.HostBootDescriptor
-	conn       *connect.BaseHandler // 负责和platform的通讯
+	conn       *connect.Connection // 负责和platform的通讯
 }
 
 func New(id, name, addr, version string) *HostBootHandler {
@@ -35,7 +37,7 @@ func New(id, name, addr, version string) *HostBootHandler {
 		},
 	}
 	zmq := connect.NewZmq(id, name, addr, connect.SocketTypeDealer, connect.RoleHost).SetPacker(&connect.ProtoPacker{})
-	h.conn = connect.NewBaseHandler(zmq, h)
+	h.conn = connect.NewConnection(zmq, h)
 	return h
 }
 
@@ -90,6 +92,8 @@ func (h *HostBootHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.Pl
 }
 
 func (h *HostBootHandler) OnStartHost(msg *protocol.PlatformMessage) {
+	log.Trace("【GET】message.StartHost. %+v", msg.Control.StartHost.Host)
+
 	host := h.newHost(msg)
 
 	resp := &protocol.PlatformMessage{
@@ -106,7 +110,7 @@ func (h *HostBootHandler) OnStartHost(msg *protocol.PlatformMessage) {
 			},
 		},
 	}
-	log.Trace("start host: %+v", resp)
+	log.Trace("【SND】message.StartHost. %+v", resp.Control.StartHost)
 	if err := h.SendOnly(resp); err != nil {
 		log.ErrorDetails(err)
 	}
@@ -129,8 +133,13 @@ func (h *HostBootHandler) newHost(msg *protocol.PlatformMessage) *host_handler.H
 }
 
 func (h *HostBootHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
+	log.Trace("【GET】message.Heartbeat. %d", msg.Control.Heartbeat)
+
 	resp := message.BuildHostBootReportInitMessage(h.descriptor)
 	resp.Header.SeqNo = msg.Header.SeqNo
+
+	log.Trace("【SND】message.Heartbeat. %+v", resp.Control.BootReport)
+
 	if err := h.SendOnly(msg); err != nil {
 		log.ErrorDetails(err)
 	}

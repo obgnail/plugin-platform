@@ -9,16 +9,16 @@ package plugin_pool
 //	"time"
 //)
 //
-//var platformHandler *FurtherHandler
+//var platformHandler *ConnectionHandler
 //
-//type FurtherHandler struct {
+//type ConnectionHandler struct {
 //	innerEp  connection.Endpoint
 //	SendBack bool
 //	sync     *connection.Synchronized
 //	log      *resourceLog.Log
 //}
 //
-//func (ph *FurtherHandler) doHb() {
+//func (ph *ConnectionHandler) doHb() {
 //	for {
 //		select {
 //		case <-time.After(time.Second * 10):
@@ -29,7 +29,7 @@ package plugin_pool
 //	}
 //}
 //
-//func (ph *FurtherHandler) sendHb() {
+//func (ph *ConnectionHandler) sendHb() {
 //	heartbeatID := utils.CreateCaptcha()
 //	controlMessage := protocol.BuildControlMessage()
 //	controlMessage.Heartbeat = heartbeatID
@@ -55,7 +55,7 @@ package plugin_pool
 //	}
 //}
 //
-//func RunPlatform() *FurtherHandler {
+//func RunPlatform() *ConnectionHandler {
 //	l := resourceLog.Logger
 //	p := &connection.PBProto{Log: l}
 //	version := config.Config.Version
@@ -63,7 +63,7 @@ package plugin_pool
 //	addr := fmt.Sprintf("%s:%d", config.StringOrPanic("host"), config.IntOrPanic("tcp_port"))
 //	router := connection.NewZmqPlatformEndpoint("R000001", connection.Platform, connection.RouterDumper, version, addr, connection.SocketTypeRouter,
 //		l, p, true, true, true)
-//	h := &FurtherHandler{
+//	h := &ConnectionHandler{
 //		sync: connection.NewSynchronized(time.Duration(1000*config.Config.TimeoutSec), l),
 //		log:  l,
 //	}
