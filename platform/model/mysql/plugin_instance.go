@@ -22,7 +22,6 @@ type PluginInstance struct {
 	Version      string `gorm:"version" json:"version"`
 	Description  string `gorm:"description" json:"description"`
 	Contact      string `gorm:"contact" json:"contact"`
-	Type         int    `gorm:"type" json:"type"`
 	Status       int    `gorm:"status" json:"status"`
 	Apis         string `gorm:"apis" json:"apis"`
 	CreateTime   string `gorm:"create_time" json:"create_time"`

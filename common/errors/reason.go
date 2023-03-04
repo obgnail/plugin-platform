@@ -14,6 +14,12 @@ const (
 	// 文件解压失败
 	FileUnzipFailed = "FileUnzipFailed"
 
+	// 加载配置文件失败
+	LoadYamlConfigFailed = "LoadYamlConfig"
+
+	// 保存到数据库失败
+	SaveToDBFailed = "SaveToDBFailed"
+
 	// 插件文件不存在
 	FileNoExist = "FileNoExist"
 

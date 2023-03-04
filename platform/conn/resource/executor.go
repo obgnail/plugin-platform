@@ -3,12 +3,12 @@ package resource
 import (
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/common/utils/message"
-	"github.com/obgnail/plugin-platform/platform/handler/resource/ability"
-	"github.com/obgnail/plugin-platform/platform/handler/resource/db"
-	"github.com/obgnail/plugin-platform/platform/handler/resource/event_publisher"
-	"github.com/obgnail/plugin-platform/platform/handler/resource/log"
-	"github.com/obgnail/plugin-platform/platform/handler/resource/network"
-	"github.com/obgnail/plugin-platform/platform/handler/resource/work_space"
+	"github.com/obgnail/plugin-platform/platform/conn/resource/ability"
+	"github.com/obgnail/plugin-platform/platform/conn/resource/db"
+	"github.com/obgnail/plugin-platform/platform/conn/resource/event_publisher"
+	"github.com/obgnail/plugin-platform/platform/conn/resource/log"
+	"github.com/obgnail/plugin-platform/platform/conn/resource/network"
+	"github.com/obgnail/plugin-platform/platform/conn/resource/work_space"
 )
 
 type Executor struct {

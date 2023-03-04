@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/log"
 	hotboot_handler "github.com/obgnail/plugin-platform/host_boot/handler"
-	"github.com/obgnail/plugin-platform/platform/handler/handler"
+	"github.com/obgnail/plugin-platform/platform/conn/handler"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/model/redis"
 	"github.com/obgnail/plugin-platform/platform/pool/plugin_pool"
@@ -15,16 +15,6 @@ import (
 func main() {
 	Init()
 	log.Info("run")
-
-	go func() {
-		time.Sleep(12 * time.Second)
-		log.Info("InstallPlugin...")
-		handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
-			"golang", "1.14.0", "1.0.0")
-		time.Sleep(10 * time.Second)
-		handler.StartPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
-			"golang", "1.14.0", "1.0.0")
-	}()
 
 	router.Run()
 }

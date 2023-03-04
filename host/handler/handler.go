@@ -13,7 +13,13 @@ import (
 	"time"
 )
 
-var Timeout = time.Duration(config.Int("host.timeout_sec", 30)) * time.Second
+const (
+	defaultTimeoutSec = 30
+	RetryReconnectSec = 9
+)
+
+var Timeout = time.Duration(config.Int("host.timeout_sec", defaultTimeoutSec)) * time.Second
+var RetryReconnectInterval = time.Duration(config.Int("host.retry_reconnect_sec", RetryReconnectSec)) * time.Second
 
 var _ common.Sender = (*HostHandler)(nil)
 var _ connect.FurtherHandler = (*HostHandler)(nil)
@@ -87,7 +93,8 @@ func (h *HostHandler) OnError(err common_type.PluginError) {
 	if err.Code() != common_type.EndpointReceiveErr {
 		os.Exit(1)
 	}
-	time.Sleep(time.Second * 9)
+	// 默认等待3个心跳周期后重新尝试连接,若还连接不上,则退出
+	time.Sleep(RetryReconnectInterval)
 	if e := h.conn.Connect(); e != nil {
 		os.Exit(1)
 	}

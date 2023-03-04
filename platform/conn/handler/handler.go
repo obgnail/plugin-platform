@@ -10,17 +10,19 @@ import (
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/common/utils/math"
 	"github.com/obgnail/plugin-platform/common/utils/message"
-	"github.com/obgnail/plugin-platform/platform/handler/resource"
-	resourceLog "github.com/obgnail/plugin-platform/platform/handler/resource/log"
+	"github.com/obgnail/plugin-platform/platform/conn/resource"
+	resourceLog "github.com/obgnail/plugin-platform/platform/conn/resource/log"
 	"time"
 )
 
 const (
-	defaultTimeoutSec   = 30
-	defaultHeartbeatSec = 5
+	defaultTimeoutSec       = 30
+	defaultHeartbeatSec     = 5
+	defaultRetryIntervalSec = 1
 )
 
 var Timeout = time.Duration(config.Int("platform.timeout_sec", defaultTimeoutSec)) * time.Second
+var RetryInterval = time.Duration(config.Int("platform.retry_interval_sec", defaultRetryIntervalSec)) * time.Second
 
 type Handler struct {
 	hostPool     *HostPool
@@ -204,15 +206,15 @@ func (h *Handler) logMsg(logMsg []*protocol.LogMessage) {
 	}
 }
 
-func (h *Handler) lifeCycleReq(
+func (h *Handler) lifeCycle(
+	done chan common_type.PluginError,
 	action protocol.ControlMessage_PluginActionType,
 	appID, instanceID, name, lang, langVer, appVer string,
 	oldVersion *protocol.PluginDescriptor,
-) {
-
+) chan common_type.PluginError {
 	h._getHostByInstanceID(instanceID, func(host common_type.IHost) {
 		if host == nil {
-			log.Error("get host timeout!")
+			done <- common_type.NewPluginError(common_type.MsgTimeOut, common_type.MsgTimeOutError.Error(), "timeout")
 			return
 		}
 
@@ -237,6 +239,9 @@ func (h *Handler) lifeCycleReq(
 			OldVersion: oldVersion,
 		}
 		h.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
+			if done != nil {
+				done <- err
+			}
 			if err == nil {
 				return
 			}
@@ -245,42 +250,43 @@ func (h *Handler) lifeCycleReq(
 			log.Warn("delete hostPool: %s", info.ID)
 		})
 	})
+	return done
 }
 
-func (h *Handler) EnablePlugin(appID, instanceID, name, lang, langVer, appVer string) {
-	h.lifeCycleReq(protocol.ControlMessage_Enable, appID, instanceID, name, lang, langVer, appVer, nil)
+func (h *Handler) EnablePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+	return h.lifeCycle(done, protocol.ControlMessage_Enable, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) DisablePlugin(appID, instanceID, name, lang, langVer, appVer string) {
-	h.lifeCycleReq(protocol.ControlMessage_Disable, appID, instanceID, name, lang, langVer, appVer, nil)
+func (h *Handler) DisablePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+	return h.lifeCycle(done, protocol.ControlMessage_Disable, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) StartPlugin(appID, instanceID, name, lang, langVer, appVer string) {
-	h.lifeCycleReq(protocol.ControlMessage_Start, appID, instanceID, name, lang, langVer, appVer, nil)
+func (h *Handler) StartPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+	return h.lifeCycle(done, protocol.ControlMessage_Start, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) StopPlugin(appID, instanceID, name, lang, langVer, appVer string) {
-	h.lifeCycleReq(protocol.ControlMessage_Stop, appID, instanceID, name, lang, langVer, appVer, nil)
+func (h *Handler) StopPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+	return h.lifeCycle(done, protocol.ControlMessage_Stop, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) InstallPlugin(appID, instanceID, name, lang, langVer, appVer string) {
-	h.lifeCycleReq(protocol.ControlMessage_Install, appID, instanceID, name, lang, langVer, appVer, nil)
+func (h *Handler) InstallPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+	return h.lifeCycle(done, protocol.ControlMessage_Install, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) UnInstallPlugin(appID, instanceID, name, lang, langVer, appVer string) {
-	h.lifeCycleReq(protocol.ControlMessage_UnInstall, appID, instanceID, name, lang, langVer, appVer, nil)
+func (h *Handler) UnInstallPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+	return h.lifeCycle(done, protocol.ControlMessage_UnInstall, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) UpgradePlugin(appID, instanceID, name, lang, langVer, appVer string, oldVersion *protocol.PluginDescriptor) {
-	h.lifeCycleReq(protocol.ControlMessage_Upgrade, appID, instanceID, name, lang, langVer, appVer, oldVersion)
+func (h *Handler) UpgradePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string, oldVersion *protocol.PluginDescriptor) chan common_type.PluginError {
+	return h.lifeCycle(done, protocol.ControlMessage_Upgrade, appID, instanceID, name, lang, langVer, appVer, oldVersion)
 }
 
-func (h *Handler) CheckStatePlugin(appID, instanceID, name, lang, langVer, appVer string) {
-	h.lifeCycleReq(protocol.ControlMessage_CheckState, appID, instanceID, name, lang, langVer, appVer, nil)
+func (h *Handler) CheckStatePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+	return h.lifeCycle(done, protocol.ControlMessage_CheckState, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
-func (h *Handler) CheckCompatibilityPlugin(appID, instanceID, name, lang, langVer, appVer string) {
-	h.lifeCycleReq(protocol.ControlMessage_CheckCompatibility, appID, instanceID, name, lang, langVer, appVer, nil)
+func (h *Handler) CheckCompatibilityPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+	return h.lifeCycle(done, protocol.ControlMessage_CheckCompatibility, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
 func (h *Handler) KillHost(hostID string) {
@@ -383,7 +389,7 @@ func (h *Handler) _createHost() common_type.IHost {
 
 		if count != maxRetry {
 			count++
-			time.Sleep(time.Second)
+			time.Sleep(RetryInterval)
 		} else {
 			break
 		}
@@ -427,10 +433,7 @@ func (h *Handler) _getHostByInstanceID(instanceID string, callback func(host com
 		return
 	}
 
-	go func() {
-		_host := h._createHost()
-		callback(_host)
-	}()
+	go callback(h._createHost())
 }
 
 func (h *Handler) Run() common_type.PluginError {

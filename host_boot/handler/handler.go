@@ -13,7 +13,13 @@ import (
 	"time"
 )
 
-var Timeout = time.Duration(config.Int("host_boot.timeout_sec", 30)) * time.Second
+const (
+	defaultTimeoutSec = 30
+	RetryReconnectSec = 9
+)
+
+var Timeout = time.Duration(config.Int("host_boot.timeout_sec", defaultTimeoutSec)) * time.Second
+var RetryReconnectInterval = time.Duration(config.Int("host_boot.retry_reconnect_sec", RetryReconnectSec)) * time.Second
 
 type HostBootHandler struct {
 	descriptor *protocol.HostBootDescriptor
@@ -56,7 +62,7 @@ func (h *HostBootHandler) OnError(err common_type.PluginError) {
 	if err.Code() != common_type.EndpointReceiveErr {
 		os.Exit(1)
 	}
-	time.Sleep(time.Second * 9)
+	time.Sleep(RetryReconnectInterval)
 	if e := h.conn.Connect(); e != nil {
 		os.Exit(1)
 	}

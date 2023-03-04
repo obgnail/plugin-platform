@@ -28,16 +28,6 @@ func Install(c *gin.Context) {
 	RenderJSON(c, result, resp)
 }
 
-//func DeleteOpk(c *gin.Context) {
-//	req := &lifecycle_action.DeleteOpkReq{}
-//	if err := c.BindJSON(&req); err != nil {
-//		return
-//	}
-//	resp, result := lifecycle_action.DeleteOpk(req)
-//	RenderJSON(c, result, resp)
-//}
-//
-
 //
 //func UnInstall(c *gin.Context) {
 //	req := &lifecycle_action.UninstallReq{}
