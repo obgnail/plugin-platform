@@ -24,8 +24,13 @@ func main() {
 		log.Info("InstallPlugin...")
 		h.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
 			"golang", "1.14.0", "1.0.0")
-	}()
+		h.StartPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+			"golang", "1.14.0", "1.0.0")
 
+		time.Sleep(time.Second * 20)
+		log.Info("kill Plugin")
+		h.KillPlugin("InstanceID123")
+	}()
 	time.Sleep(time.Hour)
 }
 

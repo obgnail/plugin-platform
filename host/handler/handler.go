@@ -94,11 +94,6 @@ func (h *HostHandler) OnError(err common_type.PluginError) {
 	h.InitReport()
 }
 
-func (h *HostHandler) OnKill(msg *protocol.PlatformMessage) {
-	log.Info("kill handler")
-	os.Exit(1)
-}
-
 func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 	appID := msg.Control.LifeCycleRequest.Instance.Application.ApplicationID
 	appVer := msg.Control.LifeCycleRequest.Instance.Application.ApplicationVersion
@@ -196,16 +191,16 @@ func (h *HostHandler) doAction(
 	return err
 }
 
-func (h *HostHandler) mountPlugin(instanceDesc *common_type.MockInstanceDesc) (common_type.IPlugin, common_type.PluginError) {
-	_plugin, _, _ := h.instancePool.GetPlugin(instanceDesc.InstanceID())
+func (h *HostHandler) mountPlugin(instanceDesc *common_type.MockInstanceDesc) (Plugin common_type.IPlugin, err common_type.PluginError) {
+	Plugin, _, _ = h.instancePool.GetPlugin(instanceDesc.InstanceID())
 
-	setupPlugin, err := h.mounter.Mount(_plugin, instanceDesc)
+	Plugin, err = h.mounter.Mount(Plugin, instanceDesc)
 	if err != nil {
 		return nil, err
 	}
 
-	h.instancePool.Add(instanceDesc.PluginInstanceID, setupPlugin) // 此插件已经成功挂载
-	return setupPlugin, nil
+	h.instancePool.Add(instanceDesc.PluginInstanceID, Plugin) // 此插件已经成功挂载
+	return Plugin, nil
 }
 
 func (h *HostHandler) setLifeCycleRespError(resp *protocol.PlatformMessage,
@@ -267,6 +262,34 @@ func (h *HostHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
 	}
 }
 
+func (h *HostHandler) OnKillSelf(msg *protocol.PlatformMessage) {
+	log.Info("kill handler")
+	os.Exit(1)
+}
+
+func (h *HostHandler) OnKillPlugin(msg *protocol.PlatformMessage) {
+	log.Info("kill plugin: %+v", msg)
+	instanceID := msg.Control.KillPlugin.InstanceID
+	_, _, exist := h.instancePool.GetPlugin(instanceID)
+
+	if exist {
+		// go plugin 机制没有卸载功能
+		h.instancePool.DeleteInstance(instanceID)
+	}
+
+	resp := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    msg.Header.SeqNo,
+			Source:   msg.Header.Distinct,
+			Distinct: msg.Header.Source,
+		},
+		Control: msg.Control,
+	}
+	if err := h.SendOnly(resp); err != nil {
+		log.ErrorDetails(err)
+	}
+}
+
 func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
 	if err != nil {
 		log.ErrorDetails(err)
@@ -291,9 +314,14 @@ func (h *HostHandler) OnControlMessage(endpoint *connect.EndpointInfo, msg *prot
 	if control.GetLifeCycleRequest() != nil {
 		h.OnLifeCycle(msg)
 	}
+
 	// kill 自己
 	if control.GetKill() != nil {
-		h.OnKill(msg)
+		h.OnKillSelf(msg)
+	}
+
+	if control.GetKillPlugin() != nil {
+		h.OnKillPlugin(msg)
 	}
 }
 

@@ -12,7 +12,7 @@ type InstancePool struct {
 
 // ListInstances 列出所有的插件实例
 func (pool *InstancePool) ListInstances() []common_type.IInstanceDescription {
-	var resp = make([]common_type.IInstanceDescription, 0)
+	var resp []common_type.IInstanceDescription
 	pool.running.Range(func(k, v interface{}) bool {
 		resp = append(resp, v.(common_type.IInstanceDescription))
 		return true

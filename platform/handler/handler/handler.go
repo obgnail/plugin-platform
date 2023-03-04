@@ -282,6 +282,41 @@ func (h *PlatformHandler) CheckCompatibilityPlugin(appID, instanceID, name, lang
 	h.lifeCycleReq(protocol.ControlMessage_CheckCompatibility, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
+func (h *PlatformHandler) KillHost(hostID string) {
+	host, ok := h.hostPool.Exist(hostID)
+	if !ok {
+		return
+	}
+	info := host.GetInfo()
+	msg := message.BuildP2HDefaultMessage(info.ID, info.Name)
+	msg.Control.Kill = &protocol.ControlMessage_KillPluginHostMessage{Kill: true}
+	if err := h.SendOnly(msg); err != nil {
+		log.ErrorDetails(err)
+	}
+}
+
+func (h *PlatformHandler) KillPlugin(instanceID string) {
+	host := h._findHostByPluginInstanceID(instanceID)
+	if host == nil {
+		return
+	}
+	info := host.GetInfo()
+
+	log.Info("kill plugin: host:%s. plugin:%s", info.ID, instanceID)
+
+	msg := message.BuildP2HDefaultMessage(info.ID, info.Name)
+	msg.Control.KillPlugin = &protocol.ControlMessage_KillPluginMessage{InstanceID: instanceID}
+	h.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
+		if err == nil {
+			log.Info("kill plugin: %s", instanceID)
+			return
+		}
+		h.logSendSyncError(input, err)
+		h.hostPool.DeleteByID(info.ID)
+		log.Info("delete hostPool: %s", info.ID)
+	})
+}
+
 func (h *PlatformHandler) _createHost() common_type.IHost {
 	boot := h.hostBootPool.One()
 	if boot == nil {
@@ -300,12 +335,12 @@ func (h *PlatformHandler) _createHost() common_type.IHost {
 	}
 
 	result, err := h.Send(msg, Timeout)
-	log.Info("start host: %+v", result.Control.StartHost)
 	if err != nil {
 		h.logSendSyncError(msg, err)
 		h.hostBootPool.Delete(boot)
 		return nil
 	}
+	log.Info("start host: %+v", result.Control.StartHost)
 
 	count := 0
 	maxRetry := 5
