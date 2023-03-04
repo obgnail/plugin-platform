@@ -92,8 +92,7 @@ func (n *Network) buildMsg(status int64, body []byte, headers map[string]*protoc
 	}
 	if err != nil {
 		log.ErrorDetails(err)
-		e := common_type.NewPluginError(common_type.CallMainSystemAPIFailure, err.Error(),
-			common_type.CallMainSystemAPIFailureError.Error())
+		e := common_type.NewPluginError(common_type.CallMainSystemAPIFailure, err.Error())
 		msg.Error = message.BuildErrorMessage(e)
 	}
 	n.distinct.Resource.Http = &protocol.HttpResourceMessage{ResourceHttpResponse: msg}

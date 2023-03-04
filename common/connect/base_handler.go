@@ -67,30 +67,30 @@ func (c *Connection) SendAsync(msg *protocol.PlatformMessage, timeout time.Durat
 	}
 }
 
-func (c *Connection) SendOnly(msg *protocol.PlatformMessage) (err common_type.PluginError) {
-	msgBytes, e := proto.Marshal(msg)
-	if e != nil {
-		log.ErrorDetails(errors.Trace(e))
-		return common_type.NewPluginError(common_type.ProtoMarshalFailure, common_type.ProtoMarshalFailureError.Error(), e.Error())
+func (c *Connection) SendOnly(msg *protocol.PlatformMessage) common_type.PluginError {
+	msgBytes, err := proto.Marshal(msg)
+	if err != nil {
+		log.ErrorDetails(errors.Trace(err))
+		return common_type.NewPluginError(common_type.ProtoMarshalFailure, err.Error())
 	}
-	if e = c.Zmq.Send(msgBytes); e != nil {
-		log.ErrorDetails(errors.Trace(e))
-		return common_type.NewPluginError(common_type.EndpointSendErr, common_type.EndpointSendError.Error(), e.Error())
+	if err = c.Zmq.Send(msgBytes); err != nil {
+		log.ErrorDetails(errors.Trace(err))
+		return common_type.NewPluginError(common_type.EndpointSendErr, err.Error())
 	}
 	return nil
 }
 
 func (c *Connection) OnMessage(endpoint *EndpointInfo, content []byte) {
 	msg := &protocol.PlatformMessage{}
-	var e common_type.PluginError
+	var pluginError common_type.PluginError
 	if err := proto.Unmarshal(content, msg); err != nil {
-		log.ErrorDetails(errors.Trace(e))
-		e = common_type.NewPluginError(common_type.ProtoUnmarshalFailure, common_type.ProtoUnmarshalFailureError.Error(), err.Error())
+		log.ErrorDetails(errors.Trace(err))
+		pluginError = common_type.NewPluginError(common_type.ProtoUnmarshalFailure, err.Error())
 	}
 	if spin, ok := c.spins.Load(msg.Header.SeqNo); ok {
 		spin.(*syncSpin).onResult(msg)
 	}
-	c.ConnectionHandler.OnMsg(endpoint, msg, e)
+	c.ConnectionHandler.OnMsg(endpoint, msg, pluginError)
 }
 
 type CallBack func(input, result *protocol.PlatformMessage, err common_type.PluginError)
@@ -134,7 +134,7 @@ func (s *syncSpin) onResult(msg *protocol.PlatformMessage) {
 func (s *syncSpin) wait() {
 	select {
 	case <-time.After(s.timeout):
-		s.err = common_type.NewPluginError(common_type.MsgTimeOut, common_type.MsgTimeOutError.Error(), "timeout")
+		s.err = common_type.NewPluginError(common_type.MsgTimeOut, "syncSpin timeout")
 	case <-s.exit:
 	}
 

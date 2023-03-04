@@ -51,6 +51,5 @@ func getEndpointInfo(node *protocol.RouterNode) *EndpointInfo {
 }
 
 func genError(err string) common_type.PluginError {
-	return common_type.NewPluginError(common_type.ProtoUnmarshalFailure,
-		common_type.ProtoUnmarshalFailureError.Error(), err)
+	return common_type.NewPluginError(common_type.ProtoUnmarshalFailure, err)
 }

@@ -125,7 +125,7 @@ func (p *ZmqEndpoint) SendTo(id string, content []byte) common_type.PluginError 
 	target, ok := p.GetEndpoint(id)
 	if !ok {
 		errStr := fmt.Sprintf("%s SendMsgError(getTarget by endpointID[%s]): TargetEndpointNotFound", p.info, id)
-		return common_type.NewPluginError(common_type.TargetEndpointNotFound, common_type.TargetEndpointNotFoundError.Error(), errStr)
+		return common_type.NewPluginError(common_type.TargetEndpointNotFound, errStr)
 	}
 	p.sendChan <- &zmqMessage{endpointID: target.ID, data: content}
 	return nil
@@ -146,12 +146,10 @@ func (p *ZmqEndpoint) Publish(rawData []byte) common_type.PluginError {
 
 func (p *ZmqEndpoint) Connect() common_type.PluginError {
 	if p.handler == nil {
-		return common_type.NewPluginError(common_type.SocketListenOrDialFailure,
-			common_type.SocketListenOrDialFailureError.Error(), "hasNoHandler")
+		return common_type.NewPluginError(common_type.SocketListenOrDialFailure, "hasNoHandler")
 	}
 	if p.packer == nil {
-		return common_type.NewPluginError(common_type.SocketListenOrDialFailure,
-			common_type.SocketListenOrDialFailureError.Error(), "hasNoIdentifier")
+		return common_type.NewPluginError(common_type.SocketListenOrDialFailure, "hasNoIdentifier")
 	}
 
 	var err error
@@ -165,8 +163,7 @@ func (p *ZmqEndpoint) Connect() common_type.PluginError {
 	}
 	if err != nil {
 		p.Close()
-		return common_type.NewPluginError(common_type.SocketListenOrDialFailure,
-			common_type.SocketListenOrDialFailureError.Error(), err.Error())
+		return common_type.NewPluginError(common_type.SocketListenOrDialFailure, err.Error())
 	}
 
 	go p.startReceiver()
@@ -184,8 +181,7 @@ func (p *ZmqEndpoint) startReceiver() {
 			raw, err := p.socket.Recv()
 			if err != nil {
 				log.ErrorDetails(errors.Trace(err))
-				p.handler.OnError(common_type.NewPluginError(common_type.EndpointReceiveErr,
-					common_type.EndpointReceiveError.Error(), err.Error()))
+				p.handler.OnError(common_type.NewPluginError(common_type.EndpointReceiveErr, err.Error()))
 				continue
 			}
 
@@ -194,8 +190,7 @@ func (p *ZmqEndpoint) startReceiver() {
 			source, _, processData, err := p.packer.Unpack(rawData)
 			if err != nil {
 				log.ErrorDetails(errors.Trace(err))
-				p.handler.OnError(common_type.NewPluginError(common_type.EndpointIdentifyErr,
-					common_type.EndpointIdentifyError.Error(), err.Error()))
+				p.handler.OnError(common_type.NewPluginError(common_type.EndpointIdentifyErr, err.Error()))
 				continue
 			}
 			p.AddEndpoint(source)
@@ -215,8 +210,7 @@ func (p *ZmqEndpoint) startSender() {
 			err := p.socket.Send(content)
 			if err != nil {
 				log.ErrorDetails(errors.Trace(err))
-				p.handler.OnError(common_type.NewPluginError(common_type.EndpointSendErr,
-					common_type.EndpointSendError.Error(), err.Error()))
+				p.handler.OnError(common_type.NewPluginError(common_type.EndpointSendErr, err.Error()))
 				continue
 			}
 		}

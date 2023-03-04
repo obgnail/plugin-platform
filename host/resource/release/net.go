@@ -60,7 +60,7 @@ func (c *CommonNetwork) fetch(platformMessage *protocol.PlatformMessage) *common
 	}
 	if retErr != nil {
 		return &common_type.HttpResponse{
-			Err:        common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg()),
+			Err:        common_type.NewPluginError(int(retErr.Code), retErr.GetMsg()),
 			StatusCode: int(code),
 			Headers:    responseHeaders,
 			Body:       body,

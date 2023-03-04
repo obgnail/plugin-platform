@@ -46,7 +46,7 @@ func (s *Space) CreateFile(name string) common_type.PluginError {
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -62,7 +62,7 @@ func (s *Space) MakeDir(dirname string) common_type.PluginError {
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -78,7 +78,7 @@ func (s *Space) Rename(originalPath, newPath string) common_type.PluginError {
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -93,7 +93,7 @@ func (s *Space) Remove(name string) common_type.PluginError {
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -108,7 +108,7 @@ func (s *Space) IsExist(name string) (bool, common_type.PluginError) {
 		return false, err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return false, common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return false, common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return msg.GetResource().GetWorkspace().GetIOResponse().GetResult(), nil
 }
@@ -123,7 +123,7 @@ func (s *Space) IsDir(name string) (bool, common_type.PluginError) {
 		return false, err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return false, common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return false, common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return msg.GetResource().GetWorkspace().GetIOResponse().GetResult(), nil
 }
@@ -139,7 +139,7 @@ func (s *Space) Copy(originalPath string, newPath string) common_type.PluginErro
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -154,7 +154,7 @@ func (s *Space) Read(name string) ([]byte, common_type.PluginError) {
 		return nil, err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return nil, common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return nil, common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return msg.GetResource().GetWorkspace().GetIOResponse().GetData(), nil
 }
@@ -171,7 +171,7 @@ func (s *Space) ReadLines(name string, readLineBegin, readLineEnd int32) ([]byte
 		return nil, err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return nil, common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return nil, common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return msg.GetResource().GetWorkspace().GetIOResponse().GetData(), nil
 }
@@ -187,7 +187,7 @@ func (s *Space) WriteBytes(name string, byteSlice []byte) common_type.PluginErro
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -203,7 +203,7 @@ func (s *Space) AppendBytes(name string, byteSlice []byte) common_type.PluginErr
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -219,7 +219,7 @@ func (s *Space) WriteStrings(name string, content []string) common_type.PluginEr
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -235,7 +235,7 @@ func (s *Space) AppendStrings(name string, content []string) common_type.PluginE
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -251,7 +251,7 @@ func (s *Space) Zip(outFileName string, targetFiles []string) common_type.Plugin
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -267,7 +267,7 @@ func (s *Space) UnZip(name, targetDir string) common_type.PluginError {
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -282,7 +282,7 @@ func (s *Space) Gz(name string) common_type.PluginError {
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -298,7 +298,7 @@ func (s *Space) UnGz(name, targetFile string) common_type.PluginError {
 		return err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }
@@ -313,7 +313,7 @@ func (s *Space) Hash(name string) ([]byte, common_type.PluginError) {
 		return nil, err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return nil, common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return nil, common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return msg.GetResource().GetWorkspace().GetIOResponse().GetData(), nil
 }
@@ -328,7 +328,7 @@ func (s *Space) List(dirName string) ([]string, common_type.PluginError) {
 		return nil, err
 	}
 	if retErr := msg.GetResource().GetWorkspace().GetIOResponse().GetError(); retErr != nil {
-		return nil, common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return nil, common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return msg.GetResource().GetWorkspace().GetIOResponse().GetFileTree(), nil
 }

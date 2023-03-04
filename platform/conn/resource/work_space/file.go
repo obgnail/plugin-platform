@@ -24,11 +24,11 @@ type SpaceOperation struct {
 func (o *SpaceOperation) CreateFile(name string) PluginError {
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return NewPluginError(CreateFileFailure, CreateFileFailureError.Error(), err.Error())
+		return NewPluginError(CreateFileFailure, err.Error())
 	}
 	newFile, err := os.Create(path)
 	if err != nil {
-		return NewPluginError(CreateFileFailure, CreateFileFailureError.Error(), err.Error())
+		return NewPluginError(CreateFileFailure, err.Error())
 	}
 	defer newFile.Close()
 	return nil
@@ -37,11 +37,11 @@ func (o *SpaceOperation) CreateFile(name string) PluginError {
 func (o *SpaceOperation) MakeDir(name string) PluginError {
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return NewPluginError(MakeDirFailure, MakeDirFailureError.Error(), err.Error())
+		return NewPluginError(MakeDirFailure, err.Error())
 	}
 	err = os.MkdirAll(path, os.ModePerm)
 	if err != nil {
-		return NewPluginError(MakeDirFailure, MakeDirFailureError.Error(), err.Error())
+		return NewPluginError(MakeDirFailure, err.Error())
 	}
 	return nil
 }
@@ -49,16 +49,16 @@ func (o *SpaceOperation) MakeDir(name string) PluginError {
 func (o *SpaceOperation) Rename(originalPath string, newPath string) PluginError {
 	oldPath, err := GetFilePath(o.AppID, o.InstanceID, originalPath)
 	if err != nil {
-		return NewPluginError(ReNameFileFailure, ReNameFileFailureError.Error(), err.Error())
+		return NewPluginError(RenameFileFailure, err.Error())
 	}
 	path, err := GetFilePath(o.AppID, o.InstanceID, newPath)
 	if err != nil {
-		return NewPluginError(ReNameFileFailure, ReNameFileFailureError.Error(), err.Error())
+		return NewPluginError(RenameFileFailure, err.Error())
 	}
 
 	err = os.Rename(oldPath, path)
 	if err != nil {
-		return NewPluginError(ReNameFileFailure, ReNameFileFailureError.Error(), err.Error())
+		return NewPluginError(RenameFileFailure, err.Error())
 	}
 	return nil
 }
@@ -66,11 +66,11 @@ func (o *SpaceOperation) Rename(originalPath string, newPath string) PluginError
 func (o *SpaceOperation) Remove(name string) PluginError {
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return NewPluginError(RemoveFileFailure, RemoveFileFailureError.Error(), err.Error())
+		return NewPluginError(RemoveFileFailure, err.Error())
 	}
 	err = os.Remove(path)
 	if err != nil {
-		return NewPluginError(RemoveFileFailure, RemoveFileFailureError.Error(), err.Error())
+		return NewPluginError(RemoveFileFailure, err.Error())
 	}
 	return nil
 }
@@ -78,11 +78,11 @@ func (o *SpaceOperation) Remove(name string) PluginError {
 func (o *SpaceOperation) IsExist(name string) (bool, PluginError) {
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return false, NewPluginError(IsExistFileFailure, IsExistFileFailureError.Error(), err.Error())
+		return false, NewPluginError(IsExistFileFailure, err.Error())
 	}
 	_, err = os.Stat(path)
 	if err != nil && os.IsNotExist(err) {
-		return false, NewPluginError(IsExistFileFailure, IsExistFileFailureError.Error(), err.Error())
+		return false, NewPluginError(IsExistFileFailure, err.Error())
 	}
 	return true, nil
 }
@@ -90,7 +90,7 @@ func (o *SpaceOperation) IsExist(name string) (bool, PluginError) {
 func (o *SpaceOperation) IsDir(name string) (bool, PluginError) {
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return false, NewPluginError(IsDirFailure, IsDirFailureError.Error(), err.Error())
+		return false, NewPluginError(IsDirFailure, err.Error())
 	}
 
 	s, err := os.Stat(path)
@@ -103,33 +103,33 @@ func (o *SpaceOperation) IsDir(name string) (bool, PluginError) {
 func (o *SpaceOperation) Copy(originalPath string, newPath string) PluginError {
 	_originalPath, err := GetFilePath(o.AppID, o.InstanceID, originalPath)
 	if err != nil {
-		return NewPluginError(CopyFileFailure, CopyFileFailureError.Error(), err.Error())
+		return NewPluginError(CopyFileFailure, err.Error())
 	}
 	_newPath, err := GetFilePath(o.AppID, o.InstanceID, newPath)
 	if err != nil {
-		return NewPluginError(CopyFileFailure, CopyFileFailureError.Error(), err.Error())
+		return NewPluginError(CopyFileFailure, err.Error())
 	}
 
 	originalFile, err := os.Open(_originalPath)
 	if err != nil {
-		return NewPluginError(CopyFileFailure, CopyFileFailureError.Error(), err.Error())
+		return NewPluginError(CopyFileFailure, err.Error())
 	}
 	defer originalFile.Close()
 
 	newFile, err := os.Create(_newPath)
 	if err != nil {
-		return NewPluginError(CopyFileFailure, CopyFileFailureError.Error(), err.Error())
+		return NewPluginError(CopyFileFailure, err.Error())
 	}
 	defer newFile.Close()
 
 	_, err = io.Copy(newFile, originalFile)
 	if err != nil {
-		return NewPluginError(CopyFileFailure, CopyFileFailureError.Error(), err.Error())
+		return NewPluginError(CopyFileFailure, err.Error())
 	}
 
 	err = newFile.Sync()
 	if err != nil {
-		return NewPluginError(CopyFileFailure, CopyFileFailureError.Error(), err.Error())
+		return NewPluginError(CopyFileFailure, err.Error())
 	}
 	return nil
 }
@@ -137,17 +137,17 @@ func (o *SpaceOperation) Copy(originalPath string, newPath string) PluginError {
 func (o *SpaceOperation) Read(name string) ([]byte, PluginError) {
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return []byte{}, NewPluginError(ReadFailure, ReadFailureError.Error(), err.Error())
+		return []byte{}, NewPluginError(ReadFailure, err.Error())
 	}
 
 	file, err := os.Open(path)
 	if err != nil {
-		return []byte{}, NewPluginError(ReadFailure, ReadFailureError.Error(), err.Error())
+		return []byte{}, NewPluginError(ReadFailure, err.Error())
 	}
 
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		return []byte{}, NewPluginError(ReadFailure, ReadFailureError.Error(), err.Error())
+		return []byte{}, NewPluginError(ReadFailure, err.Error())
 	}
 
 	return data, nil
@@ -156,7 +156,7 @@ func (o *SpaceOperation) Read(name string) ([]byte, PluginError) {
 func (o *SpaceOperation) ReadLines(name string, lineBegin, lineEnd int32) ([]byte, PluginError) {
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return nil, NewPluginError(ReadLinesFailure, ReadLinesFailureError.Error(), err.Error())
+		return nil, NewPluginError(ReadLinesFailure, err.Error())
 	}
 
 	file, err := os.Open(path)
@@ -164,7 +164,7 @@ func (o *SpaceOperation) ReadLines(name string, lineBegin, lineEnd int32) ([]byt
 		_ = file.Close()
 	}(file)
 	if err != nil {
-		return nil, NewPluginError(ReadLinesFailure, ReadLinesFailureError.Error(), err.Error())
+		return nil, NewPluginError(ReadLinesFailure, err.Error())
 	}
 	fileScanner := bufio.NewScanner(file)
 	var lineCount int32 = 1
@@ -186,18 +186,18 @@ func (o *SpaceOperation) ReadLines(name string, lineBegin, lineEnd int32) ([]byt
 func (o *SpaceOperation) WriteBytes(name string, byteSlice []byte) PluginError {
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return NewPluginError(WriteBytesFailure, WriteBytesFailureError.Error(), err.Error())
+		return NewPluginError(WriteBytesFailure, err.Error())
 	}
 
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
-		return NewPluginError(WriteBytesFailure, WriteBytesFailureError.Error(), err.Error())
+		return NewPluginError(WriteBytesFailure, err.Error())
 	}
 	defer file.Close()
 
 	_, err = file.Write(byteSlice)
 	if err != nil {
-		return NewPluginError(WriteBytesFailure, WriteBytesFailureError.Error(), err.Error())
+		return NewPluginError(WriteBytesFailure, err.Error())
 	}
 	return nil
 }
@@ -205,17 +205,17 @@ func (o *SpaceOperation) WriteBytes(name string, byteSlice []byte) PluginError {
 func (o *SpaceOperation) AppendBytes(filePath string, byteSlice []byte) PluginError {
 	path, err := GetFilePath(o.AppID, o.InstanceID, filePath)
 	if err != nil {
-		return NewPluginError(AppendBytesFailure, AppendBytesFailureError.Error(), err.Error())
+		return NewPluginError(AppendBytesFailure, err.Error())
 	}
 
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
-		return NewPluginError(AppendBytesFailure, AppendBytesFailureError.Error(), err.Error())
+		return NewPluginError(AppendBytesFailure, err.Error())
 	}
 	defer file.Close()
 	_, err = file.Write(byteSlice)
 	if err != nil {
-		return NewPluginError(AppendBytesFailure, AppendBytesFailureError.Error(), err.Error())
+		return NewPluginError(AppendBytesFailure, err.Error())
 	}
 	return nil
 }
@@ -223,12 +223,12 @@ func (o *SpaceOperation) AppendBytes(filePath string, byteSlice []byte) PluginEr
 func (o *SpaceOperation) WriteStrings(name string, content []string) PluginError {
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return NewPluginError(WriteStringsFailure, WriteStringsFailureError.Error(), err.Error())
+		return NewPluginError(WriteStringsFailure, err.Error())
 	}
 
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
-		return NewPluginError(WriteStringsFailure, WriteStringsFailureError.Error(), err.Error())
+		return NewPluginError(WriteStringsFailure, err.Error())
 	}
 	defer file.Close()
 
@@ -236,7 +236,7 @@ func (o *SpaceOperation) WriteStrings(name string, content []string) PluginError
 	for _, val := range content {
 		_, err = write.WriteString(val)
 		if err != nil {
-			return NewPluginError(WriteStringsFailure, WriteStringsFailureError.Error(), err.Error())
+			return NewPluginError(WriteStringsFailure, err.Error())
 		}
 	}
 	write.Flush()
@@ -246,7 +246,7 @@ func (o *SpaceOperation) WriteStrings(name string, content []string) PluginError
 func (o *SpaceOperation) AppendStrings(filePath string, content []string) PluginError {
 	path, err := GetFilePath(o.AppID, o.InstanceID, filePath)
 	if err != nil {
-		return NewPluginError(AppendStringsFailure, AppendStringsFailureError.Error(), err.Error())
+		return NewPluginError(AppendStringsFailure, err.Error())
 	}
 
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, 0666)
@@ -254,14 +254,14 @@ func (o *SpaceOperation) AppendStrings(filePath string, content []string) Plugin
 		_ = file.Close()
 	}(file)
 	if err != nil {
-		return NewPluginError(AppendStringsFailure, AppendStringsFailureError.Error(), err.Error())
+		return NewPluginError(AppendStringsFailure, err.Error())
 	}
 
 	write := bufio.NewWriter(file)
 	for _, val := range content {
 		_, err = write.WriteString(val)
 		if err != nil {
-			return NewPluginError(AppendStringsFailure, AppendStringsFailureError.Error(), err.Error())
+			return NewPluginError(AppendStringsFailure, err.Error())
 		}
 	}
 	write.Flush()
@@ -273,13 +273,13 @@ func (o *SpaceOperation) Zip(outFileName string, targetFiles []string) PluginErr
 	for _, v := range targetFiles {
 		path, err := GetFilePath(o.AppID, o.InstanceID, v)
 		if err != nil {
-			return NewPluginError(ZipFailure, ZipFailureError.Error(), err.Error())
+			return NewPluginError(ZipFailure, err.Error())
 		}
 		TargetFiles = append(TargetFiles, path)
 	}
 	OutFileName, err := GetFilePath(o.AppID, o.InstanceID, outFileName)
 	if err != nil {
-		return NewPluginError(ZipFailure, ZipFailureError.Error(), err.Error())
+		return NewPluginError(ZipFailure, err.Error())
 	}
 
 	type targetFile struct {
@@ -291,17 +291,17 @@ func (o *SpaceOperation) Zip(outFileName string, targetFiles []string) PluginErr
 	for _, targetFilePath := range TargetFiles {
 		tFile, err := os.Open(targetFilePath)
 		if err != nil {
-			return NewPluginError(ZipFailure, ZipFailureError.Error(), err.Error())
+			return NewPluginError(ZipFailure, err.Error())
 		}
 		defer tFile.Close()
 		info, err := tFile.Stat()
 		if err != nil {
-			return NewPluginError(ZipFailure, ZipFailureError.Error(), err.Error())
+			return NewPluginError(ZipFailure, err.Error())
 		}
 		fileName := info.Name()
 		content, err := o.Read(targetFilePath)
 		if err != nil {
-			return NewPluginError(ZipFailure, ZipFailureError.Error(), err.Error())
+			return NewPluginError(ZipFailure, err.Error())
 		}
 
 		filesToArchive = append(filesToArchive, targetFile{
@@ -312,7 +312,7 @@ func (o *SpaceOperation) Zip(outFileName string, targetFiles []string) PluginErr
 
 	outFile, err := os.Create(OutFileName)
 	if err != nil {
-		return NewPluginError(ZipFailure, ZipFailureError.Error(), err.Error())
+		return NewPluginError(ZipFailure, err.Error())
 	}
 	defer outFile.Close()
 
@@ -320,11 +320,11 @@ func (o *SpaceOperation) Zip(outFileName string, targetFiles []string) PluginErr
 	for _, file := range filesToArchive {
 		fileWriter, err := zipWriter.Create(file.Name)
 		if err != nil {
-			return NewPluginError(ZipFailure, ZipFailureError.Error(), err.Error())
+			return NewPluginError(ZipFailure, err.Error())
 		}
 		_, err = fileWriter.Write(file.Body)
 		if err != nil {
-			return NewPluginError(ZipFailure, ZipFailureError.Error(), err.Error())
+			return NewPluginError(ZipFailure, err.Error())
 		}
 	}
 	zipWriter.Close()
@@ -334,23 +334,23 @@ func (o *SpaceOperation) Zip(outFileName string, targetFiles []string) PluginErr
 func (o *SpaceOperation) UnZip(name string, targetDir string) PluginError {
 	zipPath, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return NewPluginError(UnZipFailure, UnZipFailureError.Error(), err.Error())
+		return NewPluginError(UnZipFailure, err.Error())
 	}
 	targetDirPath, err := GetFilePath(o.AppID, o.InstanceID, targetDir)
 	if err != nil {
-		return NewPluginError(UnZipFailure, UnZipFailureError.Error(), err.Error())
+		return NewPluginError(UnZipFailure, err.Error())
 	}
 
 	zipReader, err := zip.OpenReader(zipPath)
 	if err != nil {
-		return NewPluginError(UnZipFailure, UnZipFailureError.Error(), err.Error())
+		return NewPluginError(UnZipFailure, err.Error())
 	}
 	defer zipReader.Close()
 
 	for _, file := range zipReader.Reader.File {
 		zippedFile, err := file.Open()
 		if err != nil {
-			return NewPluginError(UnZipFailure, UnZipFailureError.Error(), err.Error())
+			return NewPluginError(UnZipFailure, err.Error())
 		}
 		defer zippedFile.Close()
 
@@ -368,13 +368,13 @@ func (o *SpaceOperation) UnZip(name string, targetDir string) PluginError {
 				file.Mode(),
 			)
 			if err != nil {
-				return NewPluginError(UnZipFailure, UnZipFailureError.Error(), err.Error())
+				return NewPluginError(UnZipFailure, err.Error())
 			}
 			defer outputFile.Close()
 
 			_, err = io.Copy(outputFile, zippedFile)
 			if err != nil {
-				return NewPluginError(UnZipFailure, UnZipFailureError.Error(), err.Error())
+				return NewPluginError(UnZipFailure, err.Error())
 			}
 		}
 	}
@@ -385,16 +385,16 @@ func (o *SpaceOperation) Gz(name string) PluginError {
 	gzFileName := name + ".gz"
 	gzPath, err := GetFilePath(o.AppID, o.InstanceID, gzFileName)
 	if err != nil {
-		return NewPluginError(GzFailure, GzFailureError.Error(), err.Error())
+		return NewPluginError(GzFailure, err.Error())
 	}
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return NewPluginError(GzFailure, GzFailureError.Error(), err.Error())
+		return NewPluginError(GzFailure, err.Error())
 	}
 
 	outputFile, err := os.Create(gzPath)
 	if err != nil {
-		return NewPluginError(GzFailure, GzFailureError.Error(), err.Error())
+		return NewPluginError(GzFailure, err.Error())
 	}
 
 	gzipWriter := gzip.NewWriter(outputFile)
@@ -402,11 +402,11 @@ func (o *SpaceOperation) Gz(name string) PluginError {
 
 	content, err := o.Read(path)
 	if err != nil {
-		return NewPluginError(GzFailure, GzFailureError.Error(), err.Error())
+		return NewPluginError(GzFailure, err.Error())
 	}
 	_, err = gzipWriter.Write(content)
 	if err != nil {
-		return NewPluginError(GzFailure, GzFailureError.Error(), err.Error())
+		return NewPluginError(GzFailure, err.Error())
 	}
 	return nil
 }
@@ -414,32 +414,32 @@ func (o *SpaceOperation) Gz(name string) PluginError {
 func (o *SpaceOperation) UnGz(name string, targetFile string) PluginError {
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return NewPluginError(UnGzFailure, UnGzFailureError.Error(), err.Error())
+		return NewPluginError(UnGzFailure, err.Error())
 	}
 	targetPath, err := GetFilePath(o.AppID, o.InstanceID, targetFile)
 	if err != nil {
-		return NewPluginError(UnGzFailure, UnGzFailureError.Error(), err.Error())
+		return NewPluginError(UnGzFailure, err.Error())
 	}
 
 	gzipFile, err := os.Open(path)
 	if err != nil {
-		return NewPluginError(UnGzFailure, UnGzFailureError.Error(), err.Error())
+		return NewPluginError(UnGzFailure, err.Error())
 	}
 	gzipReader, err := gzip.NewReader(gzipFile)
 	if err != nil {
-		return NewPluginError(UnGzFailure, UnGzFailureError.Error(), err.Error())
+		return NewPluginError(UnGzFailure, err.Error())
 	}
 	defer gzipReader.Close()
 
 	outfileWriter, err := os.Create(targetPath)
 	if err != nil {
-		return NewPluginError(UnGzFailure, UnGzFailureError.Error(), err.Error())
+		return NewPluginError(UnGzFailure, err.Error())
 	}
 	defer outfileWriter.Close()
 
 	_, err = io.Copy(outfileWriter, gzipReader)
 	if err != nil {
-		return NewPluginError(UnGzFailure, UnGzFailureError.Error(), err.Error())
+		return NewPluginError(UnGzFailure, err.Error())
 	}
 	return nil
 }
@@ -447,12 +447,12 @@ func (o *SpaceOperation) UnGz(name string, targetFile string) PluginError {
 func (o *SpaceOperation) Hash(name string) ([]byte, PluginError) {
 	path, err := GetFilePath(o.AppID, o.InstanceID, name)
 	if err != nil {
-		return nil, NewPluginError(HashFailure, HashFailureError.Error(), err.Error())
+		return nil, NewPluginError(HashFailure, err.Error())
 	}
 
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, NewPluginError(HashFailure, HashFailureError.Error(), err.Error())
+		return nil, NewPluginError(HashFailure, err.Error())
 	}
 	hash := md5.Sum(data)
 	fileByte := hash[:]
@@ -463,7 +463,7 @@ func (o *SpaceOperation) List(dirPath string) ([]string, PluginError) {
 	// 获取到真实路径
 	realPath, err := GetFilePath(o.AppID, o.InstanceID, dirPath)
 	if err != nil {
-		return nil, NewPluginError(MakeDirFailure, MakeDirFailureError.Error(), err.Error())
+		return nil, NewPluginError(MakeDirFailure, err.Error())
 	}
 
 	var dirList []string
@@ -481,7 +481,7 @@ func (o *SpaceOperation) List(dirPath string) ([]string, PluginError) {
 			return nil
 		})
 	if err != nil {
-		return dirList, NewPluginError(ListFileFailure, ListFileFailureError.Error(), err.Error())
+		return dirList, NewPluginError(ListFileFailure, err.Error())
 	}
 	return dirList, nil
 }

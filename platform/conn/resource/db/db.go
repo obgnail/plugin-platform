@@ -63,7 +63,7 @@ const (
 func (d *DB) prepare(rawSql, instanceID string, isLocalDB bool) (stmt string, realSql string, err common_type.PluginError) {
 	statement, e := sqlparser.Parse(rawSql)
 	if e != nil {
-		return "", "", common_type.NewPluginError(common_type.DbSqlSyntaxErr, err.Error(), common_type.DbSqlSyntaxError.Error())
+		return "", "", common_type.NewPluginError(common_type.DbSqlSyntaxErr, err.Error())
 	}
 	switch statement.(type) {
 	case *sqlparser.Select:
@@ -86,7 +86,7 @@ func (d *DB) prepare(rawSql, instanceID string, isLocalDB bool) (stmt string, re
 func (d *DB) Exec(sqlStr string) common_type.PluginError {
 	_, err := d.DbConn.Exec(sqlStr)
 	if err != nil {
-		return common_type.NewPluginError(common_type.DbExecFailure, err.Error(), common_type.DbExecFailureError.Error())
+		return common_type.NewPluginError(common_type.DbExecFailure, err.Error())
 	}
 	return nil
 }
@@ -94,13 +94,13 @@ func (d *DB) Exec(sqlStr string) common_type.PluginError {
 func (d *DB) Select(sqlStr string) (*protocol.TableMessage, common_type.PluginError) {
 	rows, err := d.DbConn.Query(sqlStr)
 	if err != nil {
-		return nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error(), common_type.DbSelectFailureError.Error())
+		return nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error())
 	}
 	defer rows.Close()
 
 	colTypes, err := rows.ColumnTypes()
 	if err != nil {
-		return nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error(), common_type.DbSelectFailureError.Error())
+		return nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error())
 	}
 
 	tableData := &protocol.TableMessage{
@@ -131,7 +131,7 @@ func (d *DB) Select(sqlStr string) (*protocol.TableMessage, common_type.PluginEr
 	for rows.Next() {
 		err = rows.Scan(built...)
 		if err != nil {
-			return nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error(), common_type.DbSelectFailureError.Error())
+			return nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error())
 		}
 		tmp := &protocol.RowMessage{
 			Cell: make([][]byte, 0),
@@ -143,9 +143,8 @@ func (d *DB) Select(sqlStr string) (*protocol.TableMessage, common_type.PluginEr
 			case "*int64":
 				v := reflect.ValueOf(i).Elem().Int()
 				bytebuf := bytes.NewBuffer([]byte{})
-				err := binary.Write(bytebuf, binary.BigEndian, v)
-				if err != nil {
-					return nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error(), common_type.DbSelectFailureError.Error())
+				if err = binary.Write(bytebuf, binary.BigEndian, v); err != nil {
+					return nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error())
 				}
 				tmp.Cell = append(tmp.Cell, bytebuf.Bytes())
 			case "*float":
@@ -161,7 +160,7 @@ func (d *DB) Select(sqlStr string) (*protocol.TableMessage, common_type.PluginEr
 				bytebuf := bytes.NewBuffer([]byte{})
 				err := binary.Write(bytebuf, binary.BigEndian, v)
 				if err != nil {
-					return nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error(), common_type.DbSelectFailureError.Error())
+					return nil, common_type.NewPluginError(common_type.DbSelectFailure, err.Error())
 				}
 				tmp.Cell = append(tmp.Cell, bytebuf.Bytes())
 			case "*sql.NullFloat64":
@@ -181,32 +180,15 @@ func (d *DB) Select(sqlStr string) (*protocol.TableMessage, common_type.PluginEr
 }
 
 func (d *DB) ImportSql(sqlFileName, appUUID, version, instanceUUID string) common_type.PluginError {
-	//判断是否是sql文件
-	if !strings.HasSuffix(sqlFileName, ".sql") {
-		err := fmt.Errorf("wrong file type")
-		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
-	}
-	pluginDir := utils.GetPluginDir(appUUID, version)
-	sqlFilePath := file_path.JoinPath(pluginDir, sqlFileName)
-
-	if ok, err := file_path.PathExists(sqlFilePath); !ok || err != nil {
-		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
-	}
-	sqlFilePath = filepath.Clean(sqlFilePath)
-
-	fileByte, err := ioutil.ReadFile(sqlFilePath)
+	fileContent, err := d.getFileContent(sqlFileName, appUUID, version, instanceUUID)
 	if err != nil {
-		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
-	}
-	fileContent := string(fileByte)
-	if fileContent, err = d.fixSql(fileContent, instanceUUID); err != nil {
-		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
+		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error())
 	}
 
 	fmt.Println("import sql:\n", fileContent)
 
 	if _, err := d.DbConn.Exec(fileContent); err != nil {
-		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, common_type.DbExecFailureError.Error(), err.Error())
+		return common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error())
 	}
 	return nil
 }
@@ -217,7 +199,7 @@ func (d *DB) fixSql(content string, instanceUUID string) (string, common_type.Pl
 	tableNameList := re.FindAllString(content, -1)
 	if len(tableNameList) == 0 {
 		err := fmt.Errorf("not set tableName")
-		return "", common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error(), common_type.SysDbImportSqlError.Error())
+		return "", common_type.NewPluginError(common_type.SysDbImportSqlFailure, err.Error())
 	}
 	for _, tableName := range tableNameList {
 		newTableName := strings.TrimRight(tableName, "}}")
@@ -226,4 +208,32 @@ func (d *DB) fixSql(content string, instanceUUID string) (string, common_type.Pl
 		content = strings.Replace(content, tableName, newTableName, -1)
 	}
 	return content, nil
+}
+
+func (d *DB) getFileContent(sqlFileName, appUUID, version, instanceUUID string) (string, error) {
+	//判断是否是sql文件
+	if !strings.HasSuffix(sqlFileName, ".sql") {
+		return "", fmt.Errorf("wrong file type")
+	}
+	pluginDir := utils.GetPluginDir(appUUID, version)
+	sqlFilePath := file_path.JoinPath(pluginDir, sqlFileName)
+
+	ok, err := file_path.PathExists(sqlFilePath)
+	if !ok {
+		return "", fmt.Errorf("path non-exist")
+	}
+	if err != nil {
+		return "", err
+	}
+	sqlFilePath = filepath.Clean(sqlFilePath)
+
+	fileByte, err := ioutil.ReadFile(sqlFilePath)
+	if err != nil {
+		return "", err
+	}
+	fileContent := string(fileByte)
+	if fileContent, err = d.fixSql(fileContent, instanceUUID); err != nil {
+		return "", err
+	}
+	return fileContent, nil
 }

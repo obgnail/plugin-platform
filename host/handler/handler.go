@@ -229,7 +229,7 @@ func (h *HostHandler) mountPlugin(instanceDesc *common_type.MockInstanceDesc) (P
 
 func (h *HostHandler) setLifeCycleRespError(resp *protocol.PlatformMessage,
 	action protocol.ControlMessage_PluginActionType, err common_type.PluginError) {
-	log.ErrorDetails(err)
+	log.Error("%+v", err)
 	resp.Control.LifeCycleResponse.Result = false
 	resp.Control.LifeCycleResponse.Error = &protocol.ErrorMessage{
 		Code:  int64(h.getLifeCycleErrorCode(action)),

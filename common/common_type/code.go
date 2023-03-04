@@ -7,6 +7,7 @@ import (
 
 const (
 	StatusOK                    = http.StatusOK
+	UnknownError                = 11000 // 任何时候都不应该主动使用
 	MsgTimeOut                  = 11001
 	SocketListenOrDialFailure   = 11002
 	TargetEndpointNotFound      = 11003
@@ -16,7 +17,7 @@ const (
 	DbExecFailure               = 11007
 	DbSqlSyntaxErr              = 11008
 	CreateFileFailure           = 11009
-	ReNameFileFailure           = 11010
+	RenameFileFailure           = 11010
 	RemoveFileFailure           = 11011
 	IsExistFileFailure          = 11012
 	CopyFileFailure             = 11013
@@ -55,8 +56,6 @@ const (
 	NotifyEventFailure          = 11046
 	CallAbilityFailure          = 11047
 	UnmarshalFailure            = 11048
-	ItemsAddFailure             = 11049
-	FieldsAddFailure            = 11050
 	AddGroupFieldFailure        = 11051
 	UpdateFieldOptionFailure    = 11052
 	OnInstallFailure            = 11053
@@ -67,63 +66,69 @@ const (
 	EndpointIdentifyErr         = 11058
 )
 
-var (
-	MsgTimeOutError                  = fmt.Errorf("timeout %d", MsgTimeOut)
-	SocketListenOrDialFailureError   = fmt.Errorf("socketListenOrDialFailureError %d", SocketListenOrDialFailure)
-	TargetEndpointNotFoundError      = fmt.Errorf("targetEndpointNotFoundError %d", TargetEndpointNotFound)
-	ProtoUnmarshalFailureError       = fmt.Errorf("ProtoUnmarshalFailureError %d", ProtoUnmarshalFailure)
-	ProtoMarshalFailureError         = fmt.Errorf("ProtoMarshalFailure %d", ProtoMarshalFailure)
-	DbSelectFailureError             = fmt.Errorf("DbSelectFailure %d", DbSelectFailure)
-	DbExecFailureError               = fmt.Errorf("DbExecFailure %d", DbExecFailure)
-	DbSqlSyntaxError                 = fmt.Errorf("DbSqlSyntaxError %d", DbSqlSyntaxErr)
-	CreateFileFailureError           = fmt.Errorf("CreateFileFailure %d", CreateFileFailure)
-	ReNameFileFailureError           = fmt.Errorf("ReNameFileFailure %d", ReNameFileFailure)
-	RemoveFileFailureError           = fmt.Errorf("RemoveFileFailure %d", RemoveFileFailure)
-	IsExistFileFailureError          = fmt.Errorf("IsExistFileFailure %d", IsExistFileFailure)
-	CopyFileFailureError             = fmt.Errorf("CopyFileFailure %d", CopyFileFailure)
-	ListFileFailureError             = fmt.Errorf("ListFileFailure %d", ListFileFailure)
-	IsDirFailureError                = fmt.Errorf("IsDirFailure %d", IsDirFailure)
-	ReadFailureError                 = fmt.Errorf("ReadFailure %d", ReadFailure)
-	ReadLinesFailureError            = fmt.Errorf("ReadLinesFailure %d", ReadLinesFailure)
-	WriteBytesFailureError           = fmt.Errorf("WriteBytesFailure %d", WriteBytesFailure)
-	AppendBytesFailureError          = fmt.Errorf("AppendBytesFailure %d", AppendBytesFailure)
-	WriteStringsFailureError         = fmt.Errorf("WriteStringsFailure %d", WriteStringsFailure)
-	AppendStringsFailureError        = fmt.Errorf("AppendStringsFailure %d", AppendStringsFailure)
-	ZipFailureError                  = fmt.Errorf("ZipFailure %d", ZipFailure)
-	UnZipFailureError                = fmt.Errorf("UnZipFailure %d", UnZipFailure)
-	GzFailureError                   = fmt.Errorf("GzFailure %d", GzFailure)
-	UnGzFailureError                 = fmt.Errorf("UnGzFailure %d", UnGzFailure)
-	HashFailureError                 = fmt.Errorf("HashFailure %d", HashFailure)
-	MakeDirFailureError              = fmt.Errorf("MakeDirFailure %d", MakeDirFailure)
-	AsyncFetchFailureError           = fmt.Errorf("AsyncFetchFailure %d", AsyncFetchFailure)
-	GetInstanceFailureError          = fmt.Errorf("GetInstanceFailure %d", GetInstanceFailure)
-	CallMainSystemAPIFailureError    = fmt.Errorf("CallMainSystemAPIFailure %d", CallMainSystemAPIFailure)
-	OnstartFailureError              = fmt.Errorf("OnstartFailure %d", OnstartFailure)
-	OnstopFailureError               = fmt.Errorf("OnstopFailure %d", OnstopFailure)
-	OnEnableFailureError             = fmt.Errorf("OnEnableFailure %d", OnEnableFailure)
-	OnDisEnableFailureError          = fmt.Errorf("OnDisEnableFailure %d", OnDisEnableFailure)
-	OnUpgradeFailureError            = fmt.Errorf("OnUpgradeFailure %d", OnUpgradeFailure)
-	OnCheckCompatibilityFailureError = fmt.Errorf("OnCheckCompatibilityFailure %d", OnCheckCompatibilityFailure)
-	OnCheckStateFailureError         = fmt.Errorf("OnCheckStateFailure %d", OnCheckStateFailure)
-	OnHeartbeatFailureError          = fmt.Errorf("OnHeartbeatFailure %d", OnHeartbeatFailure)
-	OnPluginHttpFailureError         = fmt.Errorf("OnPluginHttpFailure %d", OnPluginHttpFailure)
-	DbError                          = fmt.Errorf("DbError %d", DbErrorFailure)
-	FileNotFoundError                = fmt.Errorf("FileNotFoundError %d", FileNotFoundFailure)
-	CallSysAPIError                  = fmt.Errorf("CallSysAPIFailure %d", CallSysAPIFailure)
-	OutgoingError                    = fmt.Errorf("OutgoingFailure %d", OutgoingFailure)
-	SysDbImportSqlError              = fmt.Errorf("SysDbImportSqlFailure %d", SysDbImportSqlFailure)
-	DataBaseNameError                = fmt.Errorf("DataBaseNameFailure %d", DataBaseNameFailure)
-	NotifyEventError                 = fmt.Errorf("NotifyEventFailure %d", NotifyEventFailure)
-	CallAbilityError                 = fmt.Errorf("CallAbilityFailure %d", CallAbilityFailure)
-	UnmarshalError                   = fmt.Errorf("UnmarshalFailure %d", UnmarshalFailure)
-	ItemsAddError                    = fmt.Errorf("ItemsAddFailure %d", ItemsAddFailure)
-	FieldsAddError                   = fmt.Errorf("FieldsAddFailure %d", FieldsAddFailure)
-	AddGroupFieldError               = fmt.Errorf("AddGroupFieldFailure %d", AddGroupFieldFailure)
-	UpdateFieldOptionError           = fmt.Errorf("UpdateFieldOptionFailure %d", UpdateFieldOptionFailure)
-	OnInstallFailureError            = fmt.Errorf("OnInstallFailure %d", OnInstallFailure)
-	OnUnInstallFailureError          = fmt.Errorf("OnUninstallFailure %d", OnUnInstallFailure)
-	LocalDevelopError                = fmt.Errorf("LocalDevelopError %d", LocalDevelopErr)
-	EndpointReceiveError             = fmt.Errorf("EndpointReceiveError %d", EndpointReceiveErr)
-	EndpointSendError                = fmt.Errorf("EndpointSendError %d", EndpointSendErr)
-	EndpointIdentifyError            = fmt.Errorf("EndpointIdentifyError %d", EndpointIdentifyErr)
-)
+var m = map[int]error{
+	UnknownError:                fmt.Errorf("UnknownError"),
+	MsgTimeOut:                  fmt.Errorf("timeout %d", MsgTimeOut),
+	SocketListenOrDialFailure:   fmt.Errorf("socketListenOrDialFailureError %d", SocketListenOrDialFailure),
+	TargetEndpointNotFound:      fmt.Errorf("targetEndpointNotFoundError %d", TargetEndpointNotFound),
+	ProtoUnmarshalFailure:       fmt.Errorf("ProtoUnmarshalFailureError %d", ProtoUnmarshalFailure),
+	ProtoMarshalFailure:         fmt.Errorf("ProtoMarshalFailure %d", ProtoMarshalFailure),
+	DbSelectFailure:             fmt.Errorf("DbSelectFailure %d", DbSelectFailure),
+	DbExecFailure:               fmt.Errorf("DbExecFailure %d", DbExecFailure),
+	DbSqlSyntaxErr:              fmt.Errorf("DbSqlSyntaxError %d", DbSqlSyntaxErr),
+	CreateFileFailure:           fmt.Errorf("CreateFileFailure %d", CreateFileFailure),
+	RenameFileFailure:           fmt.Errorf("RenameFileFailure %d", RenameFileFailure),
+	RemoveFileFailure:           fmt.Errorf("RemoveFileFailure %d", RemoveFileFailure),
+	IsExistFileFailure:          fmt.Errorf("IsExistFileFailure %d", IsExistFileFailure),
+	CopyFileFailure:             fmt.Errorf("CopyFileFailure %d", CopyFileFailure),
+	ListFileFailure:             fmt.Errorf("ListFileFailure %d", ListFileFailure),
+	IsDirFailure:                fmt.Errorf("IsDirFailure %d", IsDirFailure),
+	ReadFailure:                 fmt.Errorf("ReadFailure %d", ReadFailure),
+	ReadLinesFailure:            fmt.Errorf("ReadLinesFailure %d", ReadLinesFailure),
+	WriteBytesFailure:           fmt.Errorf("WriteBytesFailure %d", WriteBytesFailure),
+	AppendBytesFailure:          fmt.Errorf("AppendBytesFailure %d", AppendBytesFailure),
+	WriteStringsFailure:         fmt.Errorf("WriteStringsFailure %d", WriteStringsFailure),
+	AppendStringsFailure:        fmt.Errorf("AppendStringsFailure %d", AppendStringsFailure),
+	ZipFailure:                  fmt.Errorf("ZipFailure %d", ZipFailure),
+	UnZipFailure:                fmt.Errorf("UnZipFailure %d", UnZipFailure),
+	GzFailure:                   fmt.Errorf("GzFailure %d", GzFailure),
+	UnGzFailure:                 fmt.Errorf("UnGzFailure %d", UnGzFailure),
+	HashFailure:                 fmt.Errorf("HashFailure %d", HashFailure),
+	MakeDirFailure:              fmt.Errorf("MakeDirFailure %d", MakeDirFailure),
+	OnstartFailure:              fmt.Errorf("OnstartFailure %d", OnstartFailure),
+	OnstopFailure:               fmt.Errorf("OnstopFailure %d", OnstopFailure),
+	OnEnableFailure:             fmt.Errorf("OnEnableFailure %d", OnEnableFailure),
+	OnDisEnableFailure:          fmt.Errorf("OnDisEnableFailure %d", OnDisEnableFailure),
+	OnUpgradeFailure:            fmt.Errorf("OnUpgradeFailure %d", OnUpgradeFailure),
+	OnCheckCompatibilityFailure: fmt.Errorf("OnCheckCompatibilityFailure %d", OnCheckCompatibilityFailure),
+	OnCheckStateFailure:         fmt.Errorf("OnCheckStateFailure %d", OnCheckStateFailure),
+	OnHeartbeatFailure:          fmt.Errorf("OnHeartbeatFailure %d", OnHeartbeatFailure),
+	OnPluginHttpFailure:         fmt.Errorf("OnPluginHttpFailure %d", OnPluginHttpFailure),
+	AsyncFetchFailure:           fmt.Errorf("AsyncFetchFailure %d", AsyncFetchFailure),
+	GetInstanceFailure:          fmt.Errorf("GetInstanceFailure %d", GetInstanceFailure),
+	DbErrorFailure:              fmt.Errorf("DbError %d", DbErrorFailure),
+	FileNotFoundFailure:         fmt.Errorf("FileNotFoundError %d", FileNotFoundFailure),
+	CallSysAPIFailure:           fmt.Errorf("CallSysAPIFailure %d", CallSysAPIFailure),
+	OutgoingFailure:             fmt.Errorf("OutgoingFailure %d", OutgoingFailure),
+	SysDbImportSqlFailure:       fmt.Errorf("SysDbImportSqlFailure %d", SysDbImportSqlFailure),
+	DataBaseNameFailure:         fmt.Errorf("DataBaseNameFailure %d", DataBaseNameFailure),
+	NotifyEventFailure:          fmt.Errorf("NotifyEventFailure %d", NotifyEventFailure),
+	CallAbilityFailure:          fmt.Errorf("CallAbilityFailure %d", CallAbilityFailure),
+	UnmarshalFailure:            fmt.Errorf("UnmarshalFailure %d", UnmarshalFailure),
+	AddGroupFieldFailure:        fmt.Errorf("AddGroupFieldFailure %d", AddGroupFieldFailure),
+	UpdateFieldOptionFailure:    fmt.Errorf("UpdateFieldOptionFailure %d", UpdateFieldOptionFailure),
+	OnInstallFailure:            fmt.Errorf("OnInstallFailure %d", OnInstallFailure),
+	OnUnInstallFailure:          fmt.Errorf("OnUninstallFailure %d", OnUnInstallFailure),
+	LocalDevelopErr:             fmt.Errorf("LocalDevelopError %d", LocalDevelopErr),
+	EndpointReceiveErr:          fmt.Errorf("EndpointReceiveError %d", EndpointReceiveErr),
+	EndpointSendErr:             fmt.Errorf("EndpointSendError %d", EndpointSendErr),
+	EndpointIdentifyErr:         fmt.Errorf("EndpointIdentifyError %d", EndpointIdentifyErr),
+}
+
+func getErr(code int) error {
+	err, ok := m[code]
+	if ok {
+		return err
+	}
+	return nil
+}

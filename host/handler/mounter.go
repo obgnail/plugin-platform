@@ -44,9 +44,7 @@ func (m *PluginMounter) CreatePlugin(appID, appVersion string) (common_type.IPlu
 	path := utils.GetPluginSoFile(appID, appVersion)
 	_plugin, err := getPlugin(path)
 	if err != nil {
-		e := common_type.NewPluginError(common_type.GetInstanceFailure,
-			fmt.Sprintf("appid: %s plugin so file not found: %v", appID, err),
-			common_type.GetInstanceFailureError.Error())
+		e := common_type.NewPluginError(common_type.GetInstanceFailure, fmt.Sprintf("appid: %s plugin so file not found: %v", appID, err))
 		return nil, e
 	}
 	return _plugin, nil

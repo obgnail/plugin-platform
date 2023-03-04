@@ -41,7 +41,7 @@ func (a *Ability) Call(kind string, req []byte) (result []byte, err common_type.
 	}
 	result = resp.GetResource().GetAbility().GetContent()
 	if e := resp.GetResource().GetAbility().GetError(); e != nil {
-		return result, common_type.NewPluginError(int(e.Code), e.GetError(), e.GetMsg())
+		return result, common_type.NewPluginError(int(e.Code), e.GetMsg())
 	}
 	return result, nil
 }

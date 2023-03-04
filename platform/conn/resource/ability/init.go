@@ -56,8 +56,7 @@ func (a *Ability) buildMsg(content []byte, err error) {
 	}
 	if err != nil {
 		log.ErrorDetails(err)
-		e := common_type.NewPluginError(common_type.CallAbilityFailure, err.Error(),
-			common_type.CallAbilityError.Error())
+		e := common_type.NewPluginError(common_type.CallAbilityFailure, err.Error())
 		msg.Error = message.BuildErrorMessage(e)
 	}
 	a.distinct.Resource.Ability = msg

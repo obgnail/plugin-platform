@@ -217,7 +217,7 @@ func (h *PlatformHandler) lifeCycle(
 ) chan common_type.PluginError {
 	h._getHostByInstanceID(instanceID, func(host common_type.IHost) {
 		if host == nil {
-			done <- common_type.NewPluginError(common_type.MsgTimeOut, common_type.MsgTimeOutError.Error(), "timeout")
+			done <- common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
 			return
 		}
 

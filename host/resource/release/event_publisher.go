@@ -35,7 +35,7 @@ func (event *EventPublisher) send(eventMsg *protocol.EventMessage) common_type.P
 	}
 	retErr := msg.GetResource().GetEvent().GetError()
 	if retErr != nil {
-		return common_type.NewPluginError(int(retErr.Code), retErr.GetError(), retErr.GetMsg())
+		return common_type.NewPluginError(int(retErr.Code), retErr.GetMsg())
 	}
 	return nil
 }

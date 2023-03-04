@@ -74,7 +74,7 @@ func (d *CommonDB) Unmarshal(rawData []*common_type.RawData, columnDesc []*commo
 		return nil
 	}
 	if err := common.Unmarshal(rawData, columnDesc, v); err != nil {
-		return common_type.NewPluginError(common_type.UnmarshalFailure, err.Error(), common_type.UnmarshalError.Error())
+		return common_type.NewPluginError(common_type.UnmarshalFailure, err.Error())
 	}
 	return nil
 }
@@ -82,11 +82,11 @@ func (d *CommonDB) Unmarshal(rawData []*common_type.RawData, columnDesc []*commo
 func (d *CommonDB) checkError(msg *protocol.PlatformMessage) common_type.PluginError {
 	err := msg.GetResource().GetDatabase().GetDBResponse().GetError()
 	if err != nil {
-		return common_type.NewPluginError(int(err.GetCode()), err.GetError(), err.GetMsg())
+		return common_type.NewPluginError(int(err.GetCode()), err.GetMsg())
 	}
 	err = msg.GetResource().GetDatabase().GetDBResponse().GetDBError()
 	if err != nil {
-		return common_type.NewPluginError(int(err.GetCode()), err.GetError(), err.GetMsg())
+		return common_type.NewPluginError(int(err.GetCode()), err.GetMsg())
 	}
 	return nil
 }

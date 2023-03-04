@@ -29,7 +29,7 @@ func NewSpace(plugin common_type.IPlugin) common_type.Workspace {
 func (s *Space) CreateFile(name string) common_type.PluginError {
 	newFile, err := os.Create(s.getSpacePath(name))
 	if err != nil {
-		return common_type.NewPluginError(common_type.CreateFileFailure, err.Error(), common_type.CreateFileFailureError.Error())
+		return common_type.NewPluginError(common_type.CreateFileFailure, err.Error())
 	}
 	defer newFile.Close()
 	return nil
@@ -39,7 +39,7 @@ func (s *Space) MakeDir(name string) common_type.PluginError {
 	_name := s.getSpacePath(name)
 	err := os.MkdirAll(_name, os.ModePerm)
 	if err != nil {
-		return common_type.NewPluginError(common_type.MakeDirFailure, err.Error(), common_type.MakeDirFailureError.Error())
+		return common_type.NewPluginError(common_type.MakeDirFailure, err.Error())
 	}
 	return nil
 }
@@ -50,7 +50,7 @@ func (s *Space) Rename(originalPath string, newPath string) common_type.PluginEr
 
 	err := os.Rename(_originalPath, _newPath)
 	if err != nil {
-		return common_type.NewPluginError(common_type.ReNameFileFailure, err.Error(), common_type.ReNameFileFailureError.Error())
+		return common_type.NewPluginError(common_type.RenameFileFailure, err.Error())
 	}
 	return nil
 }
@@ -58,7 +58,7 @@ func (s *Space) Rename(originalPath string, newPath string) common_type.PluginEr
 func (s *Space) Remove(name string) common_type.PluginError {
 	err := os.Remove(s.getSpacePath(name))
 	if err != nil {
-		return common_type.NewPluginError(common_type.RemoveFileFailure, err.Error(), common_type.RemoveFileFailureError.Error())
+		return common_type.NewPluginError(common_type.RemoveFileFailure, err.Error())
 	}
 	return nil
 }
@@ -66,7 +66,7 @@ func (s *Space) Remove(name string) common_type.PluginError {
 func (s *Space) IsExist(name string) (bool, common_type.PluginError) {
 	_, err := os.Stat(s.getSpacePath(name))
 	if err != nil && os.IsNotExist(err) {
-		return false, common_type.NewPluginError(common_type.IsExistFileFailure, err.Error(), common_type.IsExistFileFailureError.Error())
+		return false, common_type.NewPluginError(common_type.IsExistFileFailure, err.Error())
 	}
 	return true, nil
 }
@@ -75,7 +75,7 @@ func (s *Space) IsDir(name string) (bool, common_type.PluginError) {
 	path := s.getSpacePath(name)
 	stat, err := os.Stat(path)
 	if err != nil {
-		return false, common_type.NewPluginError(common_type.IsDirFailure, err.Error(), common_type.IsDirFailureError.Error())
+		return false, common_type.NewPluginError(common_type.IsDirFailure, err.Error())
 	}
 	return stat.IsDir(), nil
 }
@@ -86,24 +86,24 @@ func (s *Space) Copy(originalPath string, newPath string) common_type.PluginErro
 
 	originalFile, err := os.Open(_originalPath)
 	if err != nil {
-		return common_type.NewPluginError(common_type.CopyFileFailure, err.Error(), common_type.CopyFileFailureError.Error())
+		return common_type.NewPluginError(common_type.CopyFileFailure, err.Error())
 	}
 	defer originalFile.Close()
 
 	newFile, err := os.Create(_newPath)
 	if err != nil {
-		return common_type.NewPluginError(common_type.CopyFileFailure, err.Error(), common_type.CopyFileFailureError.Error())
+		return common_type.NewPluginError(common_type.CopyFileFailure, err.Error())
 	}
 	defer newFile.Close()
 
 	_, err = io.Copy(newFile, originalFile)
 	if err != nil {
-		return common_type.NewPluginError(common_type.CopyFileFailure, err.Error(), common_type.CopyFileFailureError.Error())
+		return common_type.NewPluginError(common_type.CopyFileFailure, err.Error())
 	}
 
 	err = newFile.Sync()
 	if err != nil {
-		return common_type.NewPluginError(common_type.CopyFileFailure, err.Error(), common_type.CopyFileFailureError.Error())
+		return common_type.NewPluginError(common_type.CopyFileFailure, err.Error())
 	}
 	return nil
 }
@@ -111,12 +111,12 @@ func (s *Space) Copy(originalPath string, newPath string) common_type.PluginErro
 func (s *Space) Read(name string) ([]byte, common_type.PluginError) {
 	file, err := os.Open(s.getSpacePath(name))
 	if err != nil {
-		return []byte{}, common_type.NewPluginError(common_type.ReadFailure, err.Error(), common_type.ReadFailureError.Error())
+		return []byte{}, common_type.NewPluginError(common_type.ReadFailure, err.Error())
 	}
 
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		return []byte{}, common_type.NewPluginError(common_type.ReadFailure, err.Error(), common_type.ReadFailureError.Error())
+		return []byte{}, common_type.NewPluginError(common_type.ReadFailure, err.Error())
 	}
 
 	return data, nil
@@ -127,7 +127,7 @@ func (s *Space) ReadLines(name string, lineBegin, lineEnd int32) ([]byte, common
 	file, err := os.Open(path)
 	defer file.Close()
 	if err != nil {
-		return nil, common_type.NewPluginError(common_type.ReadLinesFailure, err.Error(), common_type.ReadLinesFailureError.Error())
+		return nil, common_type.NewPluginError(common_type.ReadLinesFailure, err.Error())
 	}
 	fileScanner := bufio.NewScanner(file)
 	var lineCount int32 = 1
@@ -151,13 +151,13 @@ func (s *Space) ReadLines(name string, lineBegin, lineEnd int32) ([]byte, common
 func (s *Space) WriteBytes(name string, byteSlice []byte) common_type.PluginError {
 	file, err := os.OpenFile(s.getSpacePath(name), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
-		return common_type.NewPluginError(common_type.WriteBytesFailure, err.Error(), common_type.WriteBytesFailureError.Error())
+		return common_type.NewPluginError(common_type.WriteBytesFailure, err.Error())
 	}
 	defer file.Close()
 
 	_, err = file.Write(byteSlice)
 	if err != nil {
-		return common_type.NewPluginError(common_type.WriteBytesFailure, err.Error(), common_type.WriteBytesFailureError.Error())
+		return common_type.NewPluginError(common_type.WriteBytesFailure, err.Error())
 	}
 	return nil
 }
@@ -167,12 +167,12 @@ func (s *Space) AppendBytes(filePath string, byteSlice []byte) common_type.Plugi
 
 	file, err := os.OpenFile(_filePath, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
-		return common_type.NewPluginError(common_type.AppendBytesFailure, err.Error(), common_type.AppendBytesFailureError.Error())
+		return common_type.NewPluginError(common_type.AppendBytesFailure, err.Error())
 	}
 	defer file.Close()
 	_, err = file.Write(byteSlice)
 	if err != nil {
-		return common_type.NewPluginError(common_type.AppendBytesFailure, err.Error(), common_type.AppendBytesFailureError.Error())
+		return common_type.NewPluginError(common_type.AppendBytesFailure, err.Error())
 	}
 	return nil
 }
@@ -180,7 +180,7 @@ func (s *Space) AppendBytes(filePath string, byteSlice []byte) common_type.Plugi
 func (s *Space) WriteStrings(name string, content []string) common_type.PluginError {
 	file, err := os.OpenFile(s.getSpacePath(name), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
-		return common_type.NewPluginError(common_type.WriteStringsFailure, err.Error(), common_type.WriteStringsFailureError.Error())
+		return common_type.NewPluginError(common_type.WriteStringsFailure, err.Error())
 	}
 	defer file.Close()
 
@@ -188,7 +188,7 @@ func (s *Space) WriteStrings(name string, content []string) common_type.PluginEr
 	for _, val := range content {
 		_, err = write.WriteString(val)
 		if err != nil {
-			return common_type.NewPluginError(common_type.WriteStringsFailure, err.Error(), common_type.WriteStringsFailureError.Error())
+			return common_type.NewPluginError(common_type.WriteStringsFailure, err.Error())
 		}
 	}
 	write.Flush()
@@ -200,7 +200,7 @@ func (s *Space) AppendStrings(filePath string, content []string) common_type.Plu
 
 	file, err := os.OpenFile(_filePath, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
-		return common_type.NewPluginError(common_type.AppendStringsFailure, err.Error(), common_type.AppendStringsFailureError.Error())
+		return common_type.NewPluginError(common_type.AppendStringsFailure, err.Error())
 	}
 	defer file.Close()
 
@@ -208,7 +208,7 @@ func (s *Space) AppendStrings(filePath string, content []string) common_type.Plu
 	for _, val := range content {
 		_, err = write.WriteString(val)
 		if err != nil {
-			return common_type.NewPluginError(common_type.AppendStringsFailure, err.Error(), common_type.AppendStringsFailureError.Error())
+			return common_type.NewPluginError(common_type.AppendStringsFailure, err.Error())
 		}
 	}
 	write.Flush()
@@ -225,17 +225,17 @@ func (s *Space) Zip(outFileName string, targetFiles []string) common_type.Plugin
 	for _, targetFilePath := range targetFiles {
 		tFile, err := os.Open(s.getSpacePath(targetFilePath))
 		if err != nil {
-			return common_type.NewPluginError(common_type.ZipFailure, err.Error(), common_type.ZipFailureError.Error())
+			return common_type.NewPluginError(common_type.ZipFailure, err.Error())
 		}
 		defer tFile.Close()
 		info, err := tFile.Stat()
 		if err != nil {
-			return common_type.NewPluginError(common_type.ZipFailure, err.Error(), common_type.ZipFailureError.Error())
+			return common_type.NewPluginError(common_type.ZipFailure, err.Error())
 		}
 		fileName := info.Name()
 		content, err := s.Read(targetFilePath)
 		if err != nil {
-			return common_type.NewPluginError(common_type.ZipFailure, err.Error(), common_type.ZipFailureError.Error())
+			return common_type.NewPluginError(common_type.ZipFailure, err.Error())
 		}
 
 		filesToArchive = append(filesToArchive, targetFile{
@@ -247,7 +247,7 @@ func (s *Space) Zip(outFileName string, targetFiles []string) common_type.Plugin
 	_outFileName := s.getSpacePath(outFileName)
 	outFile, err := os.Create(_outFileName)
 	if err != nil {
-		return common_type.NewPluginError(common_type.ZipFailure, err.Error(), common_type.ZipFailureError.Error())
+		return common_type.NewPluginError(common_type.ZipFailure, err.Error())
 	}
 	defer outFile.Close()
 
@@ -255,11 +255,11 @@ func (s *Space) Zip(outFileName string, targetFiles []string) common_type.Plugin
 	for _, file := range filesToArchive {
 		fileWriter, err := zipWriter.Create(file.Name)
 		if err != nil {
-			return common_type.NewPluginError(common_type.ZipFailure, err.Error(), common_type.ZipFailureError.Error())
+			return common_type.NewPluginError(common_type.ZipFailure, err.Error())
 		}
 		_, err = fileWriter.Write(file.Body)
 		if err != nil {
-			return common_type.NewPluginError(common_type.ZipFailure, err.Error(), common_type.ZipFailureError.Error())
+			return common_type.NewPluginError(common_type.ZipFailure, err.Error())
 		}
 	}
 	zipWriter.Close()
@@ -272,14 +272,14 @@ func (s *Space) UnZip(name string, targetDir string) common_type.PluginError {
 
 	zipReader, err := zip.OpenReader(_name)
 	if err != nil {
-		return common_type.NewPluginError(common_type.UnZipFailure, err.Error(), common_type.UnZipFailureError.Error())
+		return common_type.NewPluginError(common_type.UnZipFailure, err.Error())
 	}
 	defer zipReader.Close()
 
 	for _, file := range zipReader.Reader.File {
 		zippedFile, err := file.Open()
 		if err != nil {
-			return common_type.NewPluginError(common_type.UnZipFailure, err.Error(), common_type.UnZipFailureError.Error())
+			return common_type.NewPluginError(common_type.UnZipFailure, err.Error())
 		}
 		defer zippedFile.Close()
 
@@ -297,13 +297,13 @@ func (s *Space) UnZip(name string, targetDir string) common_type.PluginError {
 				file.Mode(),
 			)
 			if err != nil {
-				return common_type.NewPluginError(common_type.UnZipFailure, err.Error(), common_type.UnZipFailureError.Error())
+				return common_type.NewPluginError(common_type.UnZipFailure, err.Error())
 			}
 			defer outputFile.Close()
 
 			_, err = io.Copy(outputFile, zippedFile)
 			if err != nil {
-				return common_type.NewPluginError(common_type.UnZipFailure, err.Error(), common_type.UnZipFailureError.Error())
+				return common_type.NewPluginError(common_type.UnZipFailure, err.Error())
 			}
 		}
 	}
@@ -316,7 +316,7 @@ func (s *Space) Gz(name string) common_type.PluginError {
 
 	outputFile, err := os.Create(_gzFileName)
 	if err != nil {
-		return common_type.NewPluginError(common_type.GzFailure, err.Error(), common_type.GzFailureError.Error())
+		return common_type.NewPluginError(common_type.GzFailure, err.Error())
 	}
 
 	gzipWriter := gzip.NewWriter(outputFile)
@@ -324,11 +324,11 @@ func (s *Space) Gz(name string) common_type.PluginError {
 
 	content, err := s.Read(name)
 	if err != nil {
-		return common_type.NewPluginError(common_type.GzFailure, err.Error(), common_type.GzFailureError.Error())
+		return common_type.NewPluginError(common_type.GzFailure, err.Error())
 	}
 	_, err = gzipWriter.Write(content)
 	if err != nil {
-		return common_type.NewPluginError(common_type.GzFailure, err.Error(), common_type.GzFailureError.Error())
+		return common_type.NewPluginError(common_type.GzFailure, err.Error())
 	}
 	return nil
 }
@@ -338,24 +338,24 @@ func (s *Space) UnGz(name string, targetFile string) common_type.PluginError {
 
 	gzipFile, err := os.Open(_name)
 	if err != nil {
-		return common_type.NewPluginError(common_type.UnGzFailure, err.Error(), common_type.UnGzFailureError.Error())
+		return common_type.NewPluginError(common_type.UnGzFailure, err.Error())
 	}
 
 	gzipReader, err := gzip.NewReader(gzipFile)
 	if err != nil {
-		return common_type.NewPluginError(common_type.UnGzFailure, err.Error(), common_type.UnGzFailureError.Error())
+		return common_type.NewPluginError(common_type.UnGzFailure, err.Error())
 	}
 	defer gzipReader.Close()
 
 	outfileWriter, err := os.Create(s.getSpacePath(targetFile))
 	if err != nil {
-		return common_type.NewPluginError(common_type.UnGzFailure, err.Error(), common_type.UnGzFailureError.Error())
+		return common_type.NewPluginError(common_type.UnGzFailure, err.Error())
 	}
 	defer outfileWriter.Close()
 
 	_, err = io.Copy(outfileWriter, gzipReader)
 	if err != nil {
-		return common_type.NewPluginError(common_type.UnGzFailure, err.Error(), common_type.UnGzFailureError.Error())
+		return common_type.NewPluginError(common_type.UnGzFailure, err.Error())
 	}
 	return nil
 }
@@ -364,7 +364,7 @@ func (s *Space) Hash(name string) ([]byte, common_type.PluginError) {
 	data, err := ioutil.ReadFile(s.getSpacePath(name))
 
 	if err != nil {
-		return nil, common_type.NewPluginError(common_type.HashFailure, err.Error(), common_type.HashFailureError.Error())
+		return nil, common_type.NewPluginError(common_type.HashFailure, err.Error())
 	}
 	hash := md5.Sum(data)
 	fileByte := hash[:]
@@ -384,7 +384,7 @@ func (s *Space) List(dirPath string) ([]string, common_type.PluginError) {
 			return nil
 		})
 	if err != nil {
-		return dirList, common_type.NewPluginError(common_type.ListFileFailure, err.Error(), common_type.ListFileFailureError.Error())
+		return dirList, common_type.NewPluginError(common_type.ListFileFailure, err.Error())
 	}
 	return dirList, nil
 }
@@ -468,7 +468,7 @@ func (s *Space) callback(errChan chan common_type.PluginError, callback common_t
 	var err common_type.PluginError
 	select {
 	case <-time.After(3 * time.Second):
-		err = common_type.NewPluginError(common_type.MsgTimeOut, common_type.MsgTimeOutError.Error(), "timeout")
+		err = common_type.NewPluginError(common_type.MsgTimeOut, "timeout")
 	case err = <-errChan:
 	}
 	callback(err)
