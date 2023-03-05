@@ -55,17 +55,17 @@ func Disable(c *gin.Context) {
 	RenderJSON(c, result, resp)
 }
 
-//func Upgrade(c *gin.Context) {
-//	req := &lifecycle_action.UpgradeReq{}
-//	if err := c.BindJSON(&req); err != nil {
-//		return
-//	}
-//	resp, result := lifecycle_action.Upgrade(req)
-//	RenderJSON(c, result, resp)
-//}
-//
-//type UpgradeReq struct {
-//	AppUUID  string `json:"app_uuid"`
-//	OrgUUID  string `json:"organization_uuid"`
-//	TeamUUID string `json:"team_uuid"`
-//}
+func Upgrade(c *gin.Context) {
+	req := &lifecycle.UpgradeReq{}
+	if err := c.BindJSON(&req); err != nil {
+		return
+	}
+	resp, result := lifecycle.Upgrade(c, req)
+	RenderJSON(c, result, resp)
+}
+
+type UpgradeReq struct {
+	AppUUID  string `json:"app_uuid"`
+	OrgUUID  string `json:"organization_uuid"`
+	TeamUUID string `json:"team_uuid"`
+}

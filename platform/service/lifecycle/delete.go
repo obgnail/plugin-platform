@@ -18,7 +18,7 @@ type DeleteResponse struct {
 }
 
 func Delete(req *DeleteReq) (ret gin.H, err error) {
-	if err := verify(req); err != nil {
+	if err := validate(req); err != nil {
 		return ret, errors.Trace(err)
 	}
 	if err := deletePackage(req); err != nil {
@@ -28,7 +28,7 @@ func Delete(req *DeleteReq) (ret gin.H, err error) {
 	return gin.H{"data": resp}, nil
 }
 
-func verify(req *DeleteReq) error {
+func validate(req *DeleteReq) error {
 	instanceArg := &mysql.PluginInstance{
 		AppUUID: req.AppUUID,
 		Version: req.Version,

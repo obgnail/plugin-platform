@@ -21,7 +21,7 @@ func main() {
 	//	log.Info("InstallPlugin...")
 	//	handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
 	//		"golang", "1.14.0", "1.0.0")
-	//	handler.StartPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+	//	handler.EnablePlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
 	//		"golang", "1.14.0", "1.0.0")
 	//
 	//	//time.Sleep(time.Second * 20)
@@ -44,7 +44,7 @@ func main2() {
 		log.Info("InstallPlugin...")
 		handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
 			"golang", "1.14.0", "1.0.0")
-		handler.StartPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+		handler.EnablePlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
 			"golang", "1.14.0", "1.0.0")
 
 		time.Sleep(time.Second * 20)

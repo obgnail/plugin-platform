@@ -26,8 +26,24 @@ func (p *mockPlugin) Assign(pd common_type.IInstanceDescription, resource common
 	return nil
 }
 
+func (p *mockPlugin) Install(common_type.LifeCycleRequest) common_type.PluginError {
+	event := p.resource.GetEventPublisher()
+	cnd := []string{"project.task", "project.user"}
+	er := event.Subscribe(cnd)
+	if er != nil {
+		panic(er)
+	}
+	er2 := event.Unsubscribe(cnd)
+	if er2 != nil {
+		panic(er2)
+	}
+	fmt.Println("-------------install-------------", cnd)
+	return nil
+}
+
 func (p *mockPlugin) Enable(common_type.LifeCycleRequest) common_type.PluginError {
-	fmt.Println("enable-------------")
+	//p.resource.GetLogger().Warn("this is warn )))(()()")
+
 	//err := p.resource.GetLocalDB().ImportSQL("/go/src/github.com/obgnail/plugin-platform/plugin/example/config/plugin.sql")
 	//if err != nil {
 	//	fmt.Println(err)
@@ -48,6 +64,7 @@ func (p *mockPlugin) Enable(common_type.LifeCycleRequest) common_type.PluginErro
 		fmt.Println(err)
 	}
 	fmt.Println(err)
+	fmt.Println("-------------enable------------- test localdb [select * from user;]")
 	return nil
 }
 
@@ -56,35 +73,12 @@ func (p *mockPlugin) Disable(common_type.LifeCycleRequest) common_type.PluginErr
 	if err != nil {
 		panic(err)
 	}
-	return nil
-}
-
-// TODO
-func (p *mockPlugin) CheckState() common_type.PluginError {
-	return nil
-}
-
-// TODO
-func (p *mockPlugin) CheckCompatibility() common_type.PluginError {
-	return nil
-}
-
-func (p *mockPlugin) Install(common_type.LifeCycleRequest) common_type.PluginError {
-	event := p.resource.GetEventPublisher()
-	cnd := []string{"project.task", "project.user"}
-	er := event.Subscribe(cnd)
-	if er != nil {
-		panic(er)
-	}
-	er2 := event.Unsubscribe(cnd)
-	if er2 != nil {
-		panic(er2)
-	}
-	fmt.Println("-- Install --", cnd)
+	fmt.Println("-------------disable-------------")
 	return nil
 }
 
 func (p *mockPlugin) UnInstall(common_type.LifeCycleRequest) common_type.PluginError {
+	fmt.Println("-------------uninstall-------------")
 	return nil
 }
 
@@ -97,5 +91,15 @@ func (p *mockPlugin) OnEvent(eventType string, payload interface{}) common_type.
 }
 
 func (p *mockPlugin) OnExternalHttpRequest(request *common_type.HttpRequest) *common_type.HttpResponse {
+	return nil
+}
+
+// TODO
+func (p *mockPlugin) CheckState() common_type.PluginError {
+	return nil
+}
+
+// TODO
+func (p *mockPlugin) CheckCompatibility() common_type.PluginError {
 	return nil
 }

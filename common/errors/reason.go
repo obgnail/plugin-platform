@@ -17,6 +17,9 @@ const (
 	// 加载配置文件失败
 	LoadYamlConfigFailed = "LoadYamlConfig"
 
+	// 文件元数据错误
+	ErrorMetaData = "ErrorMetaData"
+
 	// 保存到数据库失败
 	SaveToDBFailed = "SaveToDBFailed"
 
@@ -28,6 +31,9 @@ const (
 
 	// 未找到该实例
 	InstanceNotFound = "InstanceNotFound"
+
+	// 未找到package
+	PackageNotFound = "PackageNotFound"
 
 	// 已经卸载
 	PluginAlreadyUninstall = "PluginAlreadyUninstall"
@@ -42,4 +48,5 @@ const (
 const (
 	InstanceUUID = "instance_uuid"
 	AppUUID      = "app_uuid"
+	AppVersion   = "app_version"
 )

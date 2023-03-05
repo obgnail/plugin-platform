@@ -63,7 +63,7 @@ type UploadHelper struct {
 }
 
 func (h *UploadHelper) checkFile() error {
-	err := checkMaxFileSize(h.ctx, types.PluginFileMaxSize)
+	err := CheckMaxFileSize(h.ctx, types.PluginFileMaxSize)
 	if err != nil {
 		return errors.PluginUploadError(errors.FileTooLarge)
 	}
@@ -80,15 +80,13 @@ func (h *UploadHelper) checkFile() error {
 func (h *UploadHelper) parseConfigYaml() error {
 	configYaml, err := utils.GetYamlFromFile(h.fileHeader, h.file)
 	if err != nil {
-		err = errors.PluginUploadError(errors.PluginConfigFileParseFailed)
-		return err
+		return errors.PluginUploadError(errors.PluginConfigFileParseFailed)
 	}
 
 	var pluginConfig = new(plugin_pool.PluginConfig)
 	if err = yaml.Unmarshal([]byte(configYaml), pluginConfig); err != nil {
 		log.Warn("Unmarshal err: %+v", errors.Trace(err))
-		err = errors.PluginUploadError(errors.PluginConfigFileParseFailed)
-		return err
+		return errors.PluginUploadError(errors.PluginConfigFileParseFailed)
 	}
 
 	h.pluginConfig = pluginConfig
@@ -168,7 +166,7 @@ func (h *UploadHelper) newPackage(upgrade bool) (*UploadResponse, error) {
 	return resp, nil
 }
 
-func checkMaxFileSize(context *gin.Context, maxSize int64) error {
+func CheckMaxFileSize(context *gin.Context, maxSize int64) error {
 	var c = context
 
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxSize)

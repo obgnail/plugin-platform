@@ -39,6 +39,7 @@ const (
 	PluginInstanceUploadFailure         = "PluginInstanceUploadFailure"
 	PluginInstanceEnableFailure         = "PluginInstanceEnableFailure"
 	PluginInstanceDisableFailure        = "PluginInstanceDisableFailure"
+	PluginInstanceUpgradeFailure        = "PluginInstanceUpgradeFailure"
 	PluginInstanceInternalError         = "PluginInstanceInternalError"
 )
 
@@ -80,6 +81,7 @@ var (
 		PluginInstanceUploadFailure:         http.StatusBadRequest,
 		PluginInstanceEnableFailure:         http.StatusBadRequest,
 		PluginInstanceDisableFailure:        http.StatusBadRequest,
+		PluginInstanceUpgradeFailure:        http.StatusBadRequest,
 		PluginInstanceInternalError:         http.StatusInternalServerError,
 	}
 )

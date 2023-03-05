@@ -35,6 +35,10 @@ func PluginUninstallError(reason string) error {
 	return errorWithModelFieldReason(PluginInstanceUninstallationFailure, "", "", reason)
 }
 
+func PluginUpgradeError(reason string) error {
+	return errorWithModelFieldReason(PluginInstanceUpgradeFailure, "", "", reason)
+}
+
 func MissingParameterError(model string, field string) error {
 	return errorWithModelFieldReason(MissingParameter, model, field, "")
 }
