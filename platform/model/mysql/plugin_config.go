@@ -13,13 +13,13 @@ func ModelPluginConfig() *PluginConfig {
 
 type PluginConfig struct {
 	BaseModel
-	AppUUID      string `gorm:"COLUMN:app_uuid" json:"app_uuid"`
-	InstanceUUID string `gorm:"COLUMN:instance_uuid" json:"instance_uuid"`
-	Label        string `gorm:"COLUMN:label" json:"label"`
-	Key          string `gorm:"COLUMN:arg_key" json:"arg_key"`
-	Value        string `gorm:"COLUMN:arg_value" json:"arg_value"`
-	Type         int64  `gorm:"COLUMN:type" json:"type"` // COMBO: 1,INPUT: 2, TEXT: 3, SELECT: 4,CHECKBOX: 5,BUTTON: 6,
-	Required     bool   `gorm:"COLUMN:required" json:"required"`
+	AppUUID      string `gorm:"app_uuid" json:"app_uuid"`
+	InstanceUUID string `gorm:"instance_uuid" json:"instance_uuid"`
+	Label        string `gorm:"label" json:"label"`
+	Key          string `gorm:"arg_key" json:"arg_key"`
+	Value        string `gorm:"arg_value" json:"arg_value"`
+	Type         int64  `gorm:"type" json:"type"` // COMBO: 1,INPUT: 2, TEXT: 3, SELECT: 4,CHECKBOX: 5,BUTTON: 6,
+	Required     bool   `gorm:"required" json:"required"`
 }
 
 func (c *PluginConfig) tableName() string {

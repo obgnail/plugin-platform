@@ -26,6 +26,12 @@ const (
 	// 插件包已存在
 	FileAlreadyExist = "FileAlreadyExist"
 
+	// 未找到该实例
+	InstanceNotFound = "InstanceNotFound"
+
+	// 已经卸载
+	PluginAlreadyUninstall = "PluginAlreadyUninstall"
+
 	// 插件已安装
 	PluginAlreadyInstall = "PluginAlreadyInstall"
 

@@ -2,6 +2,7 @@ package ability
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/common/utils/message"
@@ -55,7 +56,7 @@ func (a *Ability) buildMsg(content []byte, err error) {
 		Content: content,
 	}
 	if err != nil {
-		log.ErrorDetails(err)
+		log.ErrorDetails(errors.Trace(err))
 		e := common_type.NewPluginError(common_type.CallAbilityFailure, err.Error())
 		msg.Error = message.BuildErrorMessage(e)
 	}

@@ -21,6 +21,20 @@ func RenderJSON(c *gin.Context, err error, obj interface{}) {
 	c.Next()
 }
 
+func RenderIndentedJSON(c *gin.Context, err error, obj interface{}) {
+	errp := buildErrPayloadAndLog(err, true)
+	if errp.HttpStatus == http.StatusOK {
+		if obj == nil {
+			c.IndentedJSON(errp.HttpStatus, errp)
+		} else {
+			c.IndentedJSON(errp.HttpStatus, obj)
+		}
+	} else {
+		c.IndentedJSON(errp.HttpStatus, errp)
+	}
+	c.Next()
+}
+
 func RenderError(c *gin.Context, result error) {
 	errp := buildErrPayloadAndLog(result, true)
 	c.JSON(errp.HttpStatus, errp)
@@ -47,8 +61,7 @@ func buildErrPayloadAndLog(err error, shouldLog bool) (errp *errors.ErrPayload) 
 			// 不需要打印日志
 		} else if errp.HttpStatus >= 500 && errp.HttpStatus < 600 {
 			// 服务端错误
-
-			log.ErrorDetails(err)
+			log.ErrorDetails(errors.Trace(err))
 			// 对客户端隐藏详细信息
 			errp.Code = errors.ServerError
 			errp.HttpStatus = http.StatusInternalServerError

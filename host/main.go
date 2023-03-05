@@ -283,20 +283,8 @@ func (p *mockPlugin) Enable(common_type.LifeCycleRequest) common_type.PluginErro
 func (p *mockPlugin) Disable(common_type.LifeCycleRequest) common_type.PluginError {
 	err := p.resource.GetWorkspace().CreateFile("mack_plugin_test.txt")
 	if err != nil {
-		log.ErrorDetails(err)
+		log.PEDetails(err)
 	}
-	return nil
-}
-
-func (p *mockPlugin) Start(common_type.LifeCycleRequest) common_type.PluginError {
-	err := p.resource.GetWorkspace().WriteBytes("mack_plugin_test.txt", []byte("1234567654321"))
-	if err != nil {
-		log.ErrorDetails(err)
-	}
-	return nil
-}
-
-func (p *mockPlugin) Stop(common_type.LifeCycleRequest) common_type.PluginError {
 	return nil
 }
 

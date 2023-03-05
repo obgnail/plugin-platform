@@ -91,7 +91,7 @@ func (n *Network) buildMsg(status int64, body []byte, headers map[string]*protoc
 		StatusCode: status,
 	}
 	if err != nil {
-		log.ErrorDetails(err)
+		log.ErrorDetails(errors.Trace(err))
 		e := common_type.NewPluginError(common_type.CallMainSystemAPIFailure, err.Error())
 		msg.Error = message.BuildErrorMessage(e)
 	}

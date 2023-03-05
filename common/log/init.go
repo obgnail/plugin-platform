@@ -1,6 +1,8 @@
 package log
 
 import (
+	"fmt"
+	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/utils/file_path"
@@ -58,6 +60,11 @@ func Error(format string, args ...interface{}) {
 
 func ErrorDetails(err error) {
 	CommonLogger.ErrorDetailsPath(CommonLogger.GetPath(), err)
+}
+
+func PEDetails(err common_type.PluginError) {
+	er := fmt.Errorf("%s: %s", err.Error(), err.Msg())
+	CommonLogger.ErrorDetailsPath(CommonLogger.GetPath(), er)
 }
 
 func Warn(format string, args ...interface{}) {

@@ -3,8 +3,6 @@ package connect
 import (
 	"github.com/golang/protobuf/proto"
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/common/errors"
-	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"sync"
 	"time"
@@ -70,11 +68,9 @@ func (c *Connection) SendAsync(msg *protocol.PlatformMessage, timeout time.Durat
 func (c *Connection) SendOnly(msg *protocol.PlatformMessage) common_type.PluginError {
 	msgBytes, err := proto.Marshal(msg)
 	if err != nil {
-		log.ErrorDetails(errors.Trace(err))
 		return common_type.NewPluginError(common_type.ProtoMarshalFailure, err.Error())
 	}
 	if err = c.Zmq.Send(msgBytes); err != nil {
-		log.ErrorDetails(errors.Trace(err))
 		return common_type.NewPluginError(common_type.EndpointSendErr, err.Error())
 	}
 	return nil
@@ -84,7 +80,6 @@ func (c *Connection) OnMessage(endpoint *EndpointInfo, content []byte) {
 	msg := &protocol.PlatformMessage{}
 	var pluginError common_type.PluginError
 	if err := proto.Unmarshal(content, msg); err != nil {
-		log.ErrorDetails(errors.Trace(err))
 		pluginError = common_type.NewPluginError(common_type.ProtoUnmarshalFailure, err.Error())
 	}
 	if spin, ok := c.spins.Load(msg.Header.SeqNo); ok {

@@ -9,6 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/config"
+	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/common/utils/file_path"
@@ -42,7 +43,7 @@ func GetDB(dbName string) *DB {
 			user, pwd, addr, dbName)
 		dbConn, err := sql.Open("mysql", connString)
 		if err != nil {
-			log.ErrorDetails(err)
+			log.ErrorDetails(errors.Trace(err))
 		}
 		dbConn.SetMaxIdleConns(maxIdle)
 		dbConn.SetMaxOpenConns(maxOpen)

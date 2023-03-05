@@ -6,7 +6,10 @@ import (
 	"github.com/obgnail/plugin-platform/platform/service/types"
 )
 
-var PluginFileDir = config.StringOrPanic("platform.plugins_storage_dir")
+var (
+	PluginFileDir      = config.StringOrPanic("platform.plugins_storage_dir")
+	PluginWorkspaceDir = config.StringOrPanic("platform.plugin_runtime_dir")
+)
 
 func IsPluginYamlPath(yamlPath string) bool {
 	p := file_path.JoinPath(types.PluginFileConfigDir, types.PluginFileConfigYaml)
@@ -27,4 +30,8 @@ func GetPluginConfigPath(appUUID string, version string) string {
 
 func GetPluginSoFile(appUUID string, version string) string {
 	return file_path.JoinPath(PluginFileDir, appUUID, version, types.PluginFileBackDir, types.PluginServerDir, types.PluginSoFile)
+}
+
+func GetPluginWorkspace(appUUID string, version string) string {
+	return file_path.JoinPath(PluginWorkspaceDir, appUUID, version)
 }

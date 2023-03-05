@@ -24,9 +24,6 @@ type PluginInstance struct {
 	Contact      string `gorm:"contact" json:"contact"`
 	Status       int    `gorm:"status" json:"status"`
 	Apis         string `gorm:"apis" json:"apis"`
-	CreateTime   string `gorm:"create_time" json:"create_time"`
-	UpdateTime   string `gorm:"update_time" json:"update_time"`
-	Deleted      int    `gorm:"deleted" json:"deleted"`
 }
 
 func (i *PluginInstance) tableName() string {

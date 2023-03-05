@@ -23,6 +23,18 @@ func PluginInstallError(reason string) error {
 	return errorWithModelFieldReason(PluginInstanceInstallationFailure, "", "", reason)
 }
 
+func PluginEnableError(reason string) error {
+	return errorWithModelFieldReason(PluginInstanceEnableFailure, "", "", reason)
+}
+
+func PluginDisableError(reason string) error {
+	return errorWithModelFieldReason(PluginInstanceDisableFailure, "", "", reason)
+}
+
+func PluginUninstallError(reason string) error {
+	return errorWithModelFieldReason(PluginInstanceUninstallationFailure, "", "", reason)
+}
+
 func MissingParameterError(model string, field string) error {
 	return errorWithModelFieldReason(MissingParameter, model, field, "")
 }

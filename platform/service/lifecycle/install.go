@@ -14,8 +14,13 @@ import (
 )
 
 type InstallReq struct {
-	AppUUID      string `json:"app_uuid"`
-	InstanceUUID string `json:"instance_uuid"`
+	AppUUID string `json:"app_uuid"`
+}
+
+type InstallResp struct {
+	*plugin_pool.Service `json:"service"`
+	Apis                 []*plugin_pool.Api     `json:"apis"`
+	Abilities            []*plugin_pool.Ability `json:"abilities"`
 }
 
 func (i *InstallReq) validate() error {
@@ -40,14 +45,17 @@ func Install(req *InstallReq) (ret gin.H, err error) {
 	if err := helper.Save2Db(); err != nil {
 		return ret, errors.Trace(err)
 	}
-
-	return gin.H{"data": "resp"}, err
+	var resp = &InstallResp{
+		Service:   helper.Cfg.Service,
+		Apis:      helper.Cfg.Apis,
+		Abilities: helper.Cfg.Abilities,
+	}
+	return gin.H{"data": resp}, err
 }
 
 type InstallHelper struct {
-	req          *InstallReq
-	cfg          *plugin_pool.PluginConfig
-	instanceUUID string
+	req *InstallReq
+	Cfg *plugin_pool.PluginConfig
 }
 
 func (h *InstallHelper) checkInstall() (*mysql.PluginPackage, error) {
@@ -76,35 +84,36 @@ func (h *InstallHelper) checkInstall() (*mysql.PluginPackage, error) {
 }
 
 func (h *InstallHelper) generatePlugin(pkg *mysql.PluginPackage) (err error) {
-	h.cfg, err = pkg.LoadYamlConfig()
+	h.Cfg, err = pkg.LoadYamlConfig()
 	if err != nil {
 		return errors.PluginInstallError(errors.LoadYamlConfigFailed)
 	}
-	h.cfg.Status = plugin_pool.PluginStatusRunning
-	h.instanceUUID = utils.NewInstanceUUID()
-	er := handler.InstallPlugin(h.cfg.AppUUID, h.instanceUUID, h.cfg.Name,
-		h.cfg.Language, h.cfg.LanguageVersion, h.cfg.Version)
+	h.Cfg.Status = plugin_pool.PluginStatusStopping
+	h.Cfg.InstanceUUID = utils.NewInstanceUUID()
+	er := handler.InstallPlugin(h.Cfg.AppUUID, h.Cfg.InstanceUUID, h.Cfg.Name,
+		h.Cfg.Language, h.Cfg.LanguageVersion, h.Cfg.Version)
 	if er != nil {
-		err = errors.PluginInstallError(er.Error())
+		log.PEDetails(er)
+		return errors.PluginInstallError(er.Error() + " " + er.Msg())
 	}
 	return nil
 }
 
 func (h *InstallHelper) Save2Db() error {
-	apis, err := json.Marshal(h.cfg.Apis)
+	apis, err := json.Marshal(h.Cfg.Apis)
 	if err != nil {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginInstallError(errors.LoadYamlConfigFailed)
 	}
 
 	m := &mysql.PluginInstance{
-		AppUUID:      h.cfg.AppUUID,
-		InstanceUUID: h.cfg.InstanceUUID,
-		Name:         h.cfg.Name,
-		Version:      h.cfg.Version,
-		Description:  h.cfg.Description,
-		Contact:      h.cfg.Contact,
-		Status:       h.cfg.Status,
+		AppUUID:      h.Cfg.AppUUID,
+		InstanceUUID: h.Cfg.InstanceUUID,
+		Name:         h.Cfg.Name,
+		Version:      h.Cfg.Version,
+		Description:  h.Cfg.Description,
+		Contact:      h.Cfg.Contact,
+		Status:       h.Cfg.Status,
 		Apis:         string(apis),
 	}
 	models := []*mysql.PluginInstance{m}
@@ -115,17 +124,17 @@ func (h *InstallHelper) Save2Db() error {
 		}
 
 		// 生成插件配置
-		if err = generatePluginConfig(db, models, h.cfg); err != nil {
+		if err = generatePluginConfig(db, models, h.Cfg); err != nil {
 			return errors.Trace(err)
 		}
 
 		// 生成自定义权限点
-		if err = generatePluginPermission(db, h.cfg); err != nil {
+		if err = generatePluginPermission(db, h.Cfg); err != nil {
 			return errors.Trace(err)
 		}
 
 		// 给每个插件生成一个新的用户,方便标品鉴权
-		if err = generatePluginUser(db, h.cfg); err != nil {
+		if err = generatePluginUser(db, h.Cfg); err != nil {
 			return errors.Trace(err)
 		}
 		return nil
@@ -149,6 +158,7 @@ func generatePluginConfig(db *gorm.DB, instances []*mysql.PluginInstance, cfg *p
 			var d = &mysql.PluginConfig{
 				AppUUID:      instance.AppUUID,
 				InstanceUUID: instance.InstanceUUID,
+				Label:        c.Label,
 				Key:          c.Key,
 				Value:        c.Value,
 				Type:         mysql.ConvertConfigType(c.Type),
@@ -196,7 +206,7 @@ func generatePluginUser(db *gorm.DB, cfg *plugin_pool.PluginConfig) error {
 		Email:        mysql.NewUserEmail(cfg.AppUUID, cfg.InstanceUUID),
 	}
 	dataset := []*mysql.PluginUser{u}
-	if err := mysql.ModelPluginConfig().NewBatchWithDB(db, dataset); err != nil {
+	if err := mysql.ModelPluginUser().NewBatchWithDB(db, dataset); err != nil {
 		return errors.Trace(err)
 	}
 	return nil

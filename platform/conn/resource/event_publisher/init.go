@@ -71,7 +71,7 @@ func (e *Event) buildMsg(err error) {
 		SubscribeFilter:    e.source.GetResource().GetEvent().GetSubscribeFilter(),
 	}
 	if err != nil {
-		log.ErrorDetails(err)
+		log.ErrorDetails(errors.Trace(err))
 		e := common_type.NewPluginError(common_type.NotifyEventFailure, err.Error())
 		msg.Error = message.BuildErrorMessage(e)
 	}

@@ -48,13 +48,11 @@ message ControlMessage{
   enum PluginActionType {
     Enable = 0;
     Disable = 1;
-    Start = 2;
-    Stop = 3;
-    Install = 4;
-    UnInstall = 5;
-    Upgrade = 6;
-    CheckState = 7;
-    CheckCompatibility = 8;
+    Install = 2;
+    UnInstall = 3;
+    Upgrade = 4;
+    CheckState = 5;
+    CheckCompatibility = 6;
   }
 
   // 插件提供的生命周期方法实现

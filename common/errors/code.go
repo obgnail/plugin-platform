@@ -33,6 +33,7 @@ const (
 	VerificationFailure                 = "VerificationFailure"
 	InvalidFileExt                      = "InvalidFileExt"
 	PluginAlreadyRunning                = "PluginAlreadyRunning"
+	PluginAlreadyStop                   = "PluginAlreadyStop"
 	PluginInstanceInstallationFailure   = "PluginInstanceInstallationFailure"
 	PluginInstanceUninstallationFailure = "PluginInstanceUninstallationFailure"
 	PluginInstanceUploadFailure         = "PluginInstanceUploadFailure"
@@ -73,6 +74,7 @@ var (
 		VerificationFailure:                 http.StatusBadRequest,
 		InvalidFileExt:                      http.StatusBadRequest,
 		PluginAlreadyRunning:                http.StatusBadRequest,
+		PluginAlreadyStop:                   http.StatusBadRequest,
 		PluginInstanceInstallationFailure:   http.StatusBadRequest,
 		PluginInstanceUninstallationFailure: http.StatusBadRequest,
 		PluginInstanceUploadFailure:         http.StatusBadRequest,

@@ -23,14 +23,6 @@ func DisablePlugin(appID, instanceID, name, lang, langVer, appVer string) common
 	return <-platformHandler.DisablePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
 }
 
-func StartPlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-platformHandler.StartPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
-}
-
-func StopPlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-platformHandler.StopPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
-}
-
 func InstallPlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
 	return <-platformHandler.InstallPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
 }

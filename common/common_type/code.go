@@ -35,8 +35,6 @@ const (
 	UnGzFailure                 = 11025
 	HashFailure                 = 11026
 	MakeDirFailure              = 11027
-	OnstartFailure              = 11028
-	OnstopFailure               = 11029
 	OnEnableFailure             = 11030
 	OnDisEnableFailure          = 11031
 	OnUpgradeFailure            = 11032
@@ -95,8 +93,6 @@ var m = map[int]error{
 	UnGzFailure:                 fmt.Errorf("UnGzFailure %d", UnGzFailure),
 	HashFailure:                 fmt.Errorf("HashFailure %d", HashFailure),
 	MakeDirFailure:              fmt.Errorf("MakeDirFailure %d", MakeDirFailure),
-	OnstartFailure:              fmt.Errorf("OnstartFailure %d", OnstartFailure),
-	OnstopFailure:               fmt.Errorf("OnstopFailure %d", OnstopFailure),
 	OnEnableFailure:             fmt.Errorf("OnEnableFailure %d", OnEnableFailure),
 	OnDisEnableFailure:          fmt.Errorf("OnDisEnableFailure %d", OnDisEnableFailure),
 	OnUpgradeFailure:            fmt.Errorf("OnUpgradeFailure %d", OnUpgradeFailure),

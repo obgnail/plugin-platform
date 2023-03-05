@@ -30,9 +30,9 @@ func Run() {
 	plugin.POST("/upload", controllers.Upload)
 	plugin.POST("/delete", controllers.Delete)
 	plugin.POST("/install", controllers.Install)
-	//plugin.POST("/uninstall", controllers.UnInstall)
-	//plugin.POST("/enable", controllers.Enable)
-	//plugin.POST("/disable", controllers.Disable)
+	plugin.POST("/enable", controllers.Enable)
+	plugin.POST("/disable", controllers.Disable)
+	plugin.POST("/uninstall", controllers.UnInstall)
 	//plugin.POST("/upgrade", controllers.Upgrade)
 
 	addr := fmt.Sprintf("%s:%d", config.StringOrPanic("platform.host"), config.IntOrPanic("platform.http_port"))

@@ -59,18 +59,6 @@ func (p *mockPlugin) Disable(common_type.LifeCycleRequest) common_type.PluginErr
 	return nil
 }
 
-func (p *mockPlugin) Start(common_type.LifeCycleRequest) common_type.PluginError {
-	err := p.resource.GetWorkspace().WriteBytes("mack_plugin_test.txt", []byte("1234567654321"))
-	if err != nil {
-		panic(err)
-	}
-	return nil
-}
-
-func (p *mockPlugin) Stop(common_type.LifeCycleRequest) common_type.PluginError {
-	return nil
-}
-
 // TODO
 func (p *mockPlugin) CheckState() common_type.PluginError {
 	return nil

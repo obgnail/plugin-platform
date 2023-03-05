@@ -16,18 +16,18 @@ func main() {
 	Init()
 	log.Info("run")
 
-	go func() {
-		time.Sleep(15 * time.Second)
-		log.Info("InstallPlugin...")
-		handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
-			"golang", "1.14.0", "1.0.0")
-		handler.StartPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
-			"golang", "1.14.0", "1.0.0")
-
-		time.Sleep(time.Second * 20)
-		log.Info("kill Plugin")
-		handler.KillPlugin("InstanceID123")
-	}()
+	//go func() {
+	//	time.Sleep(15 * time.Second)
+	//	log.Info("InstallPlugin...")
+	//	handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+	//		"golang", "1.14.0", "1.0.0")
+	//	handler.StartPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+	//		"golang", "1.14.0", "1.0.0")
+	//
+	//	//time.Sleep(time.Second * 20)
+	//	//log.Info("kill Plugin")
+	//	//handler.KillPlugin("InstanceID123")
+	//}()
 
 	router.Run()
 }

@@ -13,20 +13,20 @@ func ModelPluginUser() *PluginUser {
 
 type PluginUser struct {
 	BaseModel
-	UserUUID     string `gorm:"COLUMN:user_uuid" json:"user_uuid"`
-	AppUUID      string `gorm:"COLUMN:app_uuid" json:"app_uuid"`
-	InstanceUUID string `gorm:"COLUMN:instance_uuid" json:"instance_uuid"`
-	Name         string `gorm:"COLUMN:name" json:"name"`
-	Email        string `gorm:"COLUMN:email" json:"email"`
+	UserUUID     string `gorm:"user_uuid" json:"user_uuid"`
+	AppUUID      string `gorm:"app_uuid" json:"app_uuid"`
+	InstanceUUID string `gorm:"instance_uuid" json:"instance_uuid"`
+	Name         string `gorm:"name" json:"name"`
+	Email        string `gorm:"email" json:"email"`
 }
 
 func (u *PluginUser) tableName() string {
 	return "plugin_user"
 }
 
-func (u *PluginUser) Uninstall(db *gorm.DB, appId string, instanceId string, orgId string, teamId string) error {
+func (u *PluginUser) Uninstall(db *gorm.DB, appId string, instanceId string) error {
 	err := db.Table(u.tableName()).
-		Where("app_uuid = ? and instance_uuid = ? and org_uuid = ? and team_uuid = ?", appId, instanceId, orgId, teamId).
+		Where("app_uuid = ? and instance_uuid = ? ", appId, instanceId).
 		Updates(map[string]interface{}{
 			"deleted": true,
 		}).Error

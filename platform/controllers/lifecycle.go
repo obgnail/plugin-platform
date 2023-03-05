@@ -28,38 +28,33 @@ func Install(c *gin.Context) {
 	RenderJSON(c, result, resp)
 }
 
-//
-//func UnInstall(c *gin.Context) {
-//	req := &lifecycle_action.UninstallReq{}
-//	if err := c.BindJSON(&req); err != nil {
-//		return
-//	}
-//	userUUID := c.GetHeader("Ones-User-Id")
-//	userToken := c.GetHeader("Ones-Auth-Token")
-//	resp, result := lifecycle_action.Uninstall(req, userUUID, userToken)
-//	RenderJSON(c, result, resp)
-//}
-//
-//func Enable(c *gin.Context) {
-//	req := &lifecycle_action.EnableReq{}
-//	if err := c.BindJSON(&req); err != nil {
-//		return
-//	}
-//	userID := c.GetHeader("Ones-User-Id")
-//	resp, result := lifecycle_action.Enable(req, userID)
-//	RenderJSON(c, result, resp)
-//}
-//
-//func Disable(c *gin.Context) {
-//	req := &lifecycle_action.DisableReq{}
-//	if err := c.BindJSON(&req); err != nil {
-//		return
-//	}
-//	userID := c.GetHeader("Ones-User-Id")
-//	resp, result := lifecycle_action.Disable(req, userID)
-//	RenderJSON(c, result, resp)
-//}
-//
+func UnInstall(c *gin.Context) {
+	req := &lifecycle.UninstallReq{}
+	if err := c.BindJSON(&req); err != nil {
+		return
+	}
+	resp, result := lifecycle.Uninstall(req)
+	RenderJSON(c, result, resp)
+}
+
+func Enable(c *gin.Context) {
+	req := &lifecycle.EnableReq{}
+	if err := c.BindJSON(&req); err != nil {
+		return
+	}
+	resp, result := lifecycle.Enable(req)
+	RenderJSON(c, result, resp)
+}
+
+func Disable(c *gin.Context) {
+	req := &lifecycle.DisableReq{}
+	if err := c.BindJSON(&req); err != nil {
+		return
+	}
+	resp, result := lifecycle.Disable(req)
+	RenderJSON(c, result, resp)
+}
+
 //func Upgrade(c *gin.Context) {
 //	req := &lifecycle_action.UpgradeReq{}
 //	if err := c.BindJSON(&req); err != nil {

@@ -7,8 +7,6 @@ type IPlugin interface {
 	// 业务动作
 	Enable(LifeCycleRequest) PluginError
 	Disable(LifeCycleRequest) PluginError
-	Start(LifeCycleRequest) PluginError
-	Stop(LifeCycleRequest) PluginError
 	CheckState() PluginError
 	CheckCompatibility() PluginError
 	Install(LifeCycleRequest) PluginError

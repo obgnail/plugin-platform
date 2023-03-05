@@ -74,7 +74,7 @@ func (h *HostHandler) GetDescriptor() *protocol.HostDescriptor {
 func (h *HostHandler) InitReport() {
 	msg := message.BuildHostReportInitMessage(h.descriptor)
 	if err := h.SendOnly(msg); err != nil {
-		log.ErrorDetails(err)
+		log.PEDetails(err)
 	}
 }
 
@@ -89,6 +89,7 @@ func (h *HostHandler) OnDisconnect() common_type.PluginError {
 }
 
 func (h *HostHandler) OnError(err common_type.PluginError) {
+	log.PEDetails(err)
 	log.Warn("OnError: %s", h.descriptor.Name)
 	if err.Code() != common_type.EndpointReceiveErr {
 		os.Exit(1)
@@ -111,7 +112,7 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 	appID := app.ApplicationID
 	appVer := app.ApplicationVersion
 
-	log.Trace("【GET】message.LifeCycle. [Action]: %d. [appID]: %s. [instanceID]: %s", int32(action), appID, instance)
+	log.Trace("【GET】LifeCycle. [Action]: %d. [appID]: %s. [instanceID]: %s", int32(action), appID, instance)
 
 	resp := &protocol.PlatformMessage{
 		Header: &protocol.RouterMessage{
@@ -131,10 +132,11 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 
 	// 发送响应数据
 	defer func() {
+		resp.Control.HostReport = h.buildReportMessage() // 及时报告
 		if err := h.SendOnly(resp); err != nil {
-			log.Error("appID: %s appVersion: %s hh.SendMessage err: %s", appID, appVer, err.Error())
+			log.PEDetails(err)
+			log.Error("appID: %s appVersion: %s", appID, appVer)
 		}
-		h.OnHeartbeat(msg) // 立即触发心跳,及时报告
 	}()
 
 	instanceDesc := &common_type.MockInstanceDesc{
@@ -173,11 +175,11 @@ func (h *HostHandler) changePoolStatus(
 ) {
 	switch action {
 	case protocol.ControlMessage_UnInstall:
-		h.instancePool.DeleteInstance(instanceDesc.InstanceID())
-	case protocol.ControlMessage_Start:
-		h.instancePool.StartInstance(instanceDesc)
+		h.instancePool.DeleteMountedAndRunning(instanceDesc.InstanceID())
+	case protocol.ControlMessage_Enable:
+		h.instancePool.AddRunning(instanceDesc)
 	case protocol.ControlMessage_Disable:
-		h.instancePool.StopInstance(instanceDesc.InstanceID())
+		h.instancePool.DeleteRunning(instanceDesc.InstanceID())
 	}
 }
 
@@ -203,10 +205,6 @@ func (h *HostHandler) doAction(
 		revision := oldVersion.ApplicationVersion.GetRevision()
 		ver := common_type.NewVersion(int(major), int(minor), int(revision))
 		err = plugin.Upgrade(ver, request)
-	case protocol.ControlMessage_Start:
-		err = plugin.Start(request)
-	case protocol.ControlMessage_Stop:
-		err = plugin.Stop(request)
 	case protocol.ControlMessage_CheckState:
 		err = plugin.CheckState()
 	case protocol.ControlMessage_CheckCompatibility:
@@ -215,21 +213,22 @@ func (h *HostHandler) doAction(
 	return err
 }
 
-func (h *HostHandler) mountPlugin(instanceDesc *common_type.MockInstanceDesc) (Plugin common_type.IPlugin, err common_type.PluginError) {
-	Plugin, _, _ = h.instancePool.GetPlugin(instanceDesc.InstanceID())
+func (h *HostHandler) mountPlugin(instanceDesc *common_type.MockInstanceDesc) (common_type.IPlugin, common_type.PluginError) {
+	mounted, _ := h.instancePool.GetMounted(instanceDesc.InstanceID()) // 尝试在pool找出挂载的插件
 
-	Plugin, err = h.mounter.Mount(Plugin, instanceDesc)
+	setup, err := h.mounter.Setup(mounted, instanceDesc)
 	if err != nil {
+		log.PEDetails(err)
 		return nil, err
 	}
 
-	h.instancePool.Add(instanceDesc.PluginInstanceID, Plugin) // 此插件已经成功挂载
-	return Plugin, nil
+	h.instancePool.AddMounted(instanceDesc.PluginInstanceID, setup) // 此插件已经成功挂载,放入pool中
+	return setup, nil
 }
 
 func (h *HostHandler) setLifeCycleRespError(resp *protocol.PlatformMessage,
 	action protocol.ControlMessage_PluginActionType, err common_type.PluginError) {
-	log.Error("%+v", err)
+	log.PEDetails(err)
 	resp.Control.LifeCycleResponse.Result = false
 	resp.Control.LifeCycleResponse.Error = &protocol.ErrorMessage{
 		Code:  int64(h.getLifeCycleErrorCode(action)),
@@ -239,24 +238,20 @@ func (h *HostHandler) setLifeCycleRespError(resp *protocol.PlatformMessage,
 }
 
 func (h *HostHandler) getLifeCycleErrorCode(action protocol.ControlMessage_PluginActionType) int {
-	var errcode int
+	var errCode int
 	switch action {
 	case protocol.ControlMessage_Install:
-		errcode = common_type.OnInstallFailure
+		errCode = common_type.OnInstallFailure
 	case protocol.ControlMessage_Upgrade:
-		errcode = common_type.OnUpgradeFailure
+		errCode = common_type.OnUpgradeFailure
 	case protocol.ControlMessage_UnInstall:
-		errcode = common_type.OnUnInstallFailure
+		errCode = common_type.OnUnInstallFailure
 	case protocol.ControlMessage_Enable:
-		errcode = common_type.OnEnableFailure
+		errCode = common_type.OnEnableFailure
 	case protocol.ControlMessage_Disable:
-		errcode = common_type.OnDisEnableFailure
-	case protocol.ControlMessage_Start:
-		errcode = common_type.OnstartFailure
-	case protocol.ControlMessage_Stop:
-		errcode = common_type.OnstopFailure
+		errCode = common_type.OnDisEnableFailure
 	}
-	return errcode
+	return errCode
 }
 
 func (h *HostHandler) getLifeCycleRequest() common_type.LifeCycleRequest {
@@ -273,22 +268,31 @@ func (h *HostHandler) getLifeCycleRequest() common_type.LifeCycleRequest {
 	return req
 }
 
-func (h *HostHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
-	log.Trace("【GET】message.Heartbeat. %d", msg.Control.Heartbeat)
-
+func (h *HostHandler) buildReportMessage() *protocol.ControlMessage_HostReportMessage {
 	var running = make(map[string]*protocol.PluginInstanceDescriptor)
-	for _, _running := range h.instancePool.ListRunningInstances() {
+	for _, _running := range h.instancePool.ListRunning() {
 		instance := message.BuildInstanceDescriptor(_running, h.descriptor.HostID)
 		running[_running.InstanceID()] = instance
 	}
 
 	var support = make(map[string]*protocol.PluginInstanceDescriptor)
-	for _, _mount := range h.instancePool.ListMountedPlugin() {
+	for _, _mount := range h.instancePool.ListMounted() {
 		description := _mount.GetPluginDescription()
 		descriptor := message.BuildInstanceDescriptor(description, h.descriptor.HostID)
 		// Q:明明是挂载插件还没有运行,为什么有instanceID? A:由platform生成,接着再传过来
 		support[description.InstanceID()] = descriptor
 	}
+
+	msg := &protocol.ControlMessage_HostReportMessage{
+		Host:          h.descriptor,
+		InstanceList:  running,
+		SupportedList: support,
+	}
+	return msg
+}
+
+func (h *HostHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
+	log.Trace("【GET】Heartbeat. %d", msg.Control.Heartbeat)
 
 	toPlatform := &protocol.PlatformMessage{
 		Header: &protocol.RouterMessage{
@@ -297,17 +301,14 @@ func (h *HostHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
 			Distinct: msg.Header.Source,
 		},
 		Control: &protocol.ControlMessage{
-			HostReport: &protocol.ControlMessage_HostReportMessage{
-				Host:          h.descriptor,
-				InstanceList:  running,
-				SupportedList: support,
-			},
+			HostReport: h.buildReportMessage(),
 		},
 	}
 
-	log.Trace("【SND】message.Heartbeat. %+v", toPlatform.Control.HostReport)
+	log.Trace("【SND】Heartbeat. %+v", toPlatform.Control.HostReport)
+
 	if err := h.SendOnly(toPlatform); err != nil {
-		log.ErrorDetails(err)
+		log.PEDetails(err)
 	}
 }
 
@@ -318,13 +319,9 @@ func (h *HostHandler) OnKillSelf(msg *protocol.PlatformMessage) {
 
 func (h *HostHandler) OnKillPlugin(msg *protocol.PlatformMessage) {
 	log.Warn("kill plugin: %+v", msg)
-	instanceID := msg.Control.KillPlugin.InstanceID
-	_, _, exist := h.instancePool.GetPlugin(instanceID)
 
-	if exist {
-		// go plugin 机制没有卸载功能
-		h.instancePool.DeleteInstance(instanceID)
-	}
+	// go plugin 机制没有卸载功能. 只能在pool中将其删除
+	h.instancePool.DeleteMountedAndRunning(msg.Control.KillPlugin.InstanceID)
 
 	resp := &protocol.PlatformMessage{
 		Header: &protocol.RouterMessage{
@@ -335,13 +332,13 @@ func (h *HostHandler) OnKillPlugin(msg *protocol.PlatformMessage) {
 		Control: msg.Control,
 	}
 	if err := h.SendOnly(resp); err != nil {
-		log.ErrorDetails(err)
+		log.PEDetails(err)
 	}
 }
 
 func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
 	if err != nil {
-		log.ErrorDetails(err)
+		log.PEDetails(err)
 		return
 	}
 	h.OnControlMessage(endpoint, msg)

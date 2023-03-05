@@ -72,7 +72,7 @@ func (h *HostBootHandler) OnError(err common_type.PluginError) {
 
 func (h *HostBootHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
 	if err != nil {
-		log.ErrorDetails(err)
+		log.PEDetails(err)
 		return
 	}
 
@@ -92,7 +92,7 @@ func (h *HostBootHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.Pl
 }
 
 func (h *HostBootHandler) OnStartHost(msg *protocol.PlatformMessage) {
-	log.Trace("【GET】message.StartHost. %+v", msg.Control.StartHost.Host)
+	log.Trace("【GET】StartHost. %+v", msg.Control.StartHost.Host)
 
 	host := h.newHost(msg)
 
@@ -110,9 +110,9 @@ func (h *HostBootHandler) OnStartHost(msg *protocol.PlatformMessage) {
 			},
 		},
 	}
-	log.Trace("【SND】message.StartHost. %+v", resp.Control.StartHost)
+	log.Trace("【SND】StartHost. %+v", resp.Control.StartHost)
 	if err := h.SendOnly(resp); err != nil {
-		log.ErrorDetails(err)
+		log.PEDetails(err)
 	}
 }
 
@@ -133,15 +133,15 @@ func (h *HostBootHandler) newHost(msg *protocol.PlatformMessage) *host_handler.H
 }
 
 func (h *HostBootHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
-	log.Trace("【GET】message.Heartbeat. %d", msg.Control.Heartbeat)
+	log.Trace("【GET】Heartbeat. %d", msg.Control.Heartbeat)
 
 	resp := message.BuildHostBootReportInitMessage(h.descriptor)
 	resp.Header.SeqNo = msg.Header.SeqNo
 
-	log.Trace("【SND】message.Heartbeat. %+v", resp.Control.BootReport)
+	log.Trace("【SND】Heartbeat. %+v", resp.Control.BootReport)
 
 	if err := h.SendOnly(msg); err != nil {
-		log.ErrorDetails(err)
+		log.PEDetails(err)
 	}
 }
 
@@ -149,7 +149,7 @@ func (h *HostBootHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
 func (h *HostBootHandler) Report() {
 	msg := message.BuildHostBootReportInitMessage(h.descriptor)
 	if err := h.SendOnly(msg); err != nil {
-		log.ErrorDetails(err)
+		log.PEDetails(err)
 	}
 }
 
