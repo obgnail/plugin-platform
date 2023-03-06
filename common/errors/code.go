@@ -34,6 +34,7 @@ const (
 	InvalidFileExt                      = "InvalidFileExt"
 	PluginAlreadyRunning                = "PluginAlreadyRunning"
 	PluginAlreadyStop                   = "PluginAlreadyStop"
+	GetPluginMessageFailure             = "GetPluginMessageFailure"
 	PluginInstanceInstallationFailure   = "PluginInstanceInstallationFailure"
 	PluginInstanceUninstallationFailure = "PluginInstanceUninstallationFailure"
 	PluginInstanceUploadFailure         = "PluginInstanceUploadFailure"
@@ -76,6 +77,7 @@ var (
 		InvalidFileExt:                      http.StatusBadRequest,
 		PluginAlreadyRunning:                http.StatusBadRequest,
 		PluginAlreadyStop:                   http.StatusBadRequest,
+		GetPluginMessageFailure:             http.StatusBadRequest,
 		PluginInstanceInstallationFailure:   http.StatusBadRequest,
 		PluginInstanceUninstallationFailure: http.StatusBadRequest,
 		PluginInstanceUploadFailure:         http.StatusBadRequest,

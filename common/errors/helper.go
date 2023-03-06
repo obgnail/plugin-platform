@@ -39,6 +39,10 @@ func PluginUpgradeError(reason string) error {
 	return errorWithModelFieldReason(PluginInstanceUpgradeFailure, "", "", reason)
 }
 
+func PluginMessageError(reason string) error {
+	return errorWithModelFieldReason(GetPluginMessageFailure, "", "", reason)
+}
+
 func MissingParameterError(model string, field string) error {
 	return errorWithModelFieldReason(MissingParameter, model, field, "")
 }

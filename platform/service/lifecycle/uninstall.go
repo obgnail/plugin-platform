@@ -6,7 +6,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
-	"github.com/obgnail/plugin-platform/platform/pool/plugin_pool"
+	"github.com/obgnail/plugin-platform/platform/service/common"
 	"github.com/obgnail/plugin-platform/platform/service/utils"
 	"os"
 )
@@ -55,7 +55,7 @@ func (h *UninstallHelper) checkUninstall() error {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginUninstallError(errors.ServerError)
 	}
-	if exist && instance.Status != plugin_pool.PluginStatusStopping {
+	if exist && instance.Status != common.PluginStatusStopping {
 		return errors.PluginUninstallError(errors.PluginAlreadyRunning)
 	}
 	h.instance = instance
@@ -78,7 +78,7 @@ func (h *UninstallHelper) Uninstall() error {
 }
 
 func (h *UninstallHelper) UpdateDb() error {
-	h.instance.Status = plugin_pool.PluginStatusUploaded
+	h.instance.Status = common.PluginStatusUploaded
 	if err := mysql.ModelPluginInstance().Update(h.instance.Id, h.instance); err != nil {
 		return errors.Trace(err)
 	}

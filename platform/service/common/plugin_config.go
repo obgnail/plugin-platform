@@ -1,4 +1,4 @@
-package plugin_pool
+package common
 
 const (
 	Addition = "addition"
@@ -6,6 +6,13 @@ const (
 	Prefix   = "prefix"
 	Suffix   = "suffix"
 	External = "external"
+)
+
+const (
+	PluginStatusUploaded    = 1 // 已上传
+	PluginStatusRunning     = 2 // 已启用
+	PluginStatusStopping    = 3 // 已安装/已停用
+	PluginStatusUnavailable = 4 // 不可用
 )
 
 type Config struct {

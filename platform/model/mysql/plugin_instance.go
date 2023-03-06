@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/obgnail/plugin-platform/common/errors"
-	"github.com/obgnail/plugin-platform/platform/pool/plugin_pool"
+	"github.com/obgnail/plugin-platform/platform/service/common"
 	"github.com/obgnail/plugin-platform/platform/service/utils"
 	"gopkg.in/yaml.v2"
 	"reflect"
@@ -33,8 +33,8 @@ func (i *PluginInstance) tableName() string {
 	return "plugin_instance"
 }
 
-func (i *PluginInstance) GetConfig() *plugin_pool.PluginConfig {
-	s := &plugin_pool.Service{
+func (i *PluginInstance) GetConfig() *common.PluginConfig {
+	s := &common.Service{
 		AppUUID:      i.AppUUID,
 		InstanceUUID: i.InstanceUUID,
 		Name:         i.Name,
@@ -42,23 +42,23 @@ func (i *PluginInstance) GetConfig() *plugin_pool.PluginConfig {
 		Description:  i.Description,
 		Status:       i.Status,
 	}
-	apis := make([]*plugin_pool.Api, 0)
+	apis := make([]*common.Api, 0)
 	_ = json.Unmarshal([]byte(i.Apis), &apis)
-	cfg := &plugin_pool.PluginConfig{
+	cfg := &common.PluginConfig{
 		Service: s,
 		Apis:    apis,
 	}
 	return cfg
 }
 
-func (i *PluginInstance) LoadYamlConfig() (*plugin_pool.PluginConfig, error) {
+func (i *PluginInstance) LoadYamlConfig() (*common.PluginConfig, error) {
 	yamlPath := utils.GetPluginConfigPath(i.AppUUID, i.Version)
 	res, err := utils.ReadFile(yamlPath)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 
-	var pluginConfig = new(plugin_pool.PluginConfig)
+	var pluginConfig = new(common.PluginConfig)
 	if err := yaml.Unmarshal(res, pluginConfig); err != nil {
 		return nil, errors.Trace(err)
 	}

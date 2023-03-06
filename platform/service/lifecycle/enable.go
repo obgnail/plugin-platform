@@ -6,7 +6,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
-	"github.com/obgnail/plugin-platform/platform/pool/plugin_pool"
+	"github.com/obgnail/plugin-platform/platform/service/common"
 )
 
 type EnableReq struct {
@@ -51,7 +51,7 @@ func (h *EnableHelper) checkEnable() error {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginEnableError(errors.ServerError)
 	}
-	if exist && instance.Status != plugin_pool.PluginStatusStopping {
+	if exist && instance.Status != common.PluginStatusStopping {
 		return errors.PluginEnableError(errors.PluginAlreadyRunning)
 	}
 	h.instance = instance
@@ -74,7 +74,7 @@ func (h *EnableHelper) Enable() error {
 }
 
 func (h *EnableHelper) UpdateDb() error {
-	h.instance.Status = plugin_pool.PluginStatusRunning
+	h.instance.Status = common.PluginStatusRunning
 	if err := mysql.ModelPluginInstance().Update(h.instance.Id, h.instance); err != nil {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginEnableError(errors.ServerError)

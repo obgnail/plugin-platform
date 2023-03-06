@@ -7,7 +7,6 @@ import (
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/model/redis"
-	"github.com/obgnail/plugin-platform/platform/pool/plugin_pool"
 	"github.com/obgnail/plugin-platform/platform/router"
 	"time"
 )
@@ -62,7 +61,6 @@ func onStart(fn func() error) {
 
 func Init() {
 	onStart(handler.InitPlatformHandler)
-	onStart(plugin_pool.InitPluginPool)
 	onStart(mysql.InitDB)
 	onStart(redis.InitRedis)
 	onStart(hotboot_handler.InitHostBoot)
