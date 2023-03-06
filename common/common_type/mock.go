@@ -1,6 +1,5 @@
 package common_type
 
-var _ IPlugin = (*MockPlugin)(nil)
 var _ IInstanceDescription = (*MockInstanceDesc)(nil)
 var _ IPluginDescriptor = (*MockPluginDescriptor)(nil)
 
@@ -44,20 +43,9 @@ func (i *MockPluginDescriptor) MinSystemVersion() IVersion {
 	return result
 }
 
-type MockPlugin struct {
-	IPlugin
-}
-
-func (w *MockPlugin) Setup(p IPlugin, desc IInstanceDescription, res IResources) PluginError {
-	w.IPlugin = p
-	err := w.IPlugin.Assign(desc, res)
-	return err
-}
-
 func SetupPlugin(plugin IPlugin, desc IInstanceDescription, res IResources) (IPlugin, PluginError) {
-	mock := &MockPlugin{}
-	err := mock.Setup(plugin, desc, res)
-	return mock, err
+	err := plugin.Assign(desc, res)
+	return plugin, err
 }
 
 type MockHost struct {

@@ -338,13 +338,13 @@ func (h *HostHandler) OnKillPlugin(msg *protocol.PlatformMessage) {
 }
 
 // 查找正在运行插件
-func (h *HostHandler) getRunningInstance(msg *protocol.PlatformMessage) common_type.IPlugin {
+func (h *HostHandler) getRunningInstance(msg *protocol.PlatformMessage) common_type.IInstanceDescription {
 	if msg.Plugin.Target == nil {
 		return nil
 	}
 	instanceID := msg.Plugin.Target.InstanceID
-	p, _ := h.instancePool.GetRunning(instanceID)
-	return p
+	desc, _ := h.instancePool.GetRunning(instanceID)
+	return desc
 }
 
 func (h *HostHandler) OnPluginHttp(msg *protocol.PlatformMessage) {
@@ -427,7 +427,7 @@ func (h *HostHandler) onErrorTarget(msg *protocol.PlatformMessage) {
 }
 
 // TODO
-func (h *HostHandler) OnEvent(msg *protocol.PlatformMessage, p common_type.IPlugin) {
+func (h *HostHandler) OnEvent(msg *protocol.PlatformMessage) {
 
 }
 
@@ -460,7 +460,7 @@ func (h *HostHandler) OnPluginMessage(endpoint *connect.EndpointInfo, msg *proto
 
 	// 事件
 	if pluginMessage.Notification != nil {
-		h.OnEvent(msg, _plugin)
+		h.OnEvent(msg)
 	}
 }
 

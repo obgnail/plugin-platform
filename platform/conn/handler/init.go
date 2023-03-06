@@ -43,6 +43,10 @@ func CheckCompatibilityPlugin(instanceID string) common_type.PluginError {
 	return <-ph.CheckCompatibilityPlugin(make(chan common_type.PluginError, 1), instanceID)
 }
 
+func CallPluginHttp(instanceID string, req *common_type.HttpRequest, abilityFunc string) chan *common_type.HttpResponse {
+	return ph.CallPluginHttp(instanceID, req, abilityFunc)
+}
+
 func KillPlugin(instanceID string) { ph.KillPlugin(instanceID) }
 
 func KillHost(hostID string) { ph.KillHost(hostID) }

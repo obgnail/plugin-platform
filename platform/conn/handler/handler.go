@@ -201,34 +201,56 @@ func (h *PlatformHandler) logMsg(logMsg []*protocol.LogMessage) {
 	}
 }
 
-func (h *PlatformHandler) CallPluginHttp(done chan common_type.PluginError, instanceID string,
-	req *common_type.HttpRequest, abilityFunc string) chan common_type.PluginError {
+func (h *PlatformHandler) CallPluginHttp(instanceID string, req *common_type.HttpRequest, abilityFunc string) chan *common_type.HttpResponse {
+	respChan := make(chan *common_type.HttpResponse, 1)
 	plugins := h.GetAllAlivePlugin()
 	target, ok := plugins[instanceID]
 	if !ok {
-		err := fmt.Errorf("no such instance: %s", instanceID)
-		done <- common_type.NewPluginError(common_type.GetInstanceFailure, err.Error())
-		return done
+		err := common_type.NewPluginError(common_type.GetInstanceFailure, fmt.Sprintf("instanceNotFound: %s", instanceID))
+		respChan <- &common_type.HttpResponse{Err: err}
+		return respChan
 	}
 
 	h.getHostByInstanceID(instanceID, func(host common_type.IHost) {
 		if host == nil {
-			done <- common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
+			err := common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
+			respChan <- &common_type.HttpResponse{Err: err}
 			return
 		}
 
 		hostInfo := host.GetInfo()
 		msg := message.BuildCallPluginMessage(req, hostInfo, target, abilityFunc)
 		h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
-			if err != nil || result.Plugin.Http.Response.Error != nil {
+			if err != nil {
 				log.PEDetails(err)
+				respChan <- &common_type.HttpResponse{Err: err}
+				return
 			}
-			if done != nil {
-				done <- err
+
+			respObj := result.Plugin.Http.Response
+
+			var pe common_type.PluginError
+			if respObj.Error != nil {
+				pe = common_type.NewPluginError(common_type.CallPluginHttpFailure, respObj.Error.Msg)
 			}
+
+			headers := make(map[string][]string)
+			for k, v := range respObj.Headers {
+				for _, v1 := range v.Val {
+					headers[k] = append(headers[k], v1)
+				}
+			}
+
+			resp := &common_type.HttpResponse{
+				Err:        pe,
+				Headers:    headers,
+				Body:       respObj.Body,
+				StatusCode: int(respObj.StatusCode),
+			}
+			respChan <- resp
 		})
 	})
-	return done
+	return respChan
 }
 
 // lifeCycleInSupported 调用已经运行的插件的生命周期
@@ -267,7 +289,6 @@ func (h *PlatformHandler) lifeCycle(
 		}
 
 		info := host.GetInfo()
-
 		msg := message.BuildP2HDefaultMessage(info.ID, info.Name)
 		msg.Control.LifeCycleRequest = &protocol.ControlMessage_PluginLifeCycleRequestMessage{
 			Instance: &protocol.PluginInstanceDescriptor{

@@ -26,6 +26,18 @@ func (p *mockPlugin) Assign(pd common_type.IInstanceDescription, resource common
 	return nil
 }
 
+func (p *mockPlugin) OnHttpCall(req *common_type.HttpRequest) (resp *common_type.HttpResponse) {
+	fmt.Println("-------------OnHttpCall-------------", req.Url)
+	body := "呵呵"
+	resp = &common_type.HttpResponse{
+		Err:        nil,
+		Headers:    req.Headers,
+		Body:       []byte(body),
+		StatusCode: 200,
+	}
+	return resp
+}
+
 func (p *mockPlugin) Install(common_type.LifeCycleRequest) common_type.PluginError {
 	event := p.resource.GetEventPublisher()
 	cnd := []string{"project.task", "project.user"}

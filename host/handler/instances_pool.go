@@ -47,9 +47,9 @@ func (pool *InstancePool) DeleteMountedAndRunning(instanceID string) {
 	pool.running.Delete(instanceID)
 }
 
-func (pool *InstancePool) GetRunning(instanceID string) (common_type.IPlugin, bool) {
+func (pool *InstancePool) GetRunning(instanceID string) (common_type.IInstanceDescription, bool) {
 	if val, ok := pool.running.Load(instanceID); ok {
-		return val.(common_type.IPlugin), true
+		return val.(common_type.IInstanceDescription), true
 	}
 	return nil, false
 }

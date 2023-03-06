@@ -50,7 +50,7 @@ func (p *PluginCaller) getPbResp(resp *common_type.HttpResponse) *protocol.HttpR
 	for k, v := range resp.Headers {
 		respMsg.Headers[k] = &protocol.HeaderVal{Val: v}
 	}
-	return nil
+	return respMsg
 }
 
 func (p *PluginCaller) getReqObj(request *protocol.HttpRequestMessage) *common_type.HttpRequest {
@@ -90,7 +90,6 @@ func invoke(errChan chan error, any interface{}, name string, args ...interface{
 			n := runtime.Stack(buf, false)
 			stackInfo := fmt.Sprintf("%s", buf[:n])
 			er := fmt.Errorf("plugin invoke panic: %v, %s", err, stackInfo)
-			log.ErrorDetails(er)
 			errChan <- er
 		} else {
 			errChan <- nil
