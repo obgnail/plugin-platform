@@ -1,18 +1,22 @@
 package common
 
-const (
-	Addition = "addition"
-	Replace  = "replace"
-	Prefix   = "prefix"
-	Suffix   = "suffix"
-	External = "external"
-)
+type RouterType = string
 
 const (
-	PluginStatusUploaded    = 1 // 已上传
-	PluginStatusRunning     = 2 // 已启用
-	PluginStatusStopping    = 3 // 已安装/已停用
-	PluginStatusUnavailable = 4 // 不可用
+	Addition RouterType = "addition"
+	Replace  RouterType = "replace"
+	Prefix   RouterType = "prefix"
+	Suffix   RouterType = "suffix"
+	External RouterType = "external"
+)
+
+type StatusType = int
+
+const (
+	PluginStatusUploaded    StatusType = 1 // 已上传
+	PluginStatusRunning     StatusType = 2 // 已启用
+	PluginStatusStopping    StatusType = 3 // 已安装/已停用
+	PluginStatusUnavailable StatusType = 4 // 不可用
 )
 
 type Config struct {
@@ -41,7 +45,7 @@ type Service struct {
 	HostVersion      string        `yaml:"host_version" json:"host_version"`             // 生成zip就已经有Host
 	MinSystemVersion string        `yaml:"min_system_version" json:"min_system_version"` // 能允许插件的主程序的最小版本
 	Contact          string        `yaml:"contact" json:"contact"`                       // 开发者的联系方式
-	Status           int           `yaml:"status" json:"status"`
+	Status           StatusType    `yaml:"status" json:"status"`
 	Config           []*Config     `yaml:"config" json:"config"`         //插件自己的配置
 	Permission       []*Permission `yaml:"permission" json:"permission"` // 插件自身的权限
 	Path             string        `yaml:"path" json:"path"`             // 非config使用，nginx加载前端资源的路径
@@ -49,10 +53,10 @@ type Service struct {
 
 // 插件自定义的路由
 type Api struct {
-	Type     string   `yaml:"type" json:"type"` // add pre suf replace external(TODO)
-	Methods  []string `yaml:"methods" json:"methods"`
-	Url      string   `yaml:"url" json:"url"`
-	Function string   `yaml:"function" json:"function"` // handler函数
+	Type     RouterType `yaml:"type" json:"type"` // add pre suf replace external(TODO)
+	Methods  []string   `yaml:"methods" json:"methods"`
+	Url      string     `yaml:"url" json:"url"`
+	Function string     `yaml:"function" json:"function"` // handler函数
 }
 
 type Ability struct {

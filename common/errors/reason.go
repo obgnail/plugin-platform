@@ -55,6 +55,9 @@ const (
 
 	// 插件配置文件解析失败
 	PluginConfigFileParseFailed = "PluginConfigFileParseFailed"
+
+	// 插件接口调用失败
+	CallPluginFailed = "CallPluginFailed"
 )
 
 const (

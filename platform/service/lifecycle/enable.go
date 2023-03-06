@@ -5,6 +5,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
+	"github.com/obgnail/plugin-platform/platform/conn/router"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/service/common"
 )
@@ -22,6 +23,7 @@ func (i *EnableReq) validate() error {
 
 type EnableHelper struct {
 	req      *EnableReq
+	cfg      *common.PluginConfig
 	instance *mysql.PluginInstance
 }
 
@@ -35,6 +37,9 @@ func Enable(req *EnableReq) (ret gin.H, err error) {
 		return ret, errors.Trace(err)
 	}
 	if err := helper.Enable(); err != nil {
+		return ret, errors.Trace(err)
+	}
+	if err := helper.RegisterRouter(); err != nil {
 		return ret, errors.Trace(err)
 	}
 	if err := helper.UpdateDb(); err != nil {
@@ -59,16 +64,26 @@ func (h *EnableHelper) checkEnable() error {
 }
 
 func (h *EnableHelper) Enable() error {
-	config, err := h.instance.LoadYamlConfig()
+	cfg, err := h.instance.LoadYamlConfig()
 	if err != nil {
 		return errors.Trace(err)
 	}
 
 	er := handler.EnablePlugin(h.instance.AppUUID, h.instance.InstanceUUID, h.instance.Name,
-		config.Language, config.LanguageVersion, config.Version)
+		cfg.Language, cfg.LanguageVersion, cfg.Version)
 	if er != nil {
 		log.PEDetails(er)
 		return errors.PluginEnableError(er.Error() + " " + er.Msg())
+	}
+	h.cfg = cfg
+	return nil
+}
+
+func (h *EnableHelper) RegisterRouter() error {
+	apis := h.cfg.Apis
+	if err := router.RegisterRouter(apis, h.instance.InstanceUUID); err != nil {
+		log.ErrorDetails(errors.Trace(err))
+		return errors.PluginEnableError(errors.ServerError)
 	}
 	return nil
 }

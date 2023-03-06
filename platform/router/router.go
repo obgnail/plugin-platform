@@ -9,6 +9,7 @@ import (
 	utils_errors "github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/controllers"
+	"github.com/obgnail/plugin-platform/platform/middlewares"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,7 +20,13 @@ import (
 func Run() {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.Default()
+	app.Use(middlewares.PluginInvoke())
 
+	register(app)
+	run(app)
+}
+
+func register(app *gin.Engine) {
 	plugin := app.Group("/plugin")
 
 	plugin.POST("/list", controllers.ListPlugins)
@@ -34,7 +41,9 @@ func Run() {
 	plugin.POST("/disable", controllers.Disable)
 	plugin.POST("/uninstall", controllers.UnInstall)
 	//plugin.POST("/upgrade", controllers.Upgrade)
+}
 
+func run(app *gin.Engine) {
 	addr := fmt.Sprintf("%s:%d", config.StringOrPanic("platform.host"), config.IntOrPanic("platform.http_port"))
 	srv := &http.Server{Addr: addr, Handler: app}
 	go func() {

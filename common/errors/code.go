@@ -32,6 +32,7 @@ const (
 	UnknownError                        = "UnknownError"
 	VerificationFailure                 = "VerificationFailure"
 	InvalidFileExt                      = "InvalidFileExt"
+	CallPluginFailure                   = "CallPluginFailure"
 	PluginAlreadyRunning                = "PluginAlreadyRunning"
 	PluginAlreadyStop                   = "PluginAlreadyStop"
 	GetPluginMessageFailure             = "GetPluginMessageFailure"
@@ -75,6 +76,7 @@ var (
 		UnknownError:                        http.StatusInternalServerError,
 		VerificationFailure:                 http.StatusBadRequest,
 		InvalidFileExt:                      http.StatusBadRequest,
+		CallPluginFailure:                   http.StatusBadRequest,
 		PluginAlreadyRunning:                http.StatusBadRequest,
 		PluginAlreadyStop:                   http.StatusBadRequest,
 		GetPluginMessageFailure:             http.StatusBadRequest,

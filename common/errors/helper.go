@@ -43,6 +43,10 @@ func PluginMessageError(reason string) error {
 	return errorWithModelFieldReason(GetPluginMessageFailure, "", "", reason)
 }
 
+func PluginCallError(model string, field string) error {
+	return errorWithModelFieldReason(MissingParameter, model, field, "")
+}
+
 func MissingParameterError(model string, field string) error {
 	return errorWithModelFieldReason(MissingParameter, model, field, "")
 }
