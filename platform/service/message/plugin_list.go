@@ -1,4 +1,4 @@
-package plugin
+package message
 
 import (
 	"github.com/gin-gonic/gin"
