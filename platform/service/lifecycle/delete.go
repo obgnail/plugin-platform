@@ -4,8 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
-	"github.com/obgnail/plugin-platform/platform/service/utils"
-	"os"
 )
 
 type DeleteReq struct {
@@ -19,9 +17,6 @@ type DeleteResponse struct {
 
 func Delete(req *DeleteReq) (ret gin.H, err error) {
 	if err := validate(req); err != nil {
-		return ret, errors.Trace(err)
-	}
-	if err := deletePackage(req); err != nil {
 		return ret, errors.Trace(err)
 	}
 	resp := &DeleteResponse{Result: true}
@@ -39,28 +34,6 @@ func validate(req *DeleteReq) error {
 	}
 	// 运行中的实例不能删除
 	if exist {
-		return errors.Trace(err)
-	}
-	return nil
-}
-
-func deletePackage(req *DeleteReq) error {
-	m := mysql.ModelPluginPackage()
-
-	one := &mysql.PluginPackage{
-		AppUUID: req.AppUUID,
-		Version: req.Version,
-	}
-
-	if err := m.One(one); err != nil {
-		return errors.Trace(err)
-	}
-
-	if err := m.RealDelete(one.Id, one); err != nil {
-		return errors.Trace(err)
-	}
-	path := utils.GetPluginDir(one.AppUUID, one.Version)
-	if err := os.RemoveAll(path); err != nil {
 		return errors.Trace(err)
 	}
 	return nil

@@ -5,56 +5,56 @@ import (
 	"github.com/obgnail/plugin-platform/common/protocol"
 )
 
-var platformHandler *PlatformHandler
+var ph *PlatformHandler
 
 func InitPlatformHandler() error {
-	platformHandler = Default()
-	platformHandler.Run()
+	ph = Default()
+	ph.Run()
 	return nil
 }
 
 // 生命周期函数全部改成同步,因为业务上用不到异步
 
 func EnablePlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-platformHandler.EnablePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
+	return <-ph.EnablePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
 }
 
 func DisablePlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-platformHandler.DisablePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
+	return <-ph.DisablePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
 }
 
 func InstallPlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-platformHandler.InstallPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
+	return <-ph.InstallPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
 }
 
 func UnInstallPlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-platformHandler.UnInstallPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
+	return <-ph.UnInstallPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
 }
 
 func UpgradePlugin(appID, instanceID, name, lang, langVer, appVer string, oldVersion *protocol.PluginDescriptor) common_type.PluginError {
-	return <-platformHandler.UpgradePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer, oldVersion)
+	return <-ph.UpgradePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer, oldVersion)
 }
 
 func CheckStatePlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-platformHandler.CheckStatePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
+	return <-ph.CheckStatePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
 }
 
 func CheckCompatibilityPlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-platformHandler.CheckCompatibilityPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
+	return <-ph.CheckCompatibilityPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
 }
 
-func KillHost(hostID string) { platformHandler.KillHost(hostID) }
+func KillPlugin(instanceID string) { ph.KillPlugin(instanceID) }
 
-func KillPlugin(instanceID string) { platformHandler.KillPlugin(instanceID) }
+func KillHost(hostID string) { ph.KillHost(hostID) }
 
-func GetAllHost() []common_type.IHost { return platformHandler.GetAllHost() }
+func GetHost(instanceID string) common_type.IHost { return ph.GetHost(instanceID) }
 
-func GetAllHostBoot() []common_type.IHostBoot { return platformHandler.GetAllHostBoot() }
+func GetHostBoot(hostBootID string) common_type.IHostBoot { return ph.GetHostBoot(hostBootID) }
 
-func GetAllAlivePlugin() map[string]common_type.IInstanceDescription {
-	return platformHandler.GetAllAlivePlugin()
-}
+func GetHosts() []common_type.IHost { return ph.GetAllHost() }
 
-func GetAllSupportPlugin() map[string]common_type.IInstanceDescription {
-	return platformHandler.GetAllSupportPlugin()
-}
+func GetHostBoots() []common_type.IHostBoot { return ph.GetAllHostBoot() }
+
+func GetAlivePlugins() map[string]common_type.IInstanceDescription { return ph.GetAllAlivePlugin() }
+
+func GetSupportPlugins() map[string]common_type.IInstanceDescription { return ph.GetAllSupportPlugin() }

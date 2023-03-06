@@ -32,8 +32,20 @@ const (
 	// 未找到该实例
 	InstanceNotFound = "InstanceNotFound"
 
+	// 未找到Host
+	HostNotFound = "HostNotFound"
+
 	// 未找到package
 	PackageNotFound = "PackageNotFound"
+
+	// 语言不一致
+	LanguageDisMatch = "LanguageDisMatch"
+
+	// 语言版本不一致
+	LanguageVersionDisMatch = "LanguageVersionDisMatch"
+
+	// Host语言版本不一致
+	HostLanguageVersionDisMatch = "HostLanguageVersionDisMatch"
 
 	// 已经卸载
 	PluginAlreadyUninstall = "PluginAlreadyUninstall"

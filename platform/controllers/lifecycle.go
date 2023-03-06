@@ -55,14 +55,14 @@ func Disable(c *gin.Context) {
 	RenderJSON(c, result, resp)
 }
 
-func Upgrade(c *gin.Context) {
-	req := &lifecycle.UpgradeReq{}
-	if err := c.BindJSON(&req); err != nil {
-		return
-	}
-	resp, result := lifecycle.Upgrade(c, req)
-	RenderJSON(c, result, resp)
-}
+//func Upgrade(c *gin.Context) {
+//	req := &lifecycle.UpgradeReq{}
+//	if err := c.BindJSON(&req); err != nil {
+//		return
+//	}
+//	resp, result := lifecycle.Upgrade(c, req)
+//	RenderJSON(c, result, resp)
+//}
 
 type UpgradeReq struct {
 	AppUUID  string `json:"app_uuid"`

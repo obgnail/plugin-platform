@@ -214,15 +214,12 @@ func (h *HostHandler) doAction(
 }
 
 func (h *HostHandler) mountPlugin(instanceDesc *common_type.MockInstanceDesc) (common_type.IPlugin, common_type.PluginError) {
-	mounted, _ := h.instancePool.GetMounted(instanceDesc.InstanceID()) // 尝试在pool找出挂载的插件
-
-	setup, err := h.mounter.Setup(mounted, instanceDesc)
+	setup, err := h.mounter.Setup(instanceDesc)
 	if err != nil {
 		log.PEDetails(err)
 		return nil, err
 	}
-
-	h.instancePool.AddMounted(instanceDesc.PluginInstanceID, setup) // 此插件已经成功挂载,放入pool中
+	h.instancePool.AddMounted(instanceDesc.PluginInstanceID, setup)
 	return setup, nil
 }
 

@@ -37,11 +37,11 @@ func (pool *HostBootPool) Delete(host common_type.IHostBoot) {
 	pool.alive.Delete(id)
 }
 
-func (pool *HostBootPool) Exist(hostBootID string) bool {
-	if _, ok := pool.alive.Load(hostBootID); ok {
-		return true
+func (pool *HostBootPool) Exist(hostBootID string) (common_type.IHostBoot, bool) {
+	if hostBoot, ok := pool.alive.Load(hostBootID); ok {
+		return hostBoot.(common_type.IHostBoot), true
 	}
-	return false
+	return nil, false
 }
 
 func (pool *HostBootPool) GetAll() []common_type.IHostBoot {

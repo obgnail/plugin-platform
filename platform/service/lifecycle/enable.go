@@ -10,14 +10,10 @@ import (
 )
 
 type EnableReq struct {
-	AppUUID      string `json:"app_uuid"`
 	InstanceUUID string `json:"instance_uuid"`
 }
 
 func (i *EnableReq) validate() error {
-	if i.AppUUID == "" {
-		return errors.MissingParameterError(errors.PluginInstanceEnableFailure, errors.AppUUID)
-	}
 	if i.InstanceUUID == "" {
 		return errors.MissingParameterError(errors.PluginInstanceEnableFailure, errors.InstanceUUID)
 	}
@@ -49,13 +45,13 @@ func Enable(req *EnableReq) (ret gin.H, err error) {
 
 func (h *EnableHelper) checkEnable() error {
 	instanceModel := mysql.ModelPluginInstance()
-	instance := &mysql.PluginInstance{AppUUID: h.req.AppUUID, InstanceUUID: h.req.InstanceUUID}
+	instance := &mysql.PluginInstance{InstanceUUID: h.req.InstanceUUID}
 	exist, err := instanceModel.Exist(instance)
 	if err != nil {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginEnableError(errors.ServerError)
 	}
-	if exist && instance.Status == plugin_pool.PluginStatusRunning {
+	if exist && instance.Status != plugin_pool.PluginStatusStopping {
 		return errors.PluginEnableError(errors.PluginAlreadyRunning)
 	}
 	h.instance = instance
@@ -63,22 +59,12 @@ func (h *EnableHelper) checkEnable() error {
 }
 
 func (h *EnableHelper) Enable() error {
-	pck := mysql.ModelPluginPackage()
-	pckOne := &mysql.PluginPackage{
-		AppUUID: h.req.AppUUID,
-		Version: h.instance.Version,
-	}
-	if err := pck.One(pckOne); err != nil {
-		log.ErrorDetails(errors.Trace(err))
-		return errors.PluginEnableError(errors.ServerError)
-	}
-
-	config, err := pckOne.LoadYamlConfig()
+	config, err := h.instance.LoadYamlConfig()
 	if err != nil {
 		return errors.Trace(err)
 	}
 
-	er := handler.EnablePlugin(h.req.AppUUID, h.req.InstanceUUID, h.instance.Name,
+	er := handler.EnablePlugin(h.instance.AppUUID, h.instance.InstanceUUID, h.instance.Name,
 		config.Language, config.LanguageVersion, config.Version)
 	if er != nil {
 		log.PEDetails(er)

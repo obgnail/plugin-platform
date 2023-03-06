@@ -33,7 +33,7 @@ func Run() {
 	plugin.POST("/enable", controllers.Enable)
 	plugin.POST("/disable", controllers.Disable)
 	plugin.POST("/uninstall", controllers.UnInstall)
-	plugin.POST("/upgrade", controllers.Upgrade)
+	//plugin.POST("/upgrade", controllers.Upgrade)
 
 	addr := fmt.Sprintf("%s:%d", config.StringOrPanic("platform.host"), config.IntOrPanic("platform.http_port"))
 	srv := &http.Server{Addr: addr, Handler: app}

@@ -12,14 +12,10 @@ import (
 )
 
 type UninstallReq struct {
-	AppUUID      string `json:"app_uuid"`
 	InstanceUUID string `json:"instance_uuid"`
 }
 
 func (i *UninstallReq) validate() error {
-	if i.AppUUID == "" {
-		return errors.MissingParameterError(errors.PluginInstanceUninstallationFailure, errors.AppUUID)
-	}
 	if i.InstanceUUID == "" {
 		return errors.MissingParameterError(errors.PluginInstanceUninstallationFailure, errors.InstanceUUID)
 	}
@@ -48,19 +44,18 @@ func Uninstall(req *UninstallReq) (ret gin.H, err error) {
 
 type UninstallHelper struct {
 	req      *UninstallReq
-	pkg      *mysql.PluginPackage
 	instance *mysql.PluginInstance
 }
 
 func (h *UninstallHelper) checkUninstall() error {
 	instanceModel := mysql.ModelPluginInstance()
-	instance := &mysql.PluginInstance{AppUUID: h.req.AppUUID, InstanceUUID: h.req.InstanceUUID}
+	instance := &mysql.PluginInstance{InstanceUUID: h.req.InstanceUUID}
 	exist, err := instanceModel.Exist(instance)
 	if err != nil {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginUninstallError(errors.ServerError)
 	}
-	if exist && instance.Status == plugin_pool.PluginStatusRunning {
+	if exist && instance.Status != plugin_pool.PluginStatusStopping {
 		return errors.PluginUninstallError(errors.PluginAlreadyRunning)
 	}
 	h.instance = instance
@@ -68,24 +63,12 @@ func (h *UninstallHelper) checkUninstall() error {
 }
 
 func (h *UninstallHelper) Uninstall() error {
-	pck := mysql.ModelPluginPackage()
-	pckOne := &mysql.PluginPackage{
-		AppUUID: h.req.AppUUID,
-		Version: h.instance.Version,
-	}
-	if err := pck.One(pckOne); err != nil {
-		log.ErrorDetails(errors.Trace(err))
-		return errors.PluginUninstallError(errors.ServerError)
-	}
-
-	h.pkg = pckOne
-
-	cfg, err := pckOne.LoadYamlConfig()
+	cfg, err := h.instance.LoadYamlConfig()
 	if err != nil {
 		return errors.Trace(err)
 	}
 
-	er := handler.UnInstallPlugin(h.req.AppUUID, h.req.InstanceUUID, h.instance.Name,
+	er := handler.UnInstallPlugin(h.instance.AppUUID, h.instance.InstanceUUID, h.instance.Name,
 		cfg.Language, cfg.LanguageVersion, cfg.Version)
 	if er != nil {
 		log.PEDetails(er)
@@ -95,9 +78,9 @@ func (h *UninstallHelper) Uninstall() error {
 }
 
 func (h *UninstallHelper) UpdateDb() error {
-	if err := mysql.ModelPluginPackage().RealDelete(h.pkg.Id, h.pkg); err != nil {
-		log.ErrorDetails(errors.Trace(err))
-		return errors.PluginUninstallError(errors.ServerError)
+	h.instance.Status = plugin_pool.PluginStatusUploaded
+	if err := mysql.ModelPluginInstance().Update(h.instance.Id, h.instance); err != nil {
+		return errors.Trace(err)
 	}
 	return nil
 }

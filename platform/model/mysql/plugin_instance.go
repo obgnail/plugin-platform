@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jinzhu/gorm"
+	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/platform/pool/plugin_pool"
+	"github.com/obgnail/plugin-platform/platform/service/utils"
+	"gopkg.in/yaml.v2"
 	"reflect"
 )
 
@@ -46,6 +49,20 @@ func (i *PluginInstance) GetConfig() *plugin_pool.PluginConfig {
 		Apis:    apis,
 	}
 	return cfg
+}
+
+func (i *PluginInstance) LoadYamlConfig() (*plugin_pool.PluginConfig, error) {
+	yamlPath := utils.GetPluginConfigPath(i.AppUUID, i.Version)
+	res, err := utils.ReadFile(yamlPath)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	var pluginConfig = new(plugin_pool.PluginConfig)
+	if err := yaml.Unmarshal(res, pluginConfig); err != nil {
+		return nil, errors.Trace(err)
+	}
+	return pluginConfig, nil
 }
 
 //func (i *PluginInstance) Uninstall(appId string, instanceId string, orgId string, teamId string) error {

@@ -1,8 +1,10 @@
 package plugin_pool
 
 const (
-	PluginStatusRunning  = 1 // 插件运行状态
-	PluginStatusStopping = 2 // 插件停止状态
+	PluginStatusUploaded    = 1 // 已上传
+	PluginStatusRunning     = 2 // 已启用
+	PluginStatusStopping    = 3 // 已安装/已停用
+	PluginStatusUnavailable = 4 // 不可用
 )
 
 type PluginInterface interface {

@@ -20,21 +20,15 @@ func NewMounter(sender common.Sender, isLocal bool) *PluginMounter {
 	return &PluginMounter{isLocal: isLocal, sender: sender}
 }
 
-func (m *PluginMounter) Setup(unset common_type.IPlugin, description common_type.IInstanceDescription) (
-	setup common_type.IPlugin, err common_type.PluginError) {
-
-	if unset == nil {
-		desc := description.PluginDescription()
-		var er error
-		unset, er = m.CreatePlugin(desc.ApplicationID(), desc.ApplicationVersion().VersionString())
-		if er != nil {
-			return nil, common_type.NewPluginError(common_type.GetInstanceFailure, er.Error())
-		}
+func (m *PluginMounter) Setup(description common_type.IInstanceDescription) (common_type.IPlugin, common_type.PluginError) {
+	desc := description.PluginDescription()
+	unset, er := m.CreatePlugin(desc.ApplicationID(), desc.ApplicationVersion().VersionString())
+	if er != nil {
+		return nil, common_type.NewPluginError(common_type.GetInstanceFailure, er.Error())
 	}
 
 	resources := m.GetResources(unset)
-
-	setup, err = common_type.SetupPlugin(unset, description, resources)
+	setup, err := common_type.SetupPlugin(unset, description, resources)
 	if err != nil {
 		return nil, err
 	}

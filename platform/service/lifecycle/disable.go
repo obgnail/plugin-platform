@@ -10,14 +10,10 @@ import (
 )
 
 type DisableReq struct {
-	AppUUID      string `json:"app_uuid"`
 	InstanceUUID string `json:"instance_uuid"`
 }
 
 func (i *DisableReq) validate() error {
-	if i.AppUUID == "" {
-		return errors.MissingParameterError(errors.PluginInstanceDisableFailure, errors.AppUUID)
-	}
 	if i.InstanceUUID == "" {
 		return errors.MissingParameterError(errors.PluginInstanceDisableFailure, errors.InstanceUUID)
 	}
@@ -47,14 +43,13 @@ func Disable(req *DisableReq) (ret gin.H, err error) {
 }
 
 func (h *DisableHelper) checkDisable() error {
-	instanceModel := mysql.ModelPluginInstance()
-	instance := &mysql.PluginInstance{AppUUID: h.req.AppUUID, InstanceUUID: h.req.InstanceUUID}
-	exist, err := instanceModel.Exist(instance)
+	instance := &mysql.PluginInstance{InstanceUUID: h.req.InstanceUUID}
+	exist, err := mysql.ModelPluginInstance().Exist(instance)
 	if err != nil {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginDisableError(errors.ServerError)
 	}
-	if exist && instance.Status == plugin_pool.PluginStatusStopping {
+	if exist && instance.Status != plugin_pool.PluginStatusRunning {
 		return errors.PluginDisableError(errors.PluginAlreadyStop)
 	}
 	h.instance = instance
@@ -62,23 +57,13 @@ func (h *DisableHelper) checkDisable() error {
 }
 
 func (h *DisableHelper) Disable() error {
-	pck := mysql.ModelPluginPackage()
-	pckOne := &mysql.PluginPackage{
-		AppUUID: h.req.AppUUID,
-		Version: h.instance.Version,
-	}
-	if err := pck.One(pckOne); err != nil {
-		log.ErrorDetails(errors.Trace(err))
-		return errors.PluginDisableError(errors.ServerError)
-	}
-
-	config, err := pckOne.LoadYamlConfig()
+	cnf, err := h.instance.LoadYamlConfig()
 	if err != nil {
 		return errors.Trace(err)
 	}
 
-	er := handler.DisablePlugin(h.req.AppUUID, h.req.InstanceUUID, h.instance.Name,
-		config.Language, config.LanguageVersion, config.Version)
+	er := handler.DisablePlugin(h.instance.AppUUID, h.instance.InstanceUUID, h.instance.Name,
+		cnf.Language, cnf.LanguageVersion, cnf.Version)
 	if er != nil {
 		log.PEDetails(er)
 		return errors.PluginDisableError(er.Error() + " " + er.Msg())

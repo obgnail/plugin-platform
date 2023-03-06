@@ -291,7 +291,7 @@ func (h *PlatformHandler) KillHost(hostID string) {
 }
 
 func (h *PlatformHandler) KillPlugin(instanceID string) {
-	host := h._findHostByPluginInstanceID(instanceID)
+	host := h.GetHost(instanceID)
 	if host == nil {
 		return
 	}
@@ -385,7 +385,7 @@ func (h *PlatformHandler) _createHost() common_type.IHost {
 	return nil
 }
 
-func (h *PlatformHandler) _findHostByPluginInstanceID(instanceID string) common_type.IHost {
+func (h *PlatformHandler) GetHost(instanceID string) common_type.IHost {
 	var ret common_type.IHost
 	h.hostPool.Range(func(hostID string, host common_type.IHost) bool {
 		plugins := host.GetInfo().RunningPlugins
@@ -414,8 +414,13 @@ func (h *PlatformHandler) _findHostByPluginInstanceID(instanceID string) common_
 	return ret
 }
 
+func (h *PlatformHandler) GetHostBoot(hostBootID string) common_type.IHostBoot {
+	hostboot, _ := h.hostBootPool.Exist(hostBootID)
+	return hostboot
+}
+
 func (h *PlatformHandler) _getHostByInstanceID(instanceID string, callback func(host common_type.IHost)) {
-	host := h._findHostByPluginInstanceID(instanceID)
+	host := h.GetHost(instanceID)
 	if host != nil {
 		callback(host)
 		return
