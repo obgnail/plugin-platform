@@ -3,7 +3,7 @@ package protocol;
 option go_package = "..;protocol";
 
 import "resources.proto";
-//import "plugin.proto";
+import "plugin.proto";
 import "common.proto";
 import "control.proto";
 //import "cmdb.proto";
@@ -15,7 +15,7 @@ message PlatformMessage {
   RouterMessage Header = 1;
   // body
   ControlMessage Control = 2;
-//  PluginMessage Plugin = 10;
+  PluginMessage Plugin = 3;
 //  CmdbMessage Cmdb = 15;
   ResourceMessage Resource = 20;
 //  AbilityMessage Ability = 30;

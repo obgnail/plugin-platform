@@ -201,13 +201,66 @@ func (h *PlatformHandler) logMsg(logMsg []*protocol.LogMessage) {
 	}
 }
 
+func (h *PlatformHandler) CallPluginHttp(done chan common_type.PluginError, instanceID string,
+	req *common_type.HttpRequest, abilityFunc string) chan common_type.PluginError {
+	plugins := h.GetAllAlivePlugin()
+	target, ok := plugins[instanceID]
+	if !ok {
+		err := fmt.Errorf("no such instance: %s", instanceID)
+		done <- common_type.NewPluginError(common_type.GetInstanceFailure, err.Error())
+		return done
+	}
+
+	h.getHostByInstanceID(instanceID, func(host common_type.IHost) {
+		if host == nil {
+			done <- common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
+			return
+		}
+
+		hostInfo := host.GetInfo()
+		msg := message.BuildCallPluginMessage(req, hostInfo, target, abilityFunc)
+		h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
+			if err != nil || result.Plugin.Http.Response.Error != nil {
+				log.PEDetails(err)
+			}
+			if done != nil {
+				done <- err
+			}
+		})
+	})
+	return done
+}
+
+// lifeCycleInSupported 调用已经运行的插件的生命周期
+// (因为处于运行状态,所以在pool里面有相应的数据,不需要手动传递)
+func (h *PlatformHandler) lifeCycleInSupported(
+	done chan common_type.PluginError,
+	action protocol.ControlMessage_PluginActionType,
+	instanceID string, oldVersion *protocol.PluginDescriptor,
+) chan common_type.PluginError {
+	plugins := h.GetAllSupportPlugin()
+	target, ok := plugins[instanceID]
+	if !ok {
+		done <- common_type.NewPluginError(common_type.GetInstanceFailure, "no such instance")
+		return done
+	}
+
+	desc := target.PluginDescription()
+	appID := desc.ApplicationID()
+	name := desc.Name()
+	lang := desc.Language()
+	langVer := desc.LanguageVersion().VersionString()
+	appVer := desc.ApplicationVersion().VersionString()
+	return h.lifeCycle(done, action, appID, instanceID, name, lang, langVer, appVer, oldVersion)
+}
+
 func (h *PlatformHandler) lifeCycle(
 	done chan common_type.PluginError,
 	action protocol.ControlMessage_PluginActionType,
 	appID, instanceID, name, lang, langVer, appVer string,
 	oldVersion *protocol.PluginDescriptor,
 ) chan common_type.PluginError {
-	h._getHostByInstanceID(instanceID, func(host common_type.IHost) {
+	h.getHostByInstanceID(instanceID, func(host common_type.IHost) {
 		if host == nil {
 			done <- common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
 			return
@@ -249,32 +302,32 @@ func (h *PlatformHandler) lifeCycle(
 	return done
 }
 
-func (h *PlatformHandler) EnablePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
-	return h.lifeCycle(done, protocol.ControlMessage_Enable, appID, instanceID, name, lang, langVer, appVer, nil)
-}
-
-func (h *PlatformHandler) DisablePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
-	return h.lifeCycle(done, protocol.ControlMessage_Disable, appID, instanceID, name, lang, langVer, appVer, nil)
-}
-
 func (h *PlatformHandler) InstallPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
 	return h.lifeCycle(done, protocol.ControlMessage_Install, appID, instanceID, name, lang, langVer, appVer, nil)
-}
-
-func (h *PlatformHandler) UnInstallPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
-	return h.lifeCycle(done, protocol.ControlMessage_UnInstall, appID, instanceID, name, lang, langVer, appVer, nil)
 }
 
 func (h *PlatformHandler) UpgradePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string, oldVersion *protocol.PluginDescriptor) chan common_type.PluginError {
 	return h.lifeCycle(done, protocol.ControlMessage_Upgrade, appID, instanceID, name, lang, langVer, appVer, oldVersion)
 }
 
-func (h *PlatformHandler) CheckStatePlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
-	return h.lifeCycle(done, protocol.ControlMessage_CheckState, appID, instanceID, name, lang, langVer, appVer, nil)
+func (h *PlatformHandler) EnablePlugin(done chan common_type.PluginError, instanceID string) chan common_type.PluginError {
+	return h.lifeCycleInSupported(done, protocol.ControlMessage_Enable, instanceID, nil)
 }
 
-func (h *PlatformHandler) CheckCompatibilityPlugin(done chan common_type.PluginError, appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
-	return h.lifeCycle(done, protocol.ControlMessage_CheckCompatibility, appID, instanceID, name, lang, langVer, appVer, nil)
+func (h *PlatformHandler) DisablePlugin(done chan common_type.PluginError, instanceID string) chan common_type.PluginError {
+	return h.lifeCycleInSupported(done, protocol.ControlMessage_Disable, instanceID, nil)
+}
+
+func (h *PlatformHandler) UnInstallPlugin(done chan common_type.PluginError, instanceID string) chan common_type.PluginError {
+	return h.lifeCycleInSupported(done, protocol.ControlMessage_UnInstall, instanceID, nil)
+}
+
+func (h *PlatformHandler) CheckStatePlugin(done chan common_type.PluginError, instanceID string) chan common_type.PluginError {
+	return h.lifeCycleInSupported(done, protocol.ControlMessage_CheckState, instanceID, nil)
+}
+
+func (h *PlatformHandler) CheckCompatibilityPlugin(done chan common_type.PluginError, instanceID string) chan common_type.PluginError {
+	return h.lifeCycleInSupported(done, protocol.ControlMessage_CheckCompatibility, instanceID, nil)
 }
 
 func (h *PlatformHandler) KillHost(hostID string) {
@@ -419,7 +472,7 @@ func (h *PlatformHandler) GetHostBoot(hostBootID string) common_type.IHostBoot {
 	return hostboot
 }
 
-func (h *PlatformHandler) _getHostByInstanceID(instanceID string, callback func(host common_type.IHost)) {
+func (h *PlatformHandler) getHostByInstanceID(instanceID string, callback func(host common_type.IHost)) {
 	host := h.GetHost(instanceID)
 	if host != nil {
 		callback(host)

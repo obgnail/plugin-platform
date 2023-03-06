@@ -43,8 +43,7 @@ func main2() {
 		log.Info("InstallPlugin...")
 		handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
 			"golang", "1.14.0", "1.0.0")
-		handler.EnablePlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
-			"golang", "1.14.0", "1.0.0")
+		handler.EnablePlugin("InstanceID123")
 
 		time.Sleep(time.Second * 20)
 		log.Info("kill Plugin")

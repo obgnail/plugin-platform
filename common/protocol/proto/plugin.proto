@@ -1,13 +1,12 @@
 syntax = "proto3";
 package protocol;
-option go_package = "protocol";
+option go_package = "..;protocol";
 
 import "common.proto";
 
 // 插件需要相应的消息请求及其对应的应答
 // 插件提供的接口实现
 // 插件提供的配置处理实现
-
 message ConfigurationMessage{
   message ConfigurationChangeMessage{
     string NewConfig = 1;
@@ -22,8 +21,6 @@ message ConfigurationMessage{
 message NotificationMessage{
   enum EventType{
     TimeStamp = 0;
-    Project = 1;
-    Wiki = 2;
   }
   EventType Type = 1;
   int64 Timestamp = 2;

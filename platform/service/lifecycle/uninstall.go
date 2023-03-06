@@ -63,13 +63,7 @@ func (h *UninstallHelper) checkUninstall() error {
 }
 
 func (h *UninstallHelper) Uninstall() error {
-	cfg, err := h.instance.LoadYamlConfig()
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	er := handler.UnInstallPlugin(h.instance.AppUUID, h.instance.InstanceUUID, h.instance.Name,
-		cfg.Language, cfg.LanguageVersion, cfg.Version)
+	er := handler.UnInstallPlugin(h.instance.InstanceUUID)
 	if er != nil {
 		log.PEDetails(er)
 		return errors.PluginUninstallError(er.Error() + " " + er.Msg())

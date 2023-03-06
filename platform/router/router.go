@@ -9,7 +9,6 @@ import (
 	utils_errors "github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/controllers"
-	"github.com/obgnail/plugin-platform/platform/middlewares"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,7 +19,7 @@ import (
 func Run() {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.Default()
-	app.Use(middlewares.PluginInvoke())
+	//app.Use(middlewares.PluginInvoke())
 
 	register(app)
 	run(app)

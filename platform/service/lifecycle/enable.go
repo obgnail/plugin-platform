@@ -39,9 +39,9 @@ func Enable(req *EnableReq) (ret gin.H, err error) {
 	if err := helper.Enable(); err != nil {
 		return ret, errors.Trace(err)
 	}
-	if err := helper.RegisterRouter(); err != nil {
-		return ret, errors.Trace(err)
-	}
+	//if err := helper.RegisterRouter(); err != nil {
+	//	return ret, errors.Trace(err)
+	//}
 	if err := helper.UpdateDb(); err != nil {
 		return ret, errors.Trace(err)
 	}
@@ -69,8 +69,7 @@ func (h *EnableHelper) Enable() error {
 		return errors.Trace(err)
 	}
 
-	er := handler.EnablePlugin(h.instance.AppUUID, h.instance.InstanceUUID, h.instance.Name,
-		cfg.Language, cfg.LanguageVersion, cfg.Version)
+	er := handler.EnablePlugin(h.instance.InstanceUUID)
 	if er != nil {
 		log.PEDetails(er)
 		return errors.PluginEnableError(er.Error() + " " + er.Msg())

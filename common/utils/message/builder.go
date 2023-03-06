@@ -128,6 +128,42 @@ func BuildInstanceDescriptor(description common_type.IInstanceDescription, hostI
 	}
 }
 
+func BuildCallPluginMessage(
+	req *common_type.HttpRequest,
+	host common_type.HostInfo,
+	target common_type.IInstanceDescription,
+	abilityFunc string,
+) *protocol.PlatformMessage {
+	desc := target.PluginDescription()
+
+	msg := BuildP2HDefaultMessage(host.ID, host.Name)
+	msg.Plugin = &protocol.PluginMessage{
+		Target: &protocol.PluginInstanceDescriptor{
+			Application: &protocol.PluginDescriptor{
+				ApplicationID:      desc.ApplicationID(),
+				Name:               desc.Name(),
+				Language:           desc.Language(),
+				LanguageVersion:    VersionString2Pb(desc.LanguageVersion().VersionString()),
+				ApplicationVersion: VersionString2Pb(desc.ApplicationVersion().VersionString()),
+				HostVersion:        VersionString2Pb(host.Version),
+				MinSystemVersion:   VersionString2Pb(host.MinSystemVersion),
+			},
+			InstanceID: target.InstanceID(),
+			HostID:     host.ID,
+		},
+		Http: &protocol.HttpContextMessage{
+			Request: &protocol.HttpRequestMessage{
+				Method:      req.Method,
+				Url:         req.Url,
+				Headers:     nil,
+				Body:        req.Body,
+				AbilityFunc: abilityFunc,
+			},
+		},
+	}
+	return msg
+}
+
 func BuildHostReportInitMessage(hostInfo *protocol.HostDescriptor) *protocol.PlatformMessage {
 	msg := BuildH2PDefaultMessage(hostInfo.HostID, hostInfo.Name)
 	msg.Control.HostReport = &protocol.ControlMessage_HostReportMessage{Host: hostInfo}

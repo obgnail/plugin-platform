@@ -28,6 +28,7 @@ type HostHandler struct {
 	descriptor   *protocol.HostDescriptor // 存储host的信息
 	conn         *connect.Connection      // 负责和platform的通讯
 	mounter      *PluginMounter           // 负责挂载插件
+	caller       *PluginCaller            // 负责call插件的http
 	instancePool *InstancePool            // 存储已经挂载的插件
 	isLocal      bool                     // host运行在测试环境/生产环境
 }
@@ -50,6 +51,7 @@ func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, i
 	zmq := connect.NewZmq(id, name, addr, connect.SocketTypeDealer, connect.RoleHost).SetPacker(&connect.ProtoPacker{})
 	handler.conn = connect.NewConnection(zmq, handler)
 	handler.mounter = NewMounter(handler, isLocal)
+	handler.caller = NewCaller()
 	return handler
 }
 
@@ -139,20 +141,7 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 		}
 	}()
 
-	instanceDesc := &common_type.MockInstanceDesc{
-		PluginInstanceID: instance.InstanceID,
-		PluginDescriptor: &common_type.MockPluginDescriptor{
-			AppID:      app.ApplicationID,
-			PluginName: app.Name,
-			Lang:       app.Language,
-			LangVer:    message.VersionPb2String(app.LanguageVersion),
-			AppVer:     message.VersionPb2String(app.ApplicationVersion),
-			HostVer:    message.VersionPb2String(app.HostVersion),
-			MinSysVer:  message.VersionPb2String(app.MinSystemVersion),
-		},
-	}
-
-	_plugin, err := h.mountPlugin(instanceDesc)
+	_plugin, instanceDesc, err := h.mountPlugin(app, instance.InstanceID)
 	if err != nil {
 		h.setLifeCycleRespError(resp, action, err)
 		return
@@ -213,14 +202,29 @@ func (h *HostHandler) doAction(
 	return err
 }
 
-func (h *HostHandler) mountPlugin(instanceDesc *common_type.MockInstanceDesc) (common_type.IPlugin, common_type.PluginError) {
+func (h *HostHandler) mountPlugin(desc *protocol.PluginDescriptor, instanceID string) (
+	common_type.IPlugin, *common_type.MockInstanceDesc, common_type.PluginError) {
+	instanceDesc := &common_type.MockInstanceDesc{
+		PluginInstanceID: instanceID,
+		PluginDescriptor: &common_type.MockPluginDescriptor{
+			AppID:      desc.ApplicationID,
+			PluginName: desc.Name,
+			Lang:       desc.Language,
+			LangVer:    message.VersionPb2String(desc.LanguageVersion),
+			AppVer:     message.VersionPb2String(desc.ApplicationVersion),
+			HostVer:    message.VersionPb2String(desc.HostVersion),
+			MinSysVer:  message.VersionPb2String(desc.MinSystemVersion),
+		},
+	}
 	setup, err := h.mounter.Setup(instanceDesc)
 	if err != nil {
 		log.PEDetails(err)
-		return nil, err
+		return nil, instanceDesc, err
 	}
+
 	h.instancePool.AddMounted(instanceDesc.PluginInstanceID, setup)
-	return setup, nil
+
+	return setup, instanceDesc, err
 }
 
 func (h *HostHandler) setLifeCycleRespError(resp *protocol.PlatformMessage,
@@ -333,12 +337,131 @@ func (h *HostHandler) OnKillPlugin(msg *protocol.PlatformMessage) {
 	}
 }
 
+// 查找正在运行插件
+func (h *HostHandler) getRunningInstance(msg *protocol.PlatformMessage) common_type.IPlugin {
+	if msg.Plugin.Target == nil {
+		return nil
+	}
+	instanceID := msg.Plugin.Target.InstanceID
+	p, _ := h.instancePool.GetRunning(instanceID)
+	return p
+}
+
+func (h *HostHandler) OnPluginHttp(msg *protocol.PlatformMessage) {
+	target := msg.Plugin.Target
+	appDesc := target.Application
+	instanceID := target.InstanceID
+	appID := appDesc.ApplicationID
+	appVer := appDesc.ApplicationVersion
+	request := msg.Plugin.Http.Request
+
+	log.Trace("【GET】PluginHttp. [appID]: %s. [instanceID]: %s", appID, instanceID)
+
+	resp := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    msg.Header.SeqNo,
+			Source:   msg.Header.Distinct,
+			Distinct: msg.Header.Source,
+		},
+		Plugin: &protocol.PluginMessage{
+			Http: &protocol.HttpContextMessage{
+				Response: &protocol.HttpResponseMessage{
+					StatusCode: int64(400),
+					Headers:    make(map[string]*protocol.HeaderVal),
+					Body:       nil,
+					Error:      nil,
+				},
+			},
+		},
+	}
+
+	defer func() {
+		if err := h.SendOnly(resp); err != nil {
+			log.PEDetails(err)
+			log.Error("appID: %s appVersion: %s", appID, appVer)
+		}
+	}()
+
+	_plugin, _, err := h.mountPlugin(appDesc, instanceID)
+	if err != nil {
+		h.setPluginHttpRespError(resp, err)
+		return
+	}
+
+	respMsg, e := h.caller.CallPlugin(_plugin, request)
+	if e != nil {
+		err = common_type.NewPluginError(common_type.CallPluginHttpFailure, e.Error())
+		h.setPluginHttpRespError(resp, err)
+		return
+	}
+	resp.Plugin.Http.Response = respMsg
+}
+
+func (h *HostHandler) setPluginHttpRespError(resp *protocol.PlatformMessage, err common_type.PluginError) {
+	log.PEDetails(err)
+	resp.Plugin.Http.Response.Error = message.BuildErrorMessage(err)
+}
+
+func (h *HostHandler) onErrorTarget(msg *protocol.PlatformMessage) {
+	log.Error("错误的插件目标. %+v", msg.Plugin)
+
+	err := common_type.NewPluginError(common_type.GetInstanceFailure, "错误的插件目标")
+
+	resp := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    msg.Header.SeqNo,
+			Source:   msg.Header.Distinct,
+			Distinct: msg.Header.Source,
+		},
+		Plugin: &protocol.PluginMessage{
+			Http: &protocol.HttpContextMessage{
+				Response: &protocol.HttpResponseMessage{
+					Error: message.BuildErrorMessage(err),
+				},
+			},
+		},
+	}
+	if err = h.SendOnly(resp); err != nil {
+		log.PEDetails(err)
+	}
+}
+
+// TODO
+func (h *HostHandler) OnEvent(msg *protocol.PlatformMessage, p common_type.IPlugin) {
+
+}
+
 func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
 	if err != nil {
 		log.PEDetails(err)
 		return
 	}
 	h.OnControlMessage(endpoint, msg)
+	h.OnPluginMessage(endpoint, msg)
+}
+
+func (h *HostHandler) OnPluginMessage(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage) {
+	pluginMessage := msg.GetPlugin()
+	if pluginMessage == nil {
+		return
+	}
+
+	_plugin := h.getRunningInstance(msg)
+
+	if _plugin == nil {
+		h.onErrorTarget(msg)
+		return
+	}
+
+	// Http请求，使用反射 插件实现的http方法
+	if pluginMessage.Http != nil {
+		h.OnPluginHttp(msg)
+	}
+
+	// 事件
+	if pluginMessage.Notification != nil {
+		h.OnEvent(msg, _plugin)
+	}
 }
 
 func (h *HostHandler) OnControlMessage(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage) {
@@ -362,6 +485,7 @@ func (h *HostHandler) OnControlMessage(endpoint *connect.EndpointInfo, msg *prot
 		h.OnKillSelf(msg)
 	}
 
+	// kill 插件
 	if control.GetKillPlugin() != nil {
 		h.OnKillPlugin(msg)
 	}

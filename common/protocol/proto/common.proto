@@ -57,6 +57,7 @@ message HttpRequestMessage{
   bytes Body = 4;
   bool  Root = 5;
   bool  Internal = 6;
+  string AbilityFunc = 7;
 }
 
 message HttpResponseMessage {

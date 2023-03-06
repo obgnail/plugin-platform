@@ -15,32 +15,32 @@ func InitPlatformHandler() error {
 
 // 生命周期函数全部改成同步,因为业务上用不到异步
 
-func EnablePlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-ph.EnablePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
-}
-
-func DisablePlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-ph.DisablePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
-}
-
 func InstallPlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
 	return <-ph.InstallPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
-}
-
-func UnInstallPlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-ph.UnInstallPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
 }
 
 func UpgradePlugin(appID, instanceID, name, lang, langVer, appVer string, oldVersion *protocol.PluginDescriptor) common_type.PluginError {
 	return <-ph.UpgradePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer, oldVersion)
 }
 
-func CheckStatePlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-ph.CheckStatePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
+func EnablePlugin(instanceID string) common_type.PluginError {
+	return <-ph.EnablePlugin(make(chan common_type.PluginError, 1), instanceID)
 }
 
-func CheckCompatibilityPlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-ph.CheckCompatibilityPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
+func DisablePlugin(instanceID string) common_type.PluginError {
+	return <-ph.DisablePlugin(make(chan common_type.PluginError, 1), instanceID)
+}
+
+func UnInstallPlugin(instanceID string) common_type.PluginError {
+	return <-ph.UnInstallPlugin(make(chan common_type.PluginError, 1), instanceID)
+}
+
+func CheckStatePlugin(instanceID string) common_type.PluginError {
+	return <-ph.CheckStatePlugin(make(chan common_type.PluginError, 1), instanceID)
+}
+
+func CheckCompatibilityPlugin(instanceID string) common_type.PluginError {
+	return <-ph.CheckCompatibilityPlugin(make(chan common_type.PluginError, 1), instanceID)
 }
 
 func KillPlugin(instanceID string) { ph.KillPlugin(instanceID) }

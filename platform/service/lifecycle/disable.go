@@ -57,13 +57,7 @@ func (h *DisableHelper) checkDisable() error {
 }
 
 func (h *DisableHelper) Disable() error {
-	cnf, err := h.instance.LoadYamlConfig()
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	er := handler.DisablePlugin(h.instance.AppUUID, h.instance.InstanceUUID, h.instance.Name,
-		cnf.Language, cnf.LanguageVersion, cnf.Version)
+	er := handler.DisablePlugin(h.instance.InstanceUUID)
 	if er != nil {
 		log.PEDetails(er)
 		return errors.PluginDisableError(er.Error() + " " + er.Msg())
