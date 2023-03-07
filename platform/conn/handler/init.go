@@ -14,31 +14,31 @@ func InitPlatformHandler() error {
 }
 
 func InstallPlugin(appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
-	return ph.InstallPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
+	return ph.InstallPlugin(appID, instanceID, name, lang, langVer, appVer)
 }
 
 func UpgradePlugin(appID, instanceID, name, lang, langVer, appVer string, oldVersion *protocol.PluginDescriptor) chan common_type.PluginError {
-	return ph.UpgradePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer, oldVersion)
+	return ph.UpgradePlugin(appID, instanceID, name, lang, langVer, appVer, oldVersion)
 }
 
 func EnablePlugin(instanceID string) chan common_type.PluginError {
-	return ph.EnablePlugin(make(chan common_type.PluginError, 1), instanceID)
+	return ph.EnablePlugin(instanceID)
 }
 
 func DisablePlugin(instanceID string) chan common_type.PluginError {
-	return ph.DisablePlugin(make(chan common_type.PluginError, 1), instanceID)
+	return ph.DisablePlugin(instanceID)
 }
 
 func UnInstallPlugin(instanceID string) chan common_type.PluginError {
-	return ph.UnInstallPlugin(make(chan common_type.PluginError, 1), instanceID)
+	return ph.UnInstallPlugin(instanceID)
 }
 
 func CheckStatePlugin(instanceID string) chan common_type.PluginError {
-	return ph.CheckStatePlugin(make(chan common_type.PluginError, 1), instanceID)
+	return ph.CheckStatePlugin(instanceID)
 }
 
 func CheckCompatibilityPlugin(instanceID string) chan common_type.PluginError {
-	return ph.CheckCompatibilityPlugin(make(chan common_type.PluginError, 1), instanceID)
+	return ph.CheckCompatibilityPlugin(instanceID)
 }
 
 func CallPluginHttp(instanceID string, req *common_type.HttpRequest, abilityFunc string) chan *common_type.HttpResponse {
