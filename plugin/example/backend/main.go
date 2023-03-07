@@ -103,8 +103,16 @@ func (p *mockPlugin) OnEvent(eventType string, payload []byte) common_type.Plugi
 	return common_type.NewPluginError(1, "unknown123XXXX")
 }
 
-func (p *mockPlugin) OnExternalHttpRequest(request *common_type.HttpRequest) *common_type.HttpResponse {
-	return nil
+func (p *mockPlugin) OnExternalHttpRequest(req *common_type.HttpRequest) *common_type.HttpResponse {
+	fmt.Println("-------------OnExternalHttpRequest-------------", req.Url)
+	body := "呵呵"
+	resp := &common_type.HttpResponse{
+		Err:        nil,
+		Headers:    req.Headers,
+		Body:       []byte(body),
+		StatusCode: 200,
+	}
+	return resp
 }
 
 func (p *mockPlugin) OnConfigChange(configKey string, originValue, newValue []string) common_type.PluginError {

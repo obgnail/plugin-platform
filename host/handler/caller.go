@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	defaultOnCallFuncName = "OnCall"
+	defaultOnCallFuncName = "OnExternalHttpRequest"
 )
 
 type PluginCaller interface {
