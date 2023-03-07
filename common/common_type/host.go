@@ -13,7 +13,7 @@ type IHost interface {
 	GetStatus() HostStatus
 	//KillSelf()
 	//KillPlugin(instanceID string)
-	//CallPlugin(ctx *RequestContext) (resp *LifecycleResponse, err error)
+	//CallHTTP(ctx *RequestContext) (resp *LifecycleResponse, err error)
 }
 
 type HostInfo struct {

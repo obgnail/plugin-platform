@@ -14,14 +14,19 @@ const (
 	defaultOnCallFuncName = "OnCall"
 )
 
-type PluginCaller struct{}
-
-func NewCaller() *PluginCaller {
-	return &PluginCaller{}
+type PluginCaller interface {
+	CallHTTP(plugin common_type.IPlugin, req *protocol.HttpRequestMessage) (*protocol.HttpResponseMessage, error)
 }
 
-func (p *PluginCaller) CallPlugin(plugin common_type.IPlugin, pbReq *protocol.HttpRequestMessage) (
-	*protocol.HttpResponseMessage, error) {
+var _ PluginCaller = (*pluginCaller)(nil)
+
+type pluginCaller struct{}
+
+func NewPluginCaller() *pluginCaller {
+	return &pluginCaller{}
+}
+
+func (p *pluginCaller) CallHTTP(plugin common_type.IPlugin, pbReq *protocol.HttpRequestMessage) (*protocol.HttpResponseMessage, error) {
 	abilityFunc := pbReq.AbilityFunc
 	if abilityFunc == "" {
 		abilityFunc = defaultOnCallFuncName
@@ -38,7 +43,7 @@ func (p *PluginCaller) CallPlugin(plugin common_type.IPlugin, pbReq *protocol.Ht
 	return pbResp, nil
 }
 
-func (p *PluginCaller) getPbResp(resp *common_type.HttpResponse) *protocol.HttpResponseMessage {
+func (p *pluginCaller) getPbResp(resp *common_type.HttpResponse) *protocol.HttpResponseMessage {
 	if resp == nil {
 		return nil
 	}
@@ -53,7 +58,7 @@ func (p *PluginCaller) getPbResp(resp *common_type.HttpResponse) *protocol.HttpR
 	return respMsg
 }
 
-func (p *PluginCaller) getReqObj(request *protocol.HttpRequestMessage) *common_type.HttpRequest {
+func (p *pluginCaller) getReqObj(request *protocol.HttpRequestMessage) *common_type.HttpRequest {
 	req := &common_type.HttpRequest{
 		Url:     request.Url,
 		Method:  request.Method,
@@ -68,7 +73,7 @@ func (p *PluginCaller) getReqObj(request *protocol.HttpRequestMessage) *common_t
 	return req
 }
 
-func (p *PluginCaller) httpRequest(plugin common_type.IPlugin, funcName string, req *common_type.HttpRequest) (
+func (p *pluginCaller) httpRequest(plugin common_type.IPlugin, funcName string, req *common_type.HttpRequest) (
 	*common_type.HttpResponse, error) {
 	errChan := make(chan error, 1)
 	data := invoke(errChan, plugin, funcName, req)

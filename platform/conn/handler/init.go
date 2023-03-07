@@ -81,8 +81,8 @@ func GetSupportPlugins() map[string]common_type.IInstanceDescription {
 	return ph.GetAllSupportPlugin()
 }
 
-func KillPlugin(instanceID string) {
-	ph.KillPlugin(instanceID)
+func KillPlugin(instanceID string) chan common_type.PluginError {
+	return ph.KillPlugin(instanceID)
 }
 
 func KillHost(hostID string) {

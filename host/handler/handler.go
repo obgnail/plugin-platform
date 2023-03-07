@@ -28,7 +28,7 @@ type HostHandler struct {
 	descriptor   *protocol.HostDescriptor // 存储host的信息
 	conn         *connect.Connection      // 负责和platform的通讯
 	mounter      *PluginMounter           // 负责挂载插件
-	caller       *PluginCaller            // 负责call插件的http
+	caller       PluginCaller             // 负责call插件的http
 	instancePool *InstancePool            // 存储已经挂载的插件
 	isLocal      bool                     // host运行在测试环境/生产环境
 }
@@ -44,6 +44,7 @@ func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, i
 			MinSystemVersion: message.VersionString2Pb(minSysVersion),
 			LanguageVersion:  message.VersionString2Pb(langVersion),
 		},
+		caller: NewPluginCaller(),
 	}
 
 	log.Info("new host: %+v", handler.descriptor)
@@ -51,7 +52,6 @@ func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, i
 	zmq := connect.NewZmq(id, name, addr, connect.SocketTypeDealer, connect.RoleHost).SetPacker(&connect.ProtoPacker{})
 	handler.conn = connect.NewConnection(zmq, handler)
 	handler.mounter = NewMounter(handler, isLocal)
-	handler.caller = NewCaller()
 	return handler
 }
 
@@ -227,7 +227,7 @@ func (h *HostHandler) mountPlugin(desc *protocol.PluginDescriptor, instanceID st
 			MinSysVer:  message.VersionPb2String(desc.MinSystemVersion),
 		},
 	}
-	setup, err := h.mounter.Setup(instanceDesc)
+	setup, err := h.mounter.Mount(instanceDesc)
 	if err != nil {
 		log.PEDetails(err)
 		return nil, instanceDesc, err
@@ -393,7 +393,7 @@ func (h *HostHandler) OnPluginHttp(msg *protocol.PlatformMessage) {
 		return
 	}
 
-	respMsg, e := h.caller.CallPlugin(_plugin, request)
+	respMsg, e := h.caller.CallHTTP(_plugin, request)
 	if e != nil {
 		log.ErrorDetails(e)
 		err = common_type.NewPluginError(common_type.CallPluginHttpFailure, e.Error())

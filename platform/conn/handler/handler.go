@@ -377,26 +377,33 @@ func (h *PlatformHandler) KillHost(hostID string) {
 	}
 }
 
-func (h *PlatformHandler) KillPlugin(instanceID string) {
-	host := h.GetHost(instanceID)
-	if host == nil {
-		return
-	}
-	info := host.GetInfo()
+func (h *PlatformHandler) KillPlugin(instanceID string) chan common_type.PluginError {
+	errChan := make(chan common_type.PluginError, 1)
 
-	log.Warn("kill plugin: host:%s. plugin:%s", info.ID, instanceID)
-
-	msg := message.BuildP2HDefaultMessage(info.ID, info.Name)
-	msg.Control.KillPlugin = &protocol.ControlMessage_KillPluginMessage{InstanceID: instanceID}
-	h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
-		if err == nil {
-			log.Warn("kill plugin: %s", instanceID)
+	go func() {
+		host := h.GetHost(instanceID)
+		if host == nil {
+			errChan <- common_type.NewPluginError(common_type.HostNotFoundErr, "get host error")
 			return
 		}
-		log.PEDetails(err)
-		h.hostPool.DeleteByID(info.ID)
-		log.Warn("delete hostPool: %s", info.ID)
-	})
+
+		info := host.GetInfo()
+		log.Warn("kill plugin: host:%s. plugin:%s", info.ID, instanceID)
+
+		msg := message.BuildP2HDefaultMessage(info.ID, info.Name)
+		msg.Control.KillPlugin = &protocol.ControlMessage_KillPluginMessage{InstanceID: instanceID}
+
+		_, err := h.conn.Send(msg, Timeout)
+		if err != nil {
+			log.PEDetails(err)
+			h.hostPool.DeleteByID(info.ID)
+			log.Warn("delete hostPool: %s", info.ID)
+		} else {
+			log.Warn("kill plugin: %s", instanceID)
+		}
+		errChan <- err
+	}()
+	return errChan
 }
 
 func (h *PlatformHandler) GetAllHost() []common_type.IHost {

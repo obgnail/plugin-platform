@@ -20,7 +20,7 @@ func NewMounter(sender common.Sender, isLocal bool) *PluginMounter {
 	return &PluginMounter{isLocal: isLocal, sender: sender}
 }
 
-func (m *PluginMounter) Setup(description common_type.IInstanceDescription) (common_type.IPlugin, common_type.PluginError) {
+func (m *PluginMounter) Mount(description common_type.IInstanceDescription) (common_type.IPlugin, common_type.PluginError) {
 	desc := description.PluginDescription()
 	unset, er := m.CreatePlugin(desc.ApplicationID(), desc.ApplicationVersion().VersionString())
 	if er != nil {

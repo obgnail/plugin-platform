@@ -64,6 +64,7 @@ const (
 	EndpointReceiveErr          = 11056
 	EndpointSendErr             = 11057
 	EndpointIdentifyErr         = 11058
+	HostNotFoundErr             = 11059
 )
 
 var m = map[int]error{
@@ -123,6 +124,7 @@ var m = map[int]error{
 	EndpointReceiveErr:          fmt.Errorf("EndpointReceiveError %d", EndpointReceiveErr),
 	EndpointSendErr:             fmt.Errorf("EndpointSendError %d", EndpointSendErr),
 	EndpointIdentifyErr:         fmt.Errorf("EndpointIdentifyError %d", EndpointIdentifyErr),
+	HostNotFoundErr:             fmt.Errorf("HostNotFoundError %d", HostNotFoundErr),
 }
 
 func getErr(code int) error {
