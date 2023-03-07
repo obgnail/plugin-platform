@@ -49,22 +49,42 @@ func CallPluginEvent(instanceID string, eventType string, payload []byte) chan c
 	return ph.CallPluginEvent(instanceID, eventType, payload)
 }
 
-func CallPluginConfigChanged(instanceID, configKey string, originValue, newValue []string) chan common_type.PluginError {
+func CallPluginConfigChanged(instanceID string, configKey string, originValue, newValue []string) chan common_type.PluginError {
 	return ph.CallPluginConfigChanged(instanceID, configKey, originValue, newValue)
 }
 
-func KillPlugin(instanceID string) { ph.KillPlugin(instanceID) }
+func SendToAlivePlugin(instanceID string, messageBuilder MessageBuilder) (*protocol.PlatformMessage, common_type.PluginError) {
+	return ph.SendToAlivePlugin(instanceID, messageBuilder)
+}
 
-func KillHost(hostID string) { ph.KillHost(hostID) }
+func GetHost(instanceID string) common_type.IHost {
+	return ph.GetHost(instanceID)
+}
 
-func GetHost(instanceID string) common_type.IHost { return ph.GetHost(instanceID) }
+func GetHostBoot(hostBootID string) common_type.IHostBoot {
+	return ph.GetHostBoot(hostBootID)
+}
 
-func GetHostBoot(hostBootID string) common_type.IHostBoot { return ph.GetHostBoot(hostBootID) }
+func GetHosts() []common_type.IHost {
+	return ph.GetAllHost()
+}
 
-func GetHosts() []common_type.IHost { return ph.GetAllHost() }
+func GetHostBoots() []common_type.IHostBoot {
+	return ph.GetAllHostBoot()
+}
 
-func GetHostBoots() []common_type.IHostBoot { return ph.GetAllHostBoot() }
+func GetAlivePlugins() map[string]common_type.IInstanceDescription {
+	return ph.GetAllAlivePlugin()
+}
 
-func GetAlivePlugins() map[string]common_type.IInstanceDescription { return ph.GetAllAlivePlugin() }
+func GetSupportPlugins() map[string]common_type.IInstanceDescription {
+	return ph.GetAllSupportPlugin()
+}
 
-func GetSupportPlugins() map[string]common_type.IInstanceDescription { return ph.GetAllSupportPlugin() }
+func KillPlugin(instanceID string) {
+	ph.KillPlugin(instanceID)
+}
+
+func KillHost(hostID string) {
+	ph.KillHost(hostID)
+}

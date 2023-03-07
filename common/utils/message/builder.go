@@ -188,6 +188,33 @@ func BuildCallPluginConfigChangeMessage(
 	return msg
 }
 
+func BuildLifecycleMessage(
+	action protocol.ControlMessage_PluginActionType,
+	host common_type.HostInfo,
+	appID, instanceID, name, lang, langVer, appVer string,
+	oldVersion *protocol.PluginDescriptor,
+) *protocol.PlatformMessage {
+	msg := BuildP2HDefaultMessage(host.ID, host.Name)
+	msg.Control.LifeCycleRequest = &protocol.ControlMessage_PluginLifeCycleRequestMessage{
+		Instance: &protocol.PluginInstanceDescriptor{
+			Application: &protocol.PluginDescriptor{
+				ApplicationID:      appID,
+				Name:               name,
+				Language:           lang,
+				LanguageVersion:    VersionString2Pb(langVer),
+				ApplicationVersion: VersionString2Pb(appVer),
+				HostVersion:        VersionString2Pb(host.Version),
+				MinSystemVersion:   VersionString2Pb(host.MinSystemVersion),
+			},
+			InstanceID: instanceID,
+		},
+		Action:     action,
+		Reason:     "",
+		OldVersion: oldVersion,
+	}
+	return msg
+}
+
 func BuildHostReportInitMessage(hostInfo *protocol.HostDescriptor) *protocol.PlatformMessage {
 	msg := BuildH2PDefaultMessage(hostInfo.HostID, hostInfo.Name)
 	msg.Control.HostReport = &protocol.ControlMessage_HostReportMessage{Host: hostInfo}

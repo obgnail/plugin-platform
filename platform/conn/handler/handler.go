@@ -321,25 +321,7 @@ func (h *PlatformHandler) lifeCycle(
 		}
 
 		info := host.GetInfo()
-		msg := message.BuildP2HDefaultMessage(info.ID, info.Name)
-		msg.Control.LifeCycleRequest = &protocol.ControlMessage_PluginLifeCycleRequestMessage{
-			Instance: &protocol.PluginInstanceDescriptor{
-				Application: &protocol.PluginDescriptor{
-					ApplicationID:      appID,
-					Name:               name,
-					Language:           lang,
-					LanguageVersion:    message.VersionString2Pb(langVer),
-					ApplicationVersion: message.VersionString2Pb(appVer),
-					HostVersion:        message.VersionString2Pb(info.Version),
-					MinSystemVersion:   message.VersionString2Pb(info.MinSystemVersion),
-				},
-				InstanceID: instanceID,
-			},
-			Action:     action,
-			Reason:     "",
-			OldVersion: oldVersion,
-		}
-
+		msg := message.BuildLifecycleMessage(action, info, appID, instanceID, name, lang, langVer, appVer, oldVersion)
 		result, err := h.conn.Send(msg, Timeout)
 		if err != nil {
 			log.PEDetails(err)
