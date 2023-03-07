@@ -4,33 +4,16 @@ import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/errors"
-	"github.com/obgnail/plugin-platform/host/resource/common"
 	"github.com/obgnail/plugin-platform/platform/service/utils"
 	"plugin"
 )
 
-func MountPlugin(
-	iPlugin common_type.IPlugin,
-	iDescription common_type.IInstanceDescription,
-	resourceGetter common.ResourceFactor,
-	sender common.Sender,
-) (common_type.IPlugin, common_type.PluginError) {
-
-	// 如果不为nil则复用,否则创建一个新的
-	if iPlugin == nil {
-		var err error
-		desc := iDescription.PluginDescription()
-		iPlugin, err = createPlugin(desc.ApplicationID(), desc.ApplicationVersion().VersionString())
-		if err != nil {
-			return nil, common_type.NewPluginError(common_type.GetInstanceFailure, err.Error())
-		}
+func CreatePlugin(iDescription common_type.IInstanceDescription) (common_type.IPlugin, common_type.PluginError) {
+	desc := iDescription.PluginDescription()
+	iPlugin, err := createPlugin(desc.ApplicationID(), desc.ApplicationVersion().VersionString())
+	if err != nil {
+		return nil, common_type.NewPluginError(common_type.GetInstanceFailure, err.Error())
 	}
-
-	iResource := resourceGetter.GetResource(iPlugin, sender)
-	if err := iPlugin.Assign(iDescription, iResource); err != nil {
-		return nil, err
-	}
-
 	return iPlugin, nil
 }
 

@@ -11,14 +11,13 @@ import "control.proto";
 
 // 顶层消息
 message PlatformMessage {
-  // MessageHeader
+  // header
   RouterMessage Header = 1;
   // body
   ControlMessage Control = 2;
   PluginMessage Plugin = 3;
 //  CmdbMessage Cmdb = 15;
   ResourceMessage Resource = 20;
-//  AbilityMessage Ability = 30;
 }
 
 

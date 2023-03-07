@@ -50,16 +50,17 @@ func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, i
 		isLocal:      isLocal,
 	}
 
+	log.Info("new host: %+v", handler.descriptor)
+
 	if handler.isLocal {
 		handler.resourceFactor = new(local.ResourceFactor)
 	} else {
 		handler.resourceFactor = new(release.ResourceFactor)
 	}
 
-	log.Info("new host: %+v", handler.descriptor)
-
 	zmq := connect.NewZmq(id, name, addr, connect.SocketTypeDealer, connect.RoleHost).SetPacker(&connect.ProtoPacker{})
 	handler.conn = connect.NewConnection(zmq, handler)
+
 	return handler
 }
 
@@ -101,6 +102,7 @@ func (h *HostHandler) OnDisconnect() common_type.PluginError {
 func (h *HostHandler) OnError(err common_type.PluginError) {
 	log.PEDetails(err)
 	log.Warn("OnError: %s", h.descriptor.Name)
+
 	if err.Code() != common_type.EndpointReceiveErr {
 		os.Exit(1)
 	}
@@ -122,7 +124,8 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 	appID := app.ApplicationID
 	appVer := app.ApplicationVersion
 
-	log.Trace("【GET】LifeCycle. [Action]: %d. [appID]: %s. [instanceID]: %s", int32(action), appID, instance)
+	log.Trace("【GET】LifeCycle. [Action]: %d. [appID]: %s. [instanceID]: %s",
+		int32(action), appID, instance.InstanceID)
 
 	resp := &protocol.PlatformMessage{
 		Header: &protocol.RouterMessage{
@@ -149,7 +152,7 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 		}
 	}()
 
-	_plugin, instanceDesc, err := h.mountPlugin(app, instance.InstanceID)
+	_plugin, instanceDesc, err := h.AssignPlugin(instance)
 	if err != nil {
 		h.whenLifecycleError(resp, action, err)
 		return
@@ -221,32 +224,65 @@ func (h *HostHandler) doAction(
 	return err
 }
 
-func (h *HostHandler) mountPlugin(desc *protocol.PluginDescriptor, instanceID string) (
-	common_type.IPlugin, *common_type.MockInstanceDesc, common_type.PluginError) {
+// AssignPlugin 调用插件的核心函数:
+//     IPlugin.Assign(IInstanceDescription,IResources) PluginError
+func (h *HostHandler) AssignPlugin(descriptor *protocol.PluginInstanceDescriptor) (
+	common_type.IPlugin, common_type.IInstanceDescription, common_type.PluginError) {
 
-	instanceDesc := &common_type.MockInstanceDesc{
+	iDescription := h.getIDescription(descriptor)
+	iPlugin, err := h.getIPlugin(iDescription)
+	if err != nil {
+		return nil, iDescription, err
+	}
+	iResource := h.getIResource(iPlugin)
+
+	if err = iPlugin.Assign(iDescription, iResource); err != nil {
+		return nil, iDescription, err
+	}
+
+	h.instancePool.AddMounted(descriptor.InstanceID, iPlugin)
+
+	return iPlugin, iDescription, err
+}
+
+func (h *HostHandler) getIDescription(descriptor *protocol.PluginInstanceDescriptor) common_type.IInstanceDescription {
+	instanceID := descriptor.InstanceID
+	desc, exist := h.instancePool.GetRunning(instanceID)
+	if exist {
+		return desc // 优先使用缓存里的
+	}
+
+	description := descriptor.Application
+	iDescription := &common_type.MockInstanceDesc{
 		PluginInstanceID: instanceID,
 		PluginDescriptor: &common_type.MockPluginDescriptor{
-			AppID:      desc.ApplicationID,
-			PluginName: desc.Name,
-			Lang:       desc.Language,
-			LangVer:    message.VersionPb2String(desc.LanguageVersion),
-			AppVer:     message.VersionPb2String(desc.ApplicationVersion),
-			HostVer:    message.VersionPb2String(desc.HostVersion),
-			MinSysVer:  message.VersionPb2String(desc.MinSystemVersion),
+			AppID:      description.ApplicationID,
+			PluginName: description.Name,
+			Lang:       description.Language,
+			LangVer:    message.VersionPb2String(description.LanguageVersion),
+			AppVer:     message.VersionPb2String(description.ApplicationVersion),
+			HostVer:    message.VersionPb2String(description.HostVersion),
+			MinSysVer:  message.VersionPb2String(description.MinSystemVersion),
 		},
 	}
+	return iDescription
+}
 
-	iPlugin, _, _ := h.instancePool.GetMountedAndRunning(instanceDesc.InstanceID())
-	setup, err := MountPlugin(iPlugin, instanceDesc, h.resourceFactor, h)
-	if err != nil {
-		log.PEDetails(err)
-		return nil, instanceDesc, err
+func (h *HostHandler) getIPlugin(iDescription common_type.IInstanceDescription) (common_type.IPlugin, common_type.PluginError) {
+	iPlugin, exist := h.instancePool.GetMounted(iDescription.InstanceID())
+	if exist {
+		return iPlugin, nil // 优先使用缓存里的
 	}
 
-	h.instancePool.AddMounted(instanceDesc.PluginInstanceID, setup)
+	iPlugin, err := CreatePlugin(iDescription)
+	if err != nil {
+		return nil, err
+	}
+	return iPlugin, nil
+}
 
-	return setup, instanceDesc, err
+func (h *HostHandler) getIResource(iPlugin common_type.IPlugin) common_type.IResources {
+	return h.resourceFactor.GetResource(iPlugin, h)
 }
 
 func (h *HostHandler) getLifeCycleErrorCode(action protocol.ControlMessage_PluginActionType) int {
@@ -365,8 +401,8 @@ func (h *HostHandler) OnPluginHttp(msg *protocol.PlatformMessage) {
 	}
 
 	target := msg.Plugin.Target
-	appDesc := target.Application
 	instanceID := target.InstanceID
+	appDesc := target.Application
 	appID := appDesc.ApplicationID
 	appVer := appDesc.ApplicationVersion
 
@@ -397,7 +433,7 @@ func (h *HostHandler) OnPluginHttp(msg *protocol.PlatformMessage) {
 		}
 	}()
 
-	_plugin, _, err := h.mountPlugin(appDesc, instanceID)
+	_plugin, _, err := h.AssignPlugin(target)
 	if err != nil {
 		log.PEDetails(err)
 		resp.Plugin.Http.Response.Error = message.BuildErrorMessage(err)
@@ -473,7 +509,7 @@ func (h *HostHandler) OnEvent(msg *protocol.PlatformMessage) {
 		}
 	}()
 
-	_plugin, _, err := h.mountPlugin(appDesc, instanceID)
+	_plugin, _, err := h.AssignPlugin(target)
 	if err != nil {
 		log.PEDetails(err)
 		resp.Plugin.Notification.Error = message.BuildErrorMessage(err)
@@ -522,7 +558,7 @@ func (h *HostHandler) OnConfigChange(msg *protocol.PlatformMessage) {
 		}
 	}()
 
-	_plugin, _, err := h.mountPlugin(appDesc, instanceID)
+	_plugin, _, err := h.AssignPlugin(target)
 	if err != nil {
 		log.PEDetails(err)
 		resp.Plugin.Config.ConfigChangeResponse = message.BuildErrorMessage(err)
@@ -536,15 +572,6 @@ func (h *HostHandler) OnConfigChange(msg *protocol.PlatformMessage) {
 	}
 }
 
-func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
-	if err != nil {
-		log.PEDetails(err)
-		return
-	}
-	h.OnControlMessage(endpoint, msg)
-	h.OnPluginMessage(endpoint, msg)
-}
-
 func (h *HostHandler) OnPluginMessage(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage) {
 	pluginMessage := msg.GetPlugin()
 	if pluginMessage == nil {
@@ -552,7 +579,6 @@ func (h *HostHandler) OnPluginMessage(endpoint *connect.EndpointInfo, msg *proto
 	}
 
 	_plugin := h.getRunningInstance(msg)
-
 	if _plugin == nil {
 		h.onErrorTarget(msg)
 		return
@@ -599,6 +625,15 @@ func (h *HostHandler) OnControlMessage(endpoint *connect.EndpointInfo, msg *prot
 	if control.GetKillPlugin() != nil {
 		h.OnKillPlugin(msg)
 	}
+}
+
+func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
+	if err != nil {
+		log.PEDetails(err)
+		return
+	}
+	h.OnControlMessage(endpoint, msg)
+	h.OnPluginMessage(endpoint, msg)
 }
 
 func (h *HostHandler) Send(sender common_type.IPlugin, msg *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
