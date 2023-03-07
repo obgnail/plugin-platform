@@ -9,6 +9,8 @@ import (
 	"github.com/obgnail/plugin-platform/common/utils/math"
 	"github.com/obgnail/plugin-platform/common/utils/message"
 	"github.com/obgnail/plugin-platform/host/resource/common"
+	"github.com/obgnail/plugin-platform/host/resource/local"
+	"github.com/obgnail/plugin-platform/host/resource/release"
 	"os"
 	"time"
 )
@@ -25,12 +27,12 @@ var _ common.Sender = (*HostHandler)(nil)
 var _ connect.ConnectionHandler = (*HostHandler)(nil)
 
 type HostHandler struct {
-	descriptor   *protocol.HostDescriptor // 存储host的信息
-	conn         *connect.Connection      // 负责和platform的通讯
-	mounter      *PluginMounter           // 负责挂载插件
-	caller       PluginCaller             // 负责call插件的http
-	instancePool *InstancePool            // 存储已经挂载的插件
-	isLocal      bool                     // host运行在测试环境/生产环境
+	descriptor     *protocol.HostDescriptor // 存储host的信息
+	conn           *connect.Connection      // 负责和platform的通讯
+	resourceFactor common.ResourceFactor    // 资源工厂,负责获取资源
+	instancePool   *InstancePool            // 存储已经挂载的插件
+	pluginCaller   PluginCaller             // 负责call插件的http
+	isLocal        bool                     // host运行在测试环境/生产环境
 }
 
 func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, isLocal bool) *HostHandler {
@@ -44,14 +46,20 @@ func New(id, name, addr, lang, hostVersion, minSysVersion, langVersion string, i
 			MinSystemVersion: message.VersionString2Pb(minSysVersion),
 			LanguageVersion:  message.VersionString2Pb(langVersion),
 		},
-		caller: NewPluginCaller(),
+		pluginCaller: NewPluginCaller(),
+		isLocal:      isLocal,
+	}
+
+	if handler.isLocal {
+		handler.resourceFactor = new(local.ResourceFactor)
+	} else {
+		handler.resourceFactor = new(release.ResourceFactor)
 	}
 
 	log.Info("new host: %+v", handler.descriptor)
 
 	zmq := connect.NewZmq(id, name, addr, connect.SocketTypeDealer, connect.RoleHost).SetPacker(&connect.ProtoPacker{})
 	handler.conn = connect.NewConnection(zmq, handler)
-	handler.mounter = NewMounter(handler, isLocal)
 	return handler
 }
 
@@ -215,6 +223,7 @@ func (h *HostHandler) doAction(
 
 func (h *HostHandler) mountPlugin(desc *protocol.PluginDescriptor, instanceID string) (
 	common_type.IPlugin, *common_type.MockInstanceDesc, common_type.PluginError) {
+
 	instanceDesc := &common_type.MockInstanceDesc{
 		PluginInstanceID: instanceID,
 		PluginDescriptor: &common_type.MockPluginDescriptor{
@@ -227,7 +236,9 @@ func (h *HostHandler) mountPlugin(desc *protocol.PluginDescriptor, instanceID st
 			MinSysVer:  message.VersionPb2String(desc.MinSystemVersion),
 		},
 	}
-	setup, err := h.mounter.Mount(instanceDesc)
+
+	iPlugin, _, _ := h.instancePool.GetMountedAndRunning(instanceDesc.InstanceID())
+	setup, err := MountPlugin(iPlugin, instanceDesc, h.resourceFactor, h)
 	if err != nil {
 		log.PEDetails(err)
 		return nil, instanceDesc, err
@@ -393,7 +404,7 @@ func (h *HostHandler) OnPluginHttp(msg *protocol.PlatformMessage) {
 		return
 	}
 
-	respMsg, e := h.caller.CallHTTP(_plugin, request)
+	respMsg, e := h.pluginCaller.CallHTTP(_plugin, request)
 	if e != nil {
 		log.ErrorDetails(e)
 		err = common_type.NewPluginError(common_type.CallPluginHttpFailure, e.Error())

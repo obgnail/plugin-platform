@@ -6,6 +6,14 @@ import (
 	"github.com/obgnail/plugin-platform/host/resource/release"
 )
 
+var _ common.ResourceFactor = (*ResourceFactor)(nil)
+
+type ResourceFactor func(plugin common_type.IPlugin, sender common.Sender) common_type.IResources
+
+func (f ResourceFactor) GetResource(plugin common_type.IPlugin, sender common.Sender) common_type.IResources {
+	return &Resource{Plugin: plugin, Sender: sender}
+}
+
 var _ common_type.IResources = (*Resource)(nil)
 
 type Resource struct {

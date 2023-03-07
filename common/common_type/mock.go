@@ -43,11 +43,6 @@ func (i *MockPluginDescriptor) MinSystemVersion() IVersion {
 	return result
 }
 
-func SetupPlugin(plugin IPlugin, desc IInstanceDescription, res IResources) (IPlugin, PluginError) {
-	err := plugin.Assign(desc, res)
-	return plugin, err
-}
-
 type MockHost struct {
 	Info   HostInfo
 	Status HostStatus
