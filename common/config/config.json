@@ -32,6 +32,7 @@
     "timeout_sec": 30,
     "heartbeat_sec": 3,
     "retry_interval_sec": 1,
+    "max_retry": 5,
     "debug_mode": true
   },
   "host": {

@@ -13,34 +13,32 @@ func InitPlatformHandler() error {
 	return nil
 }
 
-// 生命周期函数全部改成同步,因为业务上用不到异步
-
-func InstallPlugin(appID, instanceID, name, lang, langVer, appVer string) common_type.PluginError {
-	return <-ph.InstallPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
+func InstallPlugin(appID, instanceID, name, lang, langVer, appVer string) chan common_type.PluginError {
+	return ph.InstallPlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer)
 }
 
-func UpgradePlugin(appID, instanceID, name, lang, langVer, appVer string, oldVersion *protocol.PluginDescriptor) common_type.PluginError {
-	return <-ph.UpgradePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer, oldVersion)
+func UpgradePlugin(appID, instanceID, name, lang, langVer, appVer string, oldVersion *protocol.PluginDescriptor) chan common_type.PluginError {
+	return ph.UpgradePlugin(make(chan common_type.PluginError, 1), appID, instanceID, name, lang, langVer, appVer, oldVersion)
 }
 
-func EnablePlugin(instanceID string) common_type.PluginError {
-	return <-ph.EnablePlugin(make(chan common_type.PluginError, 1), instanceID)
+func EnablePlugin(instanceID string) chan common_type.PluginError {
+	return ph.EnablePlugin(make(chan common_type.PluginError, 1), instanceID)
 }
 
-func DisablePlugin(instanceID string) common_type.PluginError {
-	return <-ph.DisablePlugin(make(chan common_type.PluginError, 1), instanceID)
+func DisablePlugin(instanceID string) chan common_type.PluginError {
+	return ph.DisablePlugin(make(chan common_type.PluginError, 1), instanceID)
 }
 
-func UnInstallPlugin(instanceID string) common_type.PluginError {
-	return <-ph.UnInstallPlugin(make(chan common_type.PluginError, 1), instanceID)
+func UnInstallPlugin(instanceID string) chan common_type.PluginError {
+	return ph.UnInstallPlugin(make(chan common_type.PluginError, 1), instanceID)
 }
 
-func CheckStatePlugin(instanceID string) common_type.PluginError {
-	return <-ph.CheckStatePlugin(make(chan common_type.PluginError, 1), instanceID)
+func CheckStatePlugin(instanceID string) chan common_type.PluginError {
+	return ph.CheckStatePlugin(make(chan common_type.PluginError, 1), instanceID)
 }
 
-func CheckCompatibilityPlugin(instanceID string) common_type.PluginError {
-	return <-ph.CheckCompatibilityPlugin(make(chan common_type.PluginError, 1), instanceID)
+func CheckCompatibilityPlugin(instanceID string) chan common_type.PluginError {
+	return ph.CheckCompatibilityPlugin(make(chan common_type.PluginError, 1), instanceID)
 }
 
 func CallPluginHttp(instanceID string, req *common_type.HttpRequest, abilityFunc string) chan *common_type.HttpResponse {

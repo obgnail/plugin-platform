@@ -63,7 +63,7 @@ func (h *UninstallHelper) checkUninstall() error {
 }
 
 func (h *UninstallHelper) Uninstall() error {
-	er := handler.UnInstallPlugin(h.instance.InstanceUUID)
+	er := <-handler.UnInstallPlugin(h.instance.InstanceUUID)
 	if er != nil {
 		log.PEDetails(er)
 		return errors.PluginUninstallError(er.Error() + " " + er.Msg())

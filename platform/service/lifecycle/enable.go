@@ -69,7 +69,7 @@ func (h *EnableHelper) Enable() error {
 		return errors.Trace(err)
 	}
 
-	er := handler.EnablePlugin(h.instance.InstanceUUID)
+	er := <-handler.EnablePlugin(h.instance.InstanceUUID)
 	if er != nil {
 		log.PEDetails(er)
 		return errors.PluginEnableError(er.Error() + " " + er.Msg())

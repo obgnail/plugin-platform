@@ -19,11 +19,13 @@ const (
 	defaultTimeoutSec       = 30
 	defaultHeartbeatSec     = 5
 	defaultRetryIntervalSec = 1
+	defaultMaxRetry         = 5
 )
 
 var Timeout = time.Duration(config.Int("platform.timeout_sec", defaultTimeoutSec)) * time.Second
-var RetryInterval = time.Duration(config.Int("platform.retry_interval_sec", defaultRetryIntervalSec)) * time.Second
 var HeartbeatInterval = time.Duration(config.Int("platform.heartbeat_sec", defaultHeartbeatSec)) * time.Second
+var RetryInterval = time.Duration(config.Int("platform.retry_interval_sec", defaultRetryIntervalSec)) * time.Second
+var MaxRetry = config.Int("platform.max_retry", defaultMaxRetry)
 
 var _ connect.ConnectionHandler = (*PlatformHandler)(nil)
 
@@ -442,14 +444,13 @@ func (h *PlatformHandler) _createHost() common_type.IHost {
 	log.Info("start host: %+v", result.Control.StartHost)
 
 	count := 0
-	maxRetry := 5
 	for {
 		Host, ok := h.hostPool.Exist(result.Control.StartHost.Host.HostID)
 		if ok {
 			return Host
 		}
 
-		if count != maxRetry {
+		if count != MaxRetry {
 			count++
 			time.Sleep(RetryInterval)
 		} else {

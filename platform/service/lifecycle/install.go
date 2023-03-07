@@ -76,7 +76,7 @@ func (h *InstallHelper) generatePlugin() (err error) {
 	if err != nil {
 		return errors.PluginInstallError(errors.LoadYamlConfigFailed)
 	}
-	er := handler.InstallPlugin(h.instance.AppUUID, h.instance.InstanceUUID, h.instance.Name,
+	er := <-handler.InstallPlugin(h.instance.AppUUID, h.instance.InstanceUUID, h.instance.Name,
 		h.Cfg.Language, h.Cfg.LanguageVersion, h.Cfg.Version)
 	if er != nil {
 		log.PEDetails(er)

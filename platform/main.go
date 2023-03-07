@@ -19,9 +19,9 @@ func main() {
 	go func() {
 		time.Sleep(9 * time.Second)
 		log.Info("InstallPlugin...")
-		handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+		<-handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
 			"golang", "1.14.0", "1.0.0")
-		handler.EnablePlugin("InstanceID123")
+		<-handler.EnablePlugin("InstanceID123")
 
 		req := common_type.HttpRequest{
 			Method:   "",
@@ -49,9 +49,9 @@ func main2() {
 	go func() {
 		time.Sleep(15 * time.Second)
 		log.Info("InstallPlugin...")
-		handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+		<-handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
 			"golang", "1.14.0", "1.0.0")
-		handler.EnablePlugin("InstanceID123")
+		<-handler.EnablePlugin("InstanceID123")
 
 		req := common_type.HttpRequest{
 			Method:   "",

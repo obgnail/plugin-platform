@@ -57,7 +57,7 @@ func (h *DisableHelper) checkDisable() error {
 }
 
 func (h *DisableHelper) Disable() error {
-	er := handler.DisablePlugin(h.instance.InstanceUUID)
+	er := <-handler.DisablePlugin(h.instance.InstanceUUID)
 	if er != nil {
 		log.PEDetails(er)
 		return errors.PluginDisableError(er.Error() + " " + er.Msg())
