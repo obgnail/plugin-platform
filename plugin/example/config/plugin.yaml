@@ -14,7 +14,7 @@ service:
   config: null
   permission:
     - name: 上传文件时确认安全提示弹窗
-      field: ones-global-modal-upload-X5Rv
+      field: global-modal-upload-X5Rv
       desc: 需要成员在上传文件时确认安全提示弹窗，否则不能继续上传
 apis:
   - type: addition
@@ -32,10 +32,10 @@ modules:
     title: 安全提示语配置
     entry: modules/settings-74_L/index.html
     moduleType: settings
-  - id: ones-global-modal-upload-X5Rv
+  - id: global-modal-upload-X5Rv
     title: modal
-    entry: modules/ones-global-modal-upload-X5Rv/index.html
-    moduleType: ones:global:modal:upload
+    entry: modules/global-modal-upload-X5Rv/index.html
+    moduleType: global:modal:upload
     manual: true
     preload: true
     events:

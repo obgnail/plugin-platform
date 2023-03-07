@@ -225,7 +225,7 @@ func (h *HostHandler) doAction(
 }
 
 // AssignPlugin 调用插件的核心函数:
-//     IPlugin.Assign(IInstanceDescription,IResources) PluginError
+//     IPlugin.Assign(IInstanceDescription, IResources) PluginError
 func (h *HostHandler) AssignPlugin(descriptor *protocol.PluginInstanceDescriptor) (
 	common_type.IPlugin, common_type.IInstanceDescription, common_type.PluginError) {
 
@@ -236,7 +236,8 @@ func (h *HostHandler) AssignPlugin(descriptor *protocol.PluginInstanceDescriptor
 	}
 	iResource := h.getIResource(iPlugin)
 
-	if err = iPlugin.Assign(iDescription, iResource); err != nil {
+	err = iPlugin.Assign(iDescription, iResource)
+	if err != nil {
 		return nil, iDescription, err
 	}
 
@@ -394,7 +395,7 @@ func (h *HostHandler) getRunningInstance(msg *protocol.PlatformMessage) common_t
 	return desc
 }
 
-func (h *HostHandler) OnPluginHttp(msg *protocol.PlatformMessage) {
+func (h *HostHandler) OnPluginHTTP(msg *protocol.PlatformMessage) {
 	request := msg.Plugin.Http.Request
 	if request == nil {
 		return
@@ -586,7 +587,7 @@ func (h *HostHandler) OnPluginMessage(endpoint *connect.EndpointInfo, msg *proto
 
 	// Http请求，使用反射 插件实现的http方法
 	if pluginMessage.Http != nil {
-		go h.OnPluginHttp(msg)
+		go h.OnPluginHTTP(msg)
 	}
 
 	// 事件
