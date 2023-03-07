@@ -16,6 +16,9 @@ type IPlugin interface {
 	// 事件相关
 	OnEvent(eventType string, payload []byte) PluginError
 
+	// 配置修改
+	OnConfigChange(configKey string, originValue, newValue []string) PluginError
+
 	// 外部请求
 	OnExternalHttpRequest(request *HttpRequest) *HttpResponse
 

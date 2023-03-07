@@ -203,6 +203,42 @@ func (h *PlatformHandler) logMsg(logMsg []*protocol.LogMessage) {
 	}
 }
 
+func (h *PlatformHandler) CallPluginConfigChanged(instanceID, configKey string, originValue, newValue []string) chan common_type.PluginError {
+	errChan := make(chan common_type.PluginError, 1)
+
+	go func() {
+		plugins := h.GetAllAlivePlugin()
+		target, ok := plugins[instanceID]
+		if !ok {
+			errChan <- common_type.NewPluginError(common_type.GetInstanceFailure, fmt.Sprintf("instanceNotFound: %s", instanceID))
+			return
+		}
+
+		host := h.getHostByInstanceID(instanceID)
+		if host == nil {
+			errChan <- common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
+			return
+		}
+
+		hostInfo := host.GetInfo()
+		msg := message.BuildCallPluginConfigChangeMessage(configKey, originValue, newValue, hostInfo, target)
+		h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
+			if err != nil {
+				log.PEDetails(err)
+				errChan <- err
+				return
+			}
+
+			if e := result.Plugin.Config.ConfigChangeResponse; e != nil {
+				errChan <- common_type.NewPluginError(common_type.CallPluginHttpFailure, e.Msg)
+			}
+			errChan <- nil
+		})
+	}()
+
+	return errChan
+}
+
 func (h *PlatformHandler) CallPluginEvent(instanceID string, eventType string, payload []byte) chan common_type.PluginError {
 	errChan := make(chan common_type.PluginError, 1)
 

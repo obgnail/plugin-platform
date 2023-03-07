@@ -17,7 +17,7 @@ func main() {
 	log.Info("run")
 
 	go func() {
-		time.Sleep(9 * time.Second)
+		time.Sleep(7 * time.Second)
 		log.Info("InstallPlugin...")
 		<-handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
 			"golang", "1.14.0", "1.0.0")
@@ -37,6 +37,9 @@ func main() {
 
 		err := <-handler.CallPluginEvent("InstanceID123", "myEventType", []byte("xasasdasdasdasd"))
 		fmt.Printf("((((((((((((((((((((((((((((((((((%+v\n", err.Msg())
+
+		err = <-handler.CallPluginConfigChanged("InstanceID123", "myConfigKey", []string{"originValue"}, []string{"newValue"})
+		fmt.Printf("``````````````````````````````````%+v\n", err.Msg())
 	}()
 
 	router.Run()

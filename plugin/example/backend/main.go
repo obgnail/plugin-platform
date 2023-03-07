@@ -107,6 +107,11 @@ func (p *mockPlugin) OnExternalHttpRequest(request *common_type.HttpRequest) *co
 	return nil
 }
 
+func (p *mockPlugin) OnConfigChange(configKey string, originValue, newValue []string) common_type.PluginError {
+	fmt.Println("-------------OnConfigChange-------------", configKey, originValue[0], newValue[0])
+	return common_type.NewPluginError(222, "unknown2222))))")
+}
+
 // TODO
 func (p *mockPlugin) CheckState() common_type.PluginError {
 	return nil

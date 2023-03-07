@@ -318,3 +318,7 @@ package main
 //func (p *mockPlugin) OnExternalHttpRequest(request *common_type.HttpRequest) *common_type.HttpResponse {
 //	return nil
 //}
+//
+//func (p *mockPlugin) OnConfigChange(configKey string, originValue, newValue []string) common_type.PluginError {
+//	return nil
+//}

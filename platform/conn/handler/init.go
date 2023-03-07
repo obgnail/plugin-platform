@@ -49,6 +49,10 @@ func CallPluginEvent(instanceID string, eventType string, payload []byte) chan c
 	return ph.CallPluginEvent(instanceID, eventType, payload)
 }
 
+func CallPluginConfigChanged(instanceID, configKey string, originValue, newValue []string) chan common_type.PluginError {
+	return ph.CallPluginConfigChanged(instanceID, configKey, originValue, newValue)
+}
+
 func KillPlugin(instanceID string) { ph.KillPlugin(instanceID) }
 
 func KillHost(hostID string) { ph.KillHost(hostID) }

@@ -252,3 +252,7 @@ func (p *mockPlugin2) OnEvent(eventType string, payload []byte) common_type.Plug
 func (p *mockPlugin2) OnExternalHttpRequest(request *common_type.HttpRequest) *common_type.HttpResponse {
 	return nil
 }
+
+func (p *mockPlugin2) OnConfigChange(configKey string, originValue, newValue []string) common_type.PluginError {
+	return nil
+}

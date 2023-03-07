@@ -36,6 +36,7 @@ const (
 	HashFailure                 = 11026
 	MakeDirFailure              = 11027
 	CallPluginHttpFailure       = 11028
+	CallPluginConfigFailure     = 11029
 	OnEnableFailure             = 11030
 	OnDisEnableFailure          = 11031
 	OnUpgradeFailure            = 11032
@@ -95,6 +96,7 @@ var m = map[int]error{
 	HashFailure:                 fmt.Errorf("HashFailure %d", HashFailure),
 	MakeDirFailure:              fmt.Errorf("MakeDirFailure %d", MakeDirFailure),
 	CallPluginHttpFailure:       fmt.Errorf("CallPluginHttpFailure %d", CallPluginHttpFailure),
+	CallPluginConfigFailure:     fmt.Errorf("CallPluginConfigFailure %d", CallPluginConfigFailure),
 	OnEnableFailure:             fmt.Errorf("OnEnableFailure %d", OnEnableFailure),
 	OnDisEnableFailure:          fmt.Errorf("OnDisEnableFailure %d", OnDisEnableFailure),
 	OnUpgradeFailure:            fmt.Errorf("OnUpgradeFailure %d", OnUpgradeFailure),

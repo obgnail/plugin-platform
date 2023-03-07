@@ -388,22 +388,19 @@ func (h *HostHandler) OnPluginHttp(msg *protocol.PlatformMessage) {
 
 	_plugin, _, err := h.mountPlugin(appDesc, instanceID)
 	if err != nil {
-		h.whenPluginHttpError(resp, err)
+		log.PEDetails(err)
+		resp.Plugin.Http.Response.Error = message.BuildErrorMessage(err)
 		return
 	}
 
 	respMsg, e := h.caller.CallPlugin(_plugin, request)
 	if e != nil {
+		log.ErrorDetails(e)
 		err = common_type.NewPluginError(common_type.CallPluginHttpFailure, e.Error())
-		h.whenPluginHttpError(resp, err)
+		resp.Plugin.Http.Response.Error = message.BuildErrorMessage(err)
 		return
 	}
 	resp.Plugin.Http.Response = respMsg
-}
-
-func (h *HostHandler) whenPluginHttpError(resp *protocol.PlatformMessage, err common_type.PluginError) {
-	log.PEDetails(err)
-	resp.Plugin.Http.Response.Error = message.BuildErrorMessage(err)
 }
 
 func (h *HostHandler) onErrorTarget(msg *protocol.PlatformMessage) {
@@ -467,19 +464,65 @@ func (h *HostHandler) OnEvent(msg *protocol.PlatformMessage) {
 
 	_plugin, _, err := h.mountPlugin(appDesc, instanceID)
 	if err != nil {
-		h.whenPluginOnEventError(resp, err)
+		log.PEDetails(err)
+		resp.Plugin.Notification.Error = message.BuildErrorMessage(err)
 		return
 	}
 
 	if err = _plugin.OnEvent(event.Type, event.Data); err != nil {
-		h.whenPluginOnEventError(resp, err)
+		log.PEDetails(err)
+		resp.Plugin.Notification.Error = message.BuildErrorMessage(err)
 		return
 	}
 }
 
-func (h *HostHandler) whenPluginOnEventError(resp *protocol.PlatformMessage, err common_type.PluginError) {
-	log.PEDetails(err)
-	resp.Plugin.Notification.Error = message.BuildErrorMessage(err)
+func (h *HostHandler) OnConfigChange(msg *protocol.PlatformMessage) {
+	request := msg.Plugin.Config.ConfigChangeRequest
+	if request == nil {
+		return
+	}
+
+	target := msg.Plugin.Target
+	appDesc := target.Application
+	instanceID := target.InstanceID
+	appID := appDesc.ApplicationID
+	appVer := appDesc.ApplicationVersion
+
+	log.Trace("【GET】PluginOnConfigChange. [Config]:%s [%+v -> %+v] [appID]: %s. [instanceID]: %s",
+		request.ConfigKey, request.OriginValue, request.NewValue, appID, instanceID)
+
+	resp := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    msg.Header.SeqNo,
+			Source:   msg.Header.Distinct,
+			Distinct: msg.Header.Source,
+		},
+		Plugin: &protocol.PluginMessage{
+			Config: &protocol.ConfigurationMessage{
+				ConfigChangeResponse: nil, // 后续可能会修改此值
+			},
+		},
+	}
+
+	defer func() {
+		if err := h.SendOnly(resp); err != nil {
+			log.PEDetails(err)
+			log.Error("appID: %s appVersion: %s", appID, appVer)
+		}
+	}()
+
+	_plugin, _, err := h.mountPlugin(appDesc, instanceID)
+	if err != nil {
+		log.PEDetails(err)
+		resp.Plugin.Config.ConfigChangeResponse = message.BuildErrorMessage(err)
+		return
+	}
+
+	if err = _plugin.OnConfigChange(request.ConfigKey, request.OriginValue, request.NewValue); err != nil {
+		log.PEDetails(err)
+		resp.Plugin.Config.ConfigChangeResponse = message.BuildErrorMessage(err)
+		return
+	}
 }
 
 func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
@@ -512,6 +555,11 @@ func (h *HostHandler) OnPluginMessage(endpoint *connect.EndpointInfo, msg *proto
 	// 事件
 	if pluginMessage.Notification != nil {
 		go h.OnEvent(msg)
+	}
+
+	// 配置变更
+	if pluginMessage.Config != nil {
+		go h.OnConfigChange(msg)
 	}
 }
 

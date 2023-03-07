@@ -9,12 +9,13 @@ import "common.proto";
 // 插件提供的配置处理实现
 message ConfigurationMessage{
   message ConfigurationChangeMessage{
-    string NewConfig = 1;
-    string OrigConfig = 2;
+    string ConfigKey = 1;
+    repeated string NewValue = 2;
+    repeated string OriginValue = 3;
   }
 
   ConfigurationChangeMessage ConfigChangeRequest = 1;
-  ErrorMessage ConfigChaneResponse = 2;
+  ErrorMessage ConfigChangeResponse = 2;
 }
 
 // 事件

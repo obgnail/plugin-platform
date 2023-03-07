@@ -169,6 +169,25 @@ func BuildCallPluginEventMessage(
 	return msg
 }
 
+func BuildCallPluginConfigChangeMessage(
+	key string, originVal, newVal []string,
+	host common_type.HostInfo,
+	target common_type.IInstanceDescription,
+) *protocol.PlatformMessage {
+	msg := BuildP2HDefaultMessage(host.ID, host.Name)
+	msg.Plugin = &protocol.PluginMessage{
+		Target: BuildInstanceDescriptor(target, host.ID),
+		Config: &protocol.ConfigurationMessage{
+			ConfigChangeRequest: &protocol.ConfigurationMessage_ConfigurationChangeMessage{
+				ConfigKey:   key,
+				NewValue:    newVal,
+				OriginValue: originVal,
+			},
+		},
+	}
+	return msg
+}
+
 func BuildHostReportInitMessage(hostInfo *protocol.HostDescriptor) *protocol.PlatformMessage {
 	msg := BuildH2PDefaultMessage(hostInfo.HostID, hostInfo.Name)
 	msg.Control.HostReport = &protocol.ControlMessage_HostReportMessage{Host: hostInfo}
