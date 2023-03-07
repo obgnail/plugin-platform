@@ -202,38 +202,24 @@ func (h *PlatformHandler) logMsg(logMsg []*protocol.LogMessage) {
 		}()
 	}
 }
-
 func (h *PlatformHandler) CallPluginConfigChanged(instanceID, configKey string, originValue, newValue []string) chan common_type.PluginError {
 	errChan := make(chan common_type.PluginError, 1)
 
+	msgBuilder := func(host common_type.HostInfo, plugin common_type.IInstanceDescription) *protocol.PlatformMessage {
+		return message.BuildCallPluginConfigChangeMessage(configKey, originValue, newValue, host, plugin)
+	}
+
 	go func() {
-		plugins := h.GetAllAlivePlugin()
-		target, ok := plugins[instanceID]
-		if !ok {
-			errChan <- common_type.NewPluginError(common_type.GetInstanceFailure, fmt.Sprintf("instanceNotFound: %s", instanceID))
+		result, err := h.SendToAlivePlugin(instanceID, msgBuilder)
+		if err != nil {
+			errChan <- err
 			return
 		}
 
-		host := h.getHostByInstanceID(instanceID)
-		if host == nil {
-			errChan <- common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
-			return
+		if e := result.Plugin.Config.ConfigChangeResponse; e != nil {
+			errChan <- common_type.NewPluginError(common_type.CallPluginHttpFailure, e.Msg)
 		}
-
-		hostInfo := host.GetInfo()
-		msg := message.BuildCallPluginConfigChangeMessage(configKey, originValue, newValue, hostInfo, target)
-		h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
-			if err != nil {
-				log.PEDetails(err)
-				errChan <- err
-				return
-			}
-
-			if e := result.Plugin.Config.ConfigChangeResponse; e != nil {
-				errChan <- common_type.NewPluginError(common_type.CallPluginHttpFailure, e.Msg)
-			}
-			errChan <- nil
-		})
+		errChan <- nil
 	}()
 
 	return errChan
@@ -242,90 +228,61 @@ func (h *PlatformHandler) CallPluginConfigChanged(instanceID, configKey string, 
 func (h *PlatformHandler) CallPluginEvent(instanceID string, eventType string, payload []byte) chan common_type.PluginError {
 	errChan := make(chan common_type.PluginError, 1)
 
+	msgBuilder := func(host common_type.HostInfo, plugin common_type.IInstanceDescription) *protocol.PlatformMessage {
+		return message.BuildCallPluginEventMessage(eventType, payload, host, plugin)
+	}
+
 	go func() {
-		plugins := h.GetAllAlivePlugin()
-		target, ok := plugins[instanceID]
-		if !ok {
-			errChan <- common_type.NewPluginError(common_type.GetInstanceFailure, fmt.Sprintf("instanceNotFound: %s", instanceID))
+		result, err := h.SendToAlivePlugin(instanceID, msgBuilder)
+		if err != nil {
+			errChan <- err
 			return
 		}
-
-		host := h.getHostByInstanceID(instanceID)
-		if host == nil {
-			errChan <- common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
-			return
+		if e := result.Plugin.Notification.Error; e != nil {
+			errChan <- common_type.NewPluginError(common_type.NotifyEventFailure, e.Msg)
 		}
-
-		hostInfo := host.GetInfo()
-		msg := message.BuildCallPluginEventMessage(eventType, payload, hostInfo, target)
-		h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
-			if err != nil {
-				log.PEDetails(err)
-				errChan <- err
-				return
-			}
-
-			if e := result.Plugin.Notification.Error; e != nil {
-				errChan <- common_type.NewPluginError(common_type.NotifyEventFailure, e.Msg)
-			}
-			errChan <- nil
-		})
+		errChan <- nil
 	}()
-
 	return errChan
 }
 
 func (h *PlatformHandler) CallPluginHttp(instanceID string, req *common_type.HttpRequest, abilityFunc string) chan *common_type.HttpResponse {
 	respChan := make(chan *common_type.HttpResponse, 1)
 
+	msgBuilder := func(host common_type.HostInfo, plugin common_type.IInstanceDescription) *protocol.PlatformMessage {
+		return message.BuildCallPluginHTTPMessage(req, host, plugin, abilityFunc)
+	}
+
 	go func() {
-		plugins := h.GetAllAlivePlugin()
-		target, ok := plugins[instanceID]
-		if !ok {
-			err := common_type.NewPluginError(common_type.GetInstanceFailure, fmt.Sprintf("instanceNotFound: %s", instanceID))
+		result, err := h.SendToAlivePlugin(instanceID, msgBuilder)
+		if err != nil {
 			respChan <- &common_type.HttpResponse{Err: err}
 			return
 		}
 
-		host := h.getHostByInstanceID(instanceID)
-		if host == nil {
-			err := common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
-			respChan <- &common_type.HttpResponse{Err: err}
-			return
+		respObj := result.Plugin.Http.Response
+
+		var pe common_type.PluginError
+		if respObj.Error != nil {
+			pe = common_type.NewPluginError(common_type.CallPluginHttpFailure, respObj.Error.Msg)
 		}
 
-		hostInfo := host.GetInfo()
-		msg := message.BuildCallPluginHTTPMessage(req, hostInfo, target, abilityFunc)
-		h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
-			if err != nil {
-				log.PEDetails(err)
-				respChan <- &common_type.HttpResponse{Err: err}
-				return
+		headers := make(map[string][]string)
+		for k, v := range respObj.Headers {
+			for _, v1 := range v.Val {
+				headers[k] = append(headers[k], v1)
 			}
+		}
 
-			respObj := result.Plugin.Http.Response
-
-			var pe common_type.PluginError
-			if respObj.Error != nil {
-				pe = common_type.NewPluginError(common_type.CallPluginHttpFailure, respObj.Error.Msg)
-			}
-
-			headers := make(map[string][]string)
-			for k, v := range respObj.Headers {
-				for _, v1 := range v.Val {
-					headers[k] = append(headers[k], v1)
-				}
-			}
-
-			resp := &common_type.HttpResponse{
-				Err:        pe,
-				Headers:    headers,
-				Body:       respObj.Body,
-				StatusCode: int(respObj.StatusCode),
-			}
-			respChan <- resp
-		})
+		resp := &common_type.HttpResponse{
+			Err:        pe,
+			Headers:    headers,
+			Body:       respObj.Body,
+			StatusCode: int(respObj.StatusCode),
+		}
+		respChan <- resp
 	}()
+
 	return respChan
 }
 
@@ -382,17 +339,18 @@ func (h *PlatformHandler) lifeCycle(
 			Reason:     "",
 			OldVersion: oldVersion,
 		}
-		h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
-			if err != nil {
-				log.PEDetails(err)
-				h.hostPool.DeleteByID(info.ID)
-				log.Warn("delete host: %s", info.ID)
-			} else {
-				h.onHostReport(result) // 返回hostReport信息,这里需要及时更新
-			}
-			done <- err
-		})
+
+		result, err := h.conn.Send(msg, Timeout)
+		if err != nil {
+			log.PEDetails(err)
+			h.hostPool.DeleteByID(info.ID)
+			log.Warn("delete host: %s", info.ID)
+		} else {
+			h.onHostReport(result) // 返回hostReport信息,这里需要及时更新
+		}
+		done <- err
 	}()
+
 	return done
 }
 
@@ -572,6 +530,29 @@ func (h *PlatformHandler) getHostByInstanceID(instanceID string) (host common_ty
 
 	host = h.CreateHost()
 	return host
+}
+
+type MessageBuilder func(host common_type.HostInfo, plugin common_type.IInstanceDescription) *protocol.PlatformMessage
+
+func (h *PlatformHandler) SendToAlivePlugin(instanceID string, messageBuilder MessageBuilder) (*protocol.PlatformMessage, common_type.PluginError) {
+	plugins := h.GetAllAlivePlugin()
+	target, ok := plugins[instanceID]
+	if !ok {
+		return nil, common_type.NewPluginError(common_type.GetInstanceFailure, fmt.Sprintf("instanceNotFound: %s", instanceID))
+	}
+
+	host := h.getHostByInstanceID(instanceID)
+	if host == nil {
+		return nil, common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
+	}
+
+	hostInfo := host.GetInfo()
+	msg := messageBuilder(hostInfo, target)
+	result, err := h.conn.Send(msg, Timeout)
+	if err != nil {
+		log.PEDetails(err)
+	}
+	return result, err
 }
 
 func (h *PlatformHandler) Run() common_type.PluginError {
