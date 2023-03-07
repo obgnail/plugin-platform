@@ -14,7 +14,7 @@ type IPlugin interface {
 	Upgrade(IVersion, LifeCycleRequest) PluginError
 
 	// 事件相关
-	OnEvent(eventType string, payload interface{}) PluginError
+	OnEvent(eventType string, payload []byte) PluginError
 
 	// 外部请求
 	OnExternalHttpRequest(request *HttpRequest) *HttpResponse

@@ -245,7 +245,7 @@ func (p *mockPlugin2) Upgrade(common_type.IVersion, common_type.LifeCycleRequest
 	return nil
 }
 
-func (p *mockPlugin2) OnEvent(eventType string, payload interface{}) common_type.PluginError {
+func (p *mockPlugin2) OnEvent(eventType string, payload []byte) common_type.PluginError {
 	return nil
 }
 

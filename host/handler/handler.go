@@ -143,19 +143,30 @@ func (h *HostHandler) OnLifeCycle(msg *protocol.PlatformMessage) {
 
 	_plugin, instanceDesc, err := h.mountPlugin(app, instance.InstanceID)
 	if err != nil {
-		h.setLifeCycleRespError(resp, action, err)
+		h.whenLifecycleError(resp, action, err)
 		return
 	}
 
 	err = h.doAction(action, _plugin, oldVersion)
 	if err != nil {
-		h.setLifeCycleRespError(resp, action, err)
+		h.whenLifecycleError(resp, action, err)
 		return
 	}
 
 	h.changePoolStatus(action, instanceDesc)
 
 	return
+}
+
+func (h *HostHandler) whenLifecycleError(resp *protocol.PlatformMessage,
+	action protocol.ControlMessage_PluginActionType, err common_type.PluginError) {
+	log.PEDetails(err)
+	resp.Control.LifeCycleResponse.Result = false
+	resp.Control.LifeCycleResponse.Error = &protocol.ErrorMessage{
+		Code:  int64(h.getLifeCycleErrorCode(action)),
+		Error: err.Error(),
+		Msg:   err.Msg(),
+	}
 }
 
 func (h *HostHandler) changePoolStatus(
@@ -225,17 +236,6 @@ func (h *HostHandler) mountPlugin(desc *protocol.PluginDescriptor, instanceID st
 	h.instancePool.AddMounted(instanceDesc.PluginInstanceID, setup)
 
 	return setup, instanceDesc, err
-}
-
-func (h *HostHandler) setLifeCycleRespError(resp *protocol.PlatformMessage,
-	action protocol.ControlMessage_PluginActionType, err common_type.PluginError) {
-	log.PEDetails(err)
-	resp.Control.LifeCycleResponse.Result = false
-	resp.Control.LifeCycleResponse.Error = &protocol.ErrorMessage{
-		Code:  int64(h.getLifeCycleErrorCode(action)),
-		Error: err.Error(),
-		Msg:   err.Msg(),
-	}
 }
 
 func (h *HostHandler) getLifeCycleErrorCode(action protocol.ControlMessage_PluginActionType) int {
@@ -348,12 +348,16 @@ func (h *HostHandler) getRunningInstance(msg *protocol.PlatformMessage) common_t
 }
 
 func (h *HostHandler) OnPluginHttp(msg *protocol.PlatformMessage) {
+	request := msg.Plugin.Http.Request
+	if request == nil {
+		return
+	}
+
 	target := msg.Plugin.Target
 	appDesc := target.Application
 	instanceID := target.InstanceID
 	appID := appDesc.ApplicationID
 	appVer := appDesc.ApplicationVersion
-	request := msg.Plugin.Http.Request
 
 	log.Trace("【GET】PluginHttp. [appID]: %s. [instanceID]: %s", appID, instanceID)
 
@@ -384,20 +388,20 @@ func (h *HostHandler) OnPluginHttp(msg *protocol.PlatformMessage) {
 
 	_plugin, _, err := h.mountPlugin(appDesc, instanceID)
 	if err != nil {
-		h.setPluginHttpRespError(resp, err)
+		h.whenPluginHttpError(resp, err)
 		return
 	}
 
 	respMsg, e := h.caller.CallPlugin(_plugin, request)
 	if e != nil {
 		err = common_type.NewPluginError(common_type.CallPluginHttpFailure, e.Error())
-		h.setPluginHttpRespError(resp, err)
+		h.whenPluginHttpError(resp, err)
 		return
 	}
 	resp.Plugin.Http.Response = respMsg
 }
 
-func (h *HostHandler) setPluginHttpRespError(resp *protocol.PlatformMessage, err common_type.PluginError) {
+func (h *HostHandler) whenPluginHttpError(resp *protocol.PlatformMessage, err common_type.PluginError) {
 	log.PEDetails(err)
 	resp.Plugin.Http.Response.Error = message.BuildErrorMessage(err)
 }
@@ -426,9 +430,56 @@ func (h *HostHandler) onErrorTarget(msg *protocol.PlatformMessage) {
 	}
 }
 
-// TODO
 func (h *HostHandler) OnEvent(msg *protocol.PlatformMessage) {
+	event := msg.Plugin.Notification
+	if event.Type == "" {
+		return
+	}
 
+	target := msg.Plugin.Target
+	appDesc := target.Application
+	instanceID := target.InstanceID
+	appID := appDesc.ApplicationID
+	appVer := appDesc.ApplicationVersion
+
+	log.Trace("【GET】PluginOnEvent. [Type]:%s [appID]: %s. [instanceID]: %s", event.Type, appID, instanceID)
+
+	resp := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    msg.Header.SeqNo,
+			Source:   msg.Header.Distinct,
+			Distinct: msg.Header.Source,
+		},
+		Plugin: &protocol.PluginMessage{
+			Notification: &protocol.NotificationMessage{
+				Type:  event.Type,
+				Error: nil, // 后续可能会修改此值
+			},
+		},
+	}
+
+	defer func() {
+		if err := h.SendOnly(resp); err != nil {
+			log.PEDetails(err)
+			log.Error("appID: %s appVersion: %s", appID, appVer)
+		}
+	}()
+
+	_plugin, _, err := h.mountPlugin(appDesc, instanceID)
+	if err != nil {
+		h.whenPluginOnEventError(resp, err)
+		return
+	}
+
+	if err = _plugin.OnEvent(event.Type, event.Data); err != nil {
+		h.whenPluginOnEventError(resp, err)
+		return
+	}
+}
+
+func (h *HostHandler) whenPluginOnEventError(resp *protocol.PlatformMessage, err common_type.PluginError) {
+	log.PEDetails(err)
+	resp.Plugin.Notification.Error = message.BuildErrorMessage(err)
 }
 
 func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.PlatformMessage, err common_type.PluginError) {
@@ -455,12 +506,12 @@ func (h *HostHandler) OnPluginMessage(endpoint *connect.EndpointInfo, msg *proto
 
 	// Http请求，使用反射 插件实现的http方法
 	if pluginMessage.Http != nil {
-		h.OnPluginHttp(msg)
+		go h.OnPluginHttp(msg)
 	}
 
 	// 事件
 	if pluginMessage.Notification != nil {
-		h.OnEvent(msg)
+		go h.OnEvent(msg)
 	}
 }
 

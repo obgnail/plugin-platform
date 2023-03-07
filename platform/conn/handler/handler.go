@@ -203,17 +203,54 @@ func (h *PlatformHandler) logMsg(logMsg []*protocol.LogMessage) {
 	}
 }
 
-func (h *PlatformHandler) CallPluginHttp(instanceID string, req *common_type.HttpRequest, abilityFunc string) chan *common_type.HttpResponse {
-	respChan := make(chan *common_type.HttpResponse, 1)
-	plugins := h.GetAllAlivePlugin()
-	target, ok := plugins[instanceID]
-	if !ok {
-		err := common_type.NewPluginError(common_type.GetInstanceFailure, fmt.Sprintf("instanceNotFound: %s", instanceID))
-		respChan <- &common_type.HttpResponse{Err: err}
-		return respChan
-	}
+func (h *PlatformHandler) CallPluginEvent(instanceID string, eventType string, payload []byte) chan common_type.PluginError {
+	errChan := make(chan common_type.PluginError, 1)
 
 	go func() {
+		plugins := h.GetAllAlivePlugin()
+		target, ok := plugins[instanceID]
+		if !ok {
+			errChan <- common_type.NewPluginError(common_type.GetInstanceFailure, fmt.Sprintf("instanceNotFound: %s", instanceID))
+			return
+		}
+
+		host := h.getHostByInstanceID(instanceID)
+		if host == nil {
+			errChan <- common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
+			return
+		}
+
+		hostInfo := host.GetInfo()
+		msg := message.BuildCallPluginEventMessage(eventType, payload, hostInfo, target)
+		h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
+			if err != nil {
+				log.PEDetails(err)
+				errChan <- err
+				return
+			}
+
+			if e := result.Plugin.Notification.Error; e != nil {
+				errChan <- common_type.NewPluginError(common_type.NotifyEventFailure, e.Msg)
+			}
+			errChan <- nil
+		})
+	}()
+
+	return errChan
+}
+
+func (h *PlatformHandler) CallPluginHttp(instanceID string, req *common_type.HttpRequest, abilityFunc string) chan *common_type.HttpResponse {
+	respChan := make(chan *common_type.HttpResponse, 1)
+
+	go func() {
+		plugins := h.GetAllAlivePlugin()
+		target, ok := plugins[instanceID]
+		if !ok {
+			err := common_type.NewPluginError(common_type.GetInstanceFailure, fmt.Sprintf("instanceNotFound: %s", instanceID))
+			respChan <- &common_type.HttpResponse{Err: err}
+			return
+		}
+
 		host := h.getHostByInstanceID(instanceID)
 		if host == nil {
 			err := common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
@@ -222,7 +259,7 @@ func (h *PlatformHandler) CallPluginHttp(instanceID string, req *common_type.Htt
 		}
 
 		hostInfo := host.GetInfo()
-		msg := message.BuildCallPluginMessage(req, hostInfo, target, abilityFunc)
+		msg := message.BuildCallPluginHTTPMessage(req, hostInfo, target, abilityFunc)
 		h.conn.SendAsync(msg, Timeout, func(input, result *protocol.PlatformMessage, err common_type.PluginError) {
 			if err != nil {
 				log.PEDetails(err)
@@ -286,7 +323,7 @@ func (h *PlatformHandler) lifeCycle(
 	go func() {
 		host := h.getHostByInstanceID(instanceID)
 		if host == nil {
-			done <- common_type.NewPluginError(common_type.MsgTimeOut, "get host timeout")
+			done <- common_type.NewPluginError(common_type.MsgTimeOut, "get host error")
 			return
 		}
 
@@ -317,9 +354,7 @@ func (h *PlatformHandler) lifeCycle(
 			} else {
 				h.onHostReport(result) // 返回hostReport信息,这里需要及时更新
 			}
-			if done != nil {
-				done <- err
-			}
+			done <- err
 		})
 	}()
 	return done

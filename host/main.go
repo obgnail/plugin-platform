@@ -311,7 +311,7 @@ package main
 //	return nil
 //}
 //
-//func (p *mockPlugin) OnEvent(eventType string, payload interface{}) common_type.PluginError {
+//func (p *mockPlugin) OnEvent(eventType string, payload []byte) common_type.PluginError {
 //	return nil
 //}
 //

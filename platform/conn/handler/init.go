@@ -45,6 +45,10 @@ func CallPluginHttp(instanceID string, req *common_type.HttpRequest, abilityFunc
 	return ph.CallPluginHttp(instanceID, req, abilityFunc)
 }
 
+func CallPluginEvent(instanceID string, eventType string, payload []byte) chan common_type.PluginError {
+	return ph.CallPluginEvent(instanceID, eventType, payload)
+}
+
 func KillPlugin(instanceID string) { ph.KillPlugin(instanceID) }
 
 func KillHost(hostID string) { ph.KillHost(hostID) }

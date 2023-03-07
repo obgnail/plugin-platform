@@ -34,6 +34,9 @@ func main() {
 		}
 		result := <-handler.CallPluginHttp("InstanceID123", &req, "OnHttpCall")
 		fmt.Printf("===============================%+v\n", result)
+
+		err := <-handler.CallPluginEvent("InstanceID123", "myEventType", []byte("xasasdasdasdasd"))
+		fmt.Printf("((((((((((((((((((((((((((((((((((%+v\n", err.Msg())
 	}()
 
 	router.Run()

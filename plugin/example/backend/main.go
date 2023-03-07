@@ -98,8 +98,9 @@ func (p *mockPlugin) Upgrade(common_type.IVersion, common_type.LifeCycleRequest)
 	return nil
 }
 
-func (p *mockPlugin) OnEvent(eventType string, payload interface{}) common_type.PluginError {
-	return nil
+func (p *mockPlugin) OnEvent(eventType string, payload []byte) common_type.PluginError {
+	fmt.Println("-------------onEvent-------------", eventType, string(payload))
+	return common_type.NewPluginError(1, "unknown123XXXX")
 }
 
 func (p *mockPlugin) OnExternalHttpRequest(request *common_type.HttpRequest) *common_type.HttpResponse {
