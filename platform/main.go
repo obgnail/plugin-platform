@@ -32,8 +32,11 @@ func main() {
 			Body:     nil,
 			Root:     false,
 		}
-		result := <-handler.CallPluginHttp("InstanceID123", &req, "OnHttpCall")
-		fmt.Printf("===============================%+v\n", result)
+		result := <-handler.CallPluginInternalHTTP("InstanceID123", &req, "OnHttpCall")
+		fmt.Printf("==============Internal=================%+v\n", result)
+
+		result = <-handler.CallPluginExternalHTTP("InstanceID123", &req)
+		fmt.Printf("============External===================%+v\n", result)
 
 		err := <-handler.CallPluginEvent("InstanceID123", "myEventType", []byte("xasasdasdasdasd"))
 		fmt.Printf("((((((((((((((((((((((((((((((((((%+v\n", err.Msg())
@@ -69,7 +72,7 @@ func main2() {
 			Root:     false,
 		}
 		fmt.Printf("+++++++++++++++++++++++++%+v\n", req)
-		result := <-handler.CallPluginHttp("InstanceID123", &req, "OnHttpCall")
+		result := <-handler.CallPluginHTTP("InstanceID123", &req, true, "OnHttpCall")
 		fmt.Printf("===============================%+v\n", result)
 		//time.Sleep(time.Second * 20)
 		//log.Info("kill Plugin")

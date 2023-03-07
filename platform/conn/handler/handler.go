@@ -246,11 +246,11 @@ func (h *PlatformHandler) CallPluginEvent(instanceID string, eventType string, p
 	return errChan
 }
 
-func (h *PlatformHandler) CallPluginHttp(instanceID string, req *common_type.HttpRequest, abilityFunc string) chan *common_type.HttpResponse {
+func (h *PlatformHandler) CallPluginHTTP(instanceID string, req *common_type.HttpRequest, internal bool, abilityFunc string) chan *common_type.HttpResponse {
 	respChan := make(chan *common_type.HttpResponse, 1)
 
 	msgBuilder := func(host common_type.HostInfo, plugin common_type.IInstanceDescription) *protocol.PlatformMessage {
-		return message.BuildCallPluginHTTPMessage(req, host, plugin, abilityFunc)
+		return message.BuildCallPluginHTTPMessage(req, internal, host, plugin, abilityFunc)
 	}
 
 	go func() {

@@ -395,6 +395,12 @@ func (h *HostHandler) getRunningInstance(msg *protocol.PlatformMessage) common_t
 	return desc
 }
 
+// OnPluginHTTP 插件的路由类型包括: Addition、Replace、Prefix、Suffix、External。
+// 除了External,其他都是注入到主系统接口中。属于内部接口。
+// 比如Prefix: 当用户请求某个主系统接口时，会先流转到插件，等插件处理完再交回主系统处理。
+// External: 插件自己提供一个HTTP服务。属于外部接口。
+// 上述两种情况使用msg.Plugin.Http.Request.Internal区分，二者在hostHandler的代码实现上只是调用的处理函数不同。
+// 内部接口使用插件自定义函数，外部则固定使用OnExternalHttpRequest函数处理。
 func (h *HostHandler) OnPluginHTTP(msg *protocol.PlatformMessage) {
 	request := msg.Plugin.Http.Request
 	if request == nil {
@@ -407,7 +413,7 @@ func (h *HostHandler) OnPluginHTTP(msg *protocol.PlatformMessage) {
 	appID := appDesc.ApplicationID
 	appVer := appDesc.ApplicationVersion
 
-	log.Trace("【GET】PluginHttp. [appID]: %s. [instanceID]: %s", appID, instanceID)
+	log.Trace("【GET】PluginHttp. [Internal]:%t. [appID]: %s. [instanceID]: %s", request.Internal, appID, instanceID)
 
 	resp := &protocol.PlatformMessage{
 		Header: &protocol.RouterMessage{

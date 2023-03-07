@@ -131,6 +131,7 @@ func BuildInstanceDescriptor(description common_type.IInstanceDescription, hostI
 
 func BuildCallPluginHTTPMessage(
 	req *common_type.HttpRequest,
+	internal bool,
 	host common_type.HostInfo,
 	target common_type.IInstanceDescription,
 	abilityFunc string,
@@ -144,6 +145,7 @@ func BuildCallPluginHTTPMessage(
 				Url:         req.Url,
 				Headers:     nil,
 				Body:        req.Body,
+				Internal:    internal,
 				AbilityFunc: abilityFunc,
 			},
 		},

@@ -41,8 +41,16 @@ func CheckCompatibilityPlugin(instanceID string) chan common_type.PluginError {
 	return ph.CheckCompatibilityPlugin(instanceID)
 }
 
-func CallPluginHttp(instanceID string, req *common_type.HttpRequest, abilityFunc string) chan *common_type.HttpResponse {
-	return ph.CallPluginHttp(instanceID, req, abilityFunc)
+func CallPluginHTTP(instanceID string, req *common_type.HttpRequest, internal bool, abilityFunc string) chan *common_type.HttpResponse {
+	return ph.CallPluginHTTP(instanceID, req, internal, abilityFunc)
+}
+
+func CallPluginInternalHTTP(instanceID string, req *common_type.HttpRequest, abilityFunc string) chan *common_type.HttpResponse {
+	return ph.CallPluginHTTP(instanceID, req, true, abilityFunc)
+}
+
+func CallPluginExternalHTTP(instanceID string, req *common_type.HttpRequest) chan *common_type.HttpResponse {
+	return ph.CallPluginHTTP(instanceID, req, false, "")
 }
 
 func CallPluginEvent(instanceID string, eventType string, payload []byte) chan common_type.PluginError {

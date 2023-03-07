@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/common/utils/message"
 	"reflect"
@@ -11,7 +10,7 @@ import (
 )
 
 const (
-	defaultOnCallFuncName = "OnExternalHttpRequest"
+	defaultInternalOnCallFuncName = "OnCall"
 )
 
 type PluginCaller interface {
@@ -27,23 +26,34 @@ func NewPluginCaller() *pluginCaller {
 }
 
 func (p *pluginCaller) CallHTTP(plugin common_type.IPlugin, pbReq *protocol.HttpRequestMessage) (*protocol.HttpResponseMessage, error) {
-	abilityFunc := pbReq.AbilityFunc
-	if abilityFunc == "" {
-		abilityFunc = defaultOnCallFuncName
-	}
-
-	log.Trace("on call function: %s", abilityFunc)
-
 	req := p.getReqObj(pbReq)
-	resp, err := p.httpRequest(plugin, abilityFunc, req)
-	if err != nil {
-		return nil, err
+
+	var err error
+	var resp *common_type.HttpResponse
+
+	if pbReq.Internal == false {
+		resp = plugin.OnExternalHttpRequest(req)
+	} else {
+		abilityFunc := p.getAbilityFunc(pbReq)
+		resp, err = p.httpRequest(plugin, abilityFunc, req)
+		if err != nil {
+			return nil, err
+		}
 	}
-	pbResp := p.getPbResp(resp)
+
+	pbResp := p.convert2Pb(resp)
 	return pbResp, nil
 }
 
-func (p *pluginCaller) getPbResp(resp *common_type.HttpResponse) *protocol.HttpResponseMessage {
+func (p *pluginCaller) getAbilityFunc(pbReq *protocol.HttpRequestMessage) string {
+	abilityFunc := pbReq.AbilityFunc
+	if abilityFunc == "" {
+		abilityFunc = defaultInternalOnCallFuncName
+	}
+	return abilityFunc
+}
+
+func (p *pluginCaller) convert2Pb(resp *common_type.HttpResponse) *protocol.HttpResponseMessage {
 	if resp == nil {
 		return nil
 	}
