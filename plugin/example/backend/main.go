@@ -10,6 +10,8 @@ var _ common_type.IPlugin = (*mockPlugin)(nil)
 type mockPlugin struct {
 	descriptor common_type.IInstanceDescription
 	resource   common_type.IResources
+
+	temp string
 }
 
 func GetPlugin() common_type.IPlugin {
@@ -128,4 +130,24 @@ func (p *mockPlugin) CheckState() common_type.PluginError {
 // TODO
 func (p *mockPlugin) CheckCompatibility() common_type.PluginError {
 	return nil
+}
+
+func (p *mockPlugin) AbilityFuncKey1(req *common_type.AbilityRequest) *common_type.AbilityResponse {
+	fmt.Println("-------------abilityFuncKey1-------------", string(req.Args))
+	p.temp = "temptemptemptemptemp"
+	result := &common_type.AbilityResponse{
+		Data: []byte("890"),
+		Err:  nil,
+	}
+	return result
+}
+
+func (p *mockPlugin) AbilityFuncKey2(req *common_type.AbilityRequest) *common_type.AbilityResponse {
+	fmt.Println("-------------abilityFuncKey2-------------", string(req.Args))
+	fmt.Println("tempValue:", p.temp)
+	result := &common_type.AbilityResponse{
+		Data: []byte("abilityFuncKey2890"),
+		Err:  common_type.NewPluginError(2123, "xasasd"),
+	}
+	return result
 }

@@ -41,6 +41,10 @@ func CheckCompatibilityPlugin(instanceID string) chan common_type.PluginError {
 	return ph.CheckCompatibilityPlugin(instanceID)
 }
 
+func CallPluginFunction(instanceID string, abilityID, abilityType, abilityFuncKey string, arg []byte) chan *common_type.AbilityResponse {
+	return ph.CallPluginFunction(instanceID, abilityID, abilityType, abilityFuncKey, arg)
+}
+
 func CallPluginHTTP(instanceID string, req *common_type.HttpRequest, internal bool, abilityFunc string) chan *common_type.HttpResponse {
 	return ph.CallPluginHTTP(instanceID, req, internal, abilityFunc)
 }

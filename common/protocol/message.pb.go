@@ -26,13 +26,13 @@ type PlatformMessage struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// MessageHeader
+	// header
 	Header *RouterMessage `protobuf:"bytes,1,opt,name=Header,proto3" json:"Header,omitempty"`
 	// body
 	Control *ControlMessage `protobuf:"bytes,2,opt,name=Control,proto3" json:"Control,omitempty"`
 	Plugin  *PluginMessage  `protobuf:"bytes,3,opt,name=Plugin,proto3" json:"Plugin,omitempty"`
 	//  CmdbMessage Cmdb = 15;
-	Resource *ResourceMessage `protobuf:"bytes,20,opt,name=Resource,proto3" json:"Resource,omitempty"` //  AbilityMessage Ability = 30;
+	Resource *ResourceMessage `protobuf:"bytes,20,opt,name=Resource,proto3" json:"Resource,omitempty"`
 }
 
 func (x *PlatformMessage) Reset() {

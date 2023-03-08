@@ -30,8 +30,8 @@ type HostHandler struct {
 	descriptor     *protocol.HostDescriptor // 存储host的信息
 	conn           *connect.Connection      // 负责和platform的通讯
 	resourceFactor common.ResourceFactor    // 资源工厂,负责获取资源
+	pluginCaller   Caller                   // 通过反射调用插件的函数
 	instancePool   *InstancePool            // 存储已经挂载的插件
-	pluginCaller   PluginCaller             // 负责call插件的http
 	isLocal        bool                     // host运行在测试环境/生产环境
 }
 
@@ -395,69 +395,7 @@ func (h *HostHandler) getRunningInstance(msg *protocol.PlatformMessage) common_t
 	return desc
 }
 
-// OnPluginHTTP 插件的路由类型包括: Addition、Replace、Prefix、Suffix、External。
-// 除了External,其他都是注入到主系统接口中。属于内部接口。
-// 比如Prefix: 当用户请求某个主系统接口时，会先流转到插件，等插件处理完再交回主系统处理。
-// External: 插件自己提供一个HTTP服务。属于外部接口。
-// 上述两种情况使用msg.Plugin.Http.Request.Internal区分，二者在hostHandler的代码实现上只是调用的处理函数不同。
-// 内部接口使用插件自定义函数，外部则固定使用OnExternalHttpRequest函数处理。
-func (h *HostHandler) OnPluginHTTP(msg *protocol.PlatformMessage) {
-	request := msg.Plugin.Http.Request
-	if request == nil {
-		return
-	}
-
-	target := msg.Plugin.Target
-	instanceID := target.InstanceID
-	appDesc := target.Application
-	appID := appDesc.ApplicationID
-	appVer := appDesc.ApplicationVersion
-
-	log.Trace("【GET】PluginHttp. [Internal]:%t. [appID]: %s. [instanceID]: %s", request.Internal, appID, instanceID)
-
-	resp := &protocol.PlatformMessage{
-		Header: &protocol.RouterMessage{
-			SeqNo:    msg.Header.SeqNo,
-			Source:   msg.Header.Distinct,
-			Distinct: msg.Header.Source,
-		},
-		Plugin: &protocol.PluginMessage{
-			Http: &protocol.HttpContextMessage{
-				Response: &protocol.HttpResponseMessage{
-					StatusCode: int64(400),
-					Headers:    make(map[string]*protocol.HeaderVal),
-					Body:       nil,
-					Error:      nil,
-				},
-			},
-		},
-	}
-
-	defer func() {
-		if err := h.SendOnly(resp); err != nil {
-			log.PEDetails(err)
-			log.Error("appID: %s appVersion: %s", appID, appVer)
-		}
-	}()
-
-	_plugin, _, err := h.AssignPlugin(target)
-	if err != nil {
-		log.PEDetails(err)
-		resp.Plugin.Http.Response.Error = message.BuildErrorMessage(err)
-		return
-	}
-
-	respMsg, e := h.pluginCaller.CallHTTP(_plugin, request)
-	if e != nil {
-		log.ErrorDetails(e)
-		err = common_type.NewPluginError(common_type.CallPluginHttpFailure, e.Error())
-		resp.Plugin.Http.Response.Error = message.BuildErrorMessage(err)
-		return
-	}
-	resp.Plugin.Http.Response = respMsg
-}
-
-func (h *HostHandler) onErrorTarget(msg *protocol.PlatformMessage) {
+func (h *HostHandler) OnErrorTarget(msg *protocol.PlatformMessage) {
 	log.Error("错误的插件目标. %+v", msg.Plugin)
 
 	err := common_type.NewPluginError(common_type.GetInstanceFailure, "错误的插件目标")
@@ -530,6 +468,122 @@ func (h *HostHandler) OnEvent(msg *protocol.PlatformMessage) {
 	}
 }
 
+// OnPluginHTTP 插件的路由类型包括: Addition、Replace、Prefix、Suffix、External。
+// 除了External,其他都是注入到主系统接口中。属于内部接口。
+// 比如Prefix: 当用户请求某个主系统接口时，会先流转到插件，等插件处理完再交回主系统处理。
+// External: 插件自己提供一个HTTP服务。属于外部接口。
+// 上述两种情况使用msg.Plugin.Http.Request.Internal区分，二者在hostHandler的代码实现上只是调用的处理函数不同。
+// 内部接口使用插件自定义函数，外部则固定使用OnExternalHttpRequest函数处理。
+func (h *HostHandler) OnPluginHTTP(msg *protocol.PlatformMessage) {
+	request := msg.Plugin.Http.Request
+	if request == nil {
+		return
+	}
+
+	target := msg.Plugin.Target
+	instanceID := target.InstanceID
+	appDesc := target.Application
+	appID := appDesc.ApplicationID
+	appVer := appDesc.ApplicationVersion
+
+	log.Trace("【GET】PluginHttp. [Internal]:%t. [appID]: %s. [instanceID]: %s", request.Internal, appID, instanceID)
+
+	resp := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    msg.Header.SeqNo,
+			Source:   msg.Header.Distinct,
+			Distinct: msg.Header.Source,
+		},
+		Plugin: &protocol.PluginMessage{
+			Http: &protocol.HttpContextMessage{
+				Response: &protocol.HttpResponseMessage{
+					StatusCode: int64(400),
+					Headers:    make(map[string]*protocol.HeaderVal),
+					Body:       nil,
+					Error:      nil,
+				},
+			},
+		},
+	}
+
+	defer func() {
+		if err := h.SendOnly(resp); err != nil {
+			log.PEDetails(err)
+			log.Error("appID: %s appVersion: %s", appID, appVer)
+		}
+	}()
+
+	_plugin, _, err := h.AssignPlugin(target)
+	if err != nil {
+		log.PEDetails(err)
+		resp.Plugin.Http.Response.Error = message.BuildErrorMessage(err)
+		return
+	}
+
+	response, e := h.pluginCaller.CallHTTP(_plugin, request)
+	if e != nil {
+		log.PEDetails(e)
+		resp.Plugin.Http.Response.Error = message.BuildErrorMessage(e)
+		return
+	}
+	resp.Plugin.Http.Response = response
+}
+
+func (h *HostHandler) OnAbility(msg *protocol.PlatformMessage) {
+	req := msg.Plugin.Ability.AbilityRequest
+	if req == nil || req.Id == "" || req.Type == "" {
+		return
+	}
+
+	target := msg.Plugin.Target
+	instanceID := target.InstanceID
+	appDesc := target.Application
+	appID := appDesc.ApplicationID
+	appVer := appDesc.ApplicationVersion
+
+	abilityType := req.Type
+
+	log.Trace("【GET】PluginAbility. [type]:%s [appID]: %s. [instanceID]: %s", abilityType, appID, instanceID)
+
+	resp := &protocol.PlatformMessage{
+		Header: &protocol.RouterMessage{
+			SeqNo:    msg.Header.SeqNo,
+			Source:   msg.Header.Distinct,
+			Distinct: msg.Header.Source,
+		},
+		Plugin: &protocol.PluginMessage{
+			Ability: &protocol.StandardAbilityMessage{
+				AbilityResponse: &protocol.StandardAbilityMessage_AbilityResponseMessage{
+					Data:  nil,
+					Error: nil,
+				},
+			},
+		},
+	}
+
+	defer func() {
+		if err := h.SendOnly(resp); err != nil {
+			log.PEDetails(err)
+			log.Error("appID: %s appVersion: %s", appID, appVer)
+		}
+	}()
+
+	_plugin, _, err := h.AssignPlugin(target)
+	if err != nil {
+		log.PEDetails(err)
+		resp.Plugin.Ability.AbilityResponse.Error = message.BuildErrorMessage(err)
+		return
+	}
+
+	result, err := h.pluginCaller.CallAbility(_plugin, req)
+	if err != nil {
+		log.PEDetails(err)
+		resp.Plugin.Ability.AbilityResponse.Error = message.BuildErrorMessage(err)
+		return
+	}
+	resp.Plugin.Ability.AbilityResponse = result
+}
+
 func (h *HostHandler) OnConfigChange(msg *protocol.PlatformMessage) {
 	request := msg.Plugin.Config.ConfigChangeRequest
 	if request == nil {
@@ -587,7 +641,7 @@ func (h *HostHandler) OnPluginMessage(endpoint *connect.EndpointInfo, msg *proto
 
 	_plugin := h.getRunningInstance(msg)
 	if _plugin == nil {
-		h.onErrorTarget(msg)
+		h.OnErrorTarget(msg)
 		return
 	}
 
@@ -604,6 +658,11 @@ func (h *HostHandler) OnPluginMessage(endpoint *connect.EndpointInfo, msg *proto
 	// 配置变更
 	if pluginMessage.Config != nil {
 		go h.OnConfigChange(msg)
+	}
+
+	// 标准能力
+	if pluginMessage.Ability != nil {
+		go h.OnAbility(msg)
 	}
 }
 
@@ -644,23 +703,23 @@ func (h *HostHandler) OnMsg(endpoint *connect.EndpointInfo, msg *protocol.Platfo
 }
 
 func (h *HostHandler) Send(sender common_type.IPlugin, msg *protocol.PlatformMessage) (*protocol.PlatformMessage, common_type.PluginError) {
-	h.fillMsg(sender, msg)
+	h.fillMeta(sender, msg)
 	result, err := h.conn.Send(msg, Timeout)
 	return result, err
 }
 
 func (h *HostHandler) SendAsync(sender common_type.IPlugin, msg *protocol.PlatformMessage, callback connect.CallBack) {
-	h.fillMsg(sender, msg)
+	h.fillMeta(sender, msg)
 	h.conn.SendAsync(msg, Timeout, callback)
 }
 
 func (h *HostHandler) SendOnly(msg *protocol.PlatformMessage) (err common_type.PluginError) {
-	h.fillMsg(nil, msg)
+	h.fillMeta(nil, msg)
 	return h.conn.SendOnly(msg)
 }
 
-// fillMsg 添加路由信息
-func (h *HostHandler) fillMsg(sender common_type.IPlugin, msg *protocol.PlatformMessage) {
+// fillMeta 添加路由信息
+func (h *HostHandler) fillMeta(sender common_type.IPlugin, msg *protocol.PlatformMessage) {
 	if msg == nil {
 		msg = message.GetInitMessage(nil, nil)
 	}

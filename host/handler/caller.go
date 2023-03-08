@@ -10,14 +10,16 @@ import (
 )
 
 const (
-	defaultInternalOnCallFuncName = "OnCall"
+	defaultInternalOnCallFuncName     = "OnCall"
+	defaultFuncSignatureDismatchError = "function signature dismatch"
 )
 
-type PluginCaller interface {
-	CallHTTP(plugin common_type.IPlugin, req *protocol.HttpRequestMessage) (*protocol.HttpResponseMessage, error)
+type Caller interface {
+	CallAbility(plugin common_type.IPlugin, req *protocol.StandardAbilityMessage_AbilityRequestMessage) (*protocol.StandardAbilityMessage_AbilityResponseMessage, common_type.PluginError)
+	CallHTTP(plugin common_type.IPlugin, req *protocol.HttpRequestMessage) (*protocol.HttpResponseMessage, common_type.PluginError)
 }
 
-var _ PluginCaller = (*pluginCaller)(nil)
+var _ Caller = (*pluginCaller)(nil)
 
 type pluginCaller struct{}
 
@@ -25,23 +27,76 @@ func NewPluginCaller() *pluginCaller {
 	return &pluginCaller{}
 }
 
-func (p *pluginCaller) CallHTTP(plugin common_type.IPlugin, pbReq *protocol.HttpRequestMessage) (*protocol.HttpResponseMessage, error) {
+func (p *pluginCaller) CallAbility(plugin common_type.IPlugin, req *protocol.StandardAbilityMessage_AbilityRequestMessage) (
+	*protocol.StandardAbilityMessage_AbilityResponseMessage, common_type.PluginError) {
+
+	request := p.buildAbilityRequest(req)
+	data, err := p.CallFunction(plugin, request)
+	if err != nil {
+		return nil, err
+	}
+	return p.convert2AbilityPb(data), nil
+}
+
+func (p *pluginCaller) buildAbilityRequest(req *protocol.StandardAbilityMessage_AbilityRequestMessage) *common_type.AbilityRequest {
+	r := &common_type.AbilityRequest{
+		ID:   req.Id,
+		Type: req.Type,
+		Func: req.FuncKey,
+		Args: req.Args,
+	}
+	return r
+}
+
+func (p *pluginCaller) convert2AbilityPb(resp *common_type.AbilityResponse) *protocol.StandardAbilityMessage_AbilityResponseMessage {
+	msg := &protocol.StandardAbilityMessage_AbilityResponseMessage{
+		Data:  resp.Data,
+		Error: message.BuildErrorMessage(resp.Err),
+	}
+	return msg
+}
+
+// CallFunction 规定abilityFunc的签名:
+//    myFunc(req *common_type.AbilityRequest) *common_type.AbilityResponse
+func (p *pluginCaller) CallFunction(plugin common_type.IPlugin, req *common_type.AbilityRequest) (
+	*common_type.AbilityResponse, common_type.PluginError) {
+
+	resp, e := CallFunction(plugin, req.Func, req)
+	if e != nil {
+		return nil, common_type.NewPluginError(common_type.CallAbilityFailure, e.Error())
+	}
+
+	if len(resp) != 1 {
+		return nil, common_type.NewPluginError(common_type.CallAbilityFailure, defaultFuncSignatureDismatchError)
+	}
+
+	data := resp[0]
+	if data == nil {
+		return nil, nil
+	}
+
+	respObj, ok := data.(*common_type.AbilityResponse)
+	if !ok {
+		return nil, common_type.NewPluginError(common_type.CallAbilityFailure, defaultFuncSignatureDismatchError)
+	}
+
+	return respObj, nil
+}
+
+func (p *pluginCaller) CallHTTP(plugin common_type.IPlugin, pbReq *protocol.HttpRequestMessage) (
+	pbResp *protocol.HttpResponseMessage, err common_type.PluginError) {
+
 	req := p.getReqObj(pbReq)
 
-	var err error
 	var resp *common_type.HttpResponse
-
 	if pbReq.Internal == false {
 		resp = plugin.OnExternalHttpRequest(req)
 	} else {
 		abilityFunc := p.getAbilityFunc(pbReq)
-		resp, err = p.httpRequest(plugin, abilityFunc, req)
-		if err != nil {
-			return nil, err
-		}
+		resp, err = p.callHTTPFunction(plugin, abilityFunc, req)
 	}
 
-	pbResp := p.convert2Pb(resp)
+	pbResp = p.convert2HTTPPb(resp)
 	return pbResp, nil
 }
 
@@ -53,7 +108,7 @@ func (p *pluginCaller) getAbilityFunc(pbReq *protocol.HttpRequestMessage) string
 	return abilityFunc
 }
 
-func (p *pluginCaller) convert2Pb(resp *common_type.HttpResponse) *protocol.HttpResponseMessage {
+func (p *pluginCaller) convert2HTTPPb(resp *common_type.HttpResponse) *protocol.HttpResponseMessage {
 	if resp == nil {
 		return nil
 	}
@@ -83,19 +138,41 @@ func (p *pluginCaller) getReqObj(request *protocol.HttpRequestMessage) *common_t
 	return req
 }
 
-func (p *pluginCaller) httpRequest(plugin common_type.IPlugin, funcName string, req *common_type.HttpRequest) (
-	*common_type.HttpResponse, error) {
-	errChan := make(chan error, 1)
-	data := invoke(errChan, plugin, funcName, req)
-	if err := <-errChan; err != nil {
-		return nil, err
+func (p *pluginCaller) callHTTPFunction(plugin common_type.IPlugin, funcName string, req *common_type.HttpRequest) (
+	*common_type.HttpResponse, common_type.PluginError) {
+
+	data, err := CallFunction(plugin, funcName, req)
+	if err != nil {
+		return nil, common_type.NewPluginError(common_type.CallPluginHttpFailure, err.Error())
 	}
 	if len(data) == 0 {
 		return nil, nil
 	}
-	resp := data[0]
-	respObj := resp.Interface().(*common_type.HttpResponse)
+
+	d := data[0]
+	if d == nil {
+		return nil, nil
+	}
+
+	respObj, ok := d.(*common_type.HttpResponse)
+	if !ok {
+		return nil, common_type.NewPluginError(common_type.CallPluginHttpFailure, defaultFuncSignatureDismatchError)
+	}
 	return respObj, nil
+}
+
+func CallFunction(any interface{}, funcName string, funcArgs ...interface{}) ([]interface{}, error) {
+	errChan := make(chan error, 1)
+	dataset := invoke(errChan, any, funcName, funcArgs...)
+	if err := <-errChan; err != nil {
+		return nil, err
+	}
+
+	var result []interface{}
+	for _, data := range dataset {
+		result = append(result, data.Interface())
+	}
+	return result, nil
 }
 
 func invoke(errChan chan error, any interface{}, name string, args ...interface{}) []reflect.Value {
@@ -104,7 +181,8 @@ func invoke(errChan chan error, any interface{}, name string, args ...interface{
 			buf := make([]byte, 10240)
 			n := runtime.Stack(buf, false)
 			stackInfo := fmt.Sprintf("%s", buf[:n])
-			er := fmt.Errorf("plugin invoke panic: %v, %s", err, stackInfo)
+			er := fmt.Errorf("plugin invoke panic:\nobject:\t%+v\nfunc:\t%s\nargs:\t%+v\nerr:\t%v\nstack:\t%s",
+				any, name, args, err, stackInfo)
 			errChan <- er
 		} else {
 			errChan <- nil
@@ -116,6 +194,6 @@ func invoke(errChan chan error, any interface{}, name string, args ...interface{
 		inputs[i] = reflect.ValueOf(args[i])
 	}
 	ptr := reflect.ValueOf(any).MethodByName(name)
-	data := ptr.Call(inputs)
-	return data
+	dataset := ptr.Call(inputs)
+	return dataset
 }

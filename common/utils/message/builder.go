@@ -153,6 +153,26 @@ func BuildCallPluginHTTPMessage(
 	return msg
 }
 
+func BuildCallPluginFunctionMessage(
+	abilityID, abilityType, abilityFuncKey string, arg []byte,
+	host common_type.HostInfo,
+	target common_type.IInstanceDescription,
+) *protocol.PlatformMessage {
+	msg := BuildP2HDefaultMessage(host.ID, host.Name)
+	msg.Plugin = &protocol.PluginMessage{
+		Target: BuildInstanceDescriptor(target, host.ID),
+		Ability: &protocol.StandardAbilityMessage{
+			AbilityRequest: &protocol.StandardAbilityMessage_AbilityRequestMessage{
+				Id:      abilityID,
+				Type:    abilityType,
+				FuncKey: abilityFuncKey,
+				Args:    arg,
+			},
+		},
+	}
+	return msg
+}
+
 func BuildCallPluginEventMessage(
 	eventType string, payload []byte,
 	host common_type.HostInfo,

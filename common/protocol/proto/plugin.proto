@@ -26,17 +26,36 @@ message NotificationMessage{
   ErrorMessage Error = 4;
 }
 
+message StandardAbilityMessage{
+  message AbilityRequestMessage{
+    string Id = 1;
+    string Type = 2; // 能力类型，能力的唯一标识
+    string FuncKey = 3;
+    bytes Args = 4;
+  }
+  message AbilityResponseMessage{
+    bytes Data = 1;
+    ErrorMessage Error = 2;
+  }
+
+  AbilityRequestMessage AbilityRequest = 1;
+  AbilityResponseMessage AbilityResponse = 2;
+}
+
 message PluginMessage{
   // 添加消息路由数据
   PluginInstanceDescriptor Target = 1;
   HostDescriptor Host = 2;
 
   // 插件实现的各种http方法，包括对内（前端）和对外（独立的http服务）
-  HttpContextMessage Http = 21;
+  HttpContextMessage Http = 3;
 
   // 插件配置变动通知
-  ConfigurationMessage Config = 22;
+  ConfigurationMessage Config = 4;
 
   // 插件接收的通知消息
-  NotificationMessage Notification = 23;
+  NotificationMessage Notification = 5;
+
+  // 标准能力
+  StandardAbilityMessage Ability = 6;
 }
