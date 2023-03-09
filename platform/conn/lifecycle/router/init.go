@@ -4,9 +4,8 @@ import "github.com/obgnail/plugin-platform/platform/service/common"
 
 var r *PluginRouter
 
-func InitRouter() error {
+func InitRouter() {
 	r = NewRouter()
-	return nil
 }
 
 func RegisterRouter(apis []*common.Api, instanceID string) error {

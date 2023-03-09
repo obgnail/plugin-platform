@@ -10,8 +10,8 @@ import (
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/common/utils/math"
 	"github.com/obgnail/plugin-platform/common/utils/message"
+	"github.com/obgnail/plugin-platform/platform/conn/lifecycle/event"
 	"github.com/obgnail/plugin-platform/platform/conn/resource"
-	"github.com/obgnail/plugin-platform/platform/conn/resource/event_publisher"
 	resourceLog "github.com/obgnail/plugin-platform/platform/conn/resource/log"
 	"time"
 )
@@ -217,8 +217,8 @@ func (h *PlatformHandler) CallPluginEvent(instanceID string, eventType string, p
 
 	// force: 无论插件是否订阅了该topic, 强制通知
 	if !force {
-		ok, err := event_publisher.Filter(eventType, instanceID)
-		if err != nil || !ok {
+		ok := event.FilterEvent(instanceID, eventType, payload)
+		if !ok {
 			msg := fmt.Sprintf("instance %s does not subscribe this topic: %s", instanceID, eventType)
 			errChan <- common_type.NewPluginError(common_type.NotifyEventFailure, msg)
 			return errChan

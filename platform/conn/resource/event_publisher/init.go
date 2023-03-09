@@ -6,6 +6,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/common/utils/message"
+	"github.com/obgnail/plugin-platform/platform/conn/lifecycle/event"
 )
 
 type Event struct {
@@ -30,19 +31,24 @@ func NewEvent(source, distinct *protocol.PlatformMessage) *Event {
 func (e *Event) Execute() {
 	var err error
 	switch e.opType {
-	case protocol.EventMessage_Subscribe:
+	case protocol.EventMessage_Subscribe, protocol.EventMessage_SubscribeWithFilter:
 		err = e.Subscribe()
 	case protocol.EventMessage_Unsubscribe:
 		err = e.Unsubscribe()
-	case protocol.EventMessage_SubscribeWithFilter:
-		err = e.SubscribeWithFilter()
 	}
 	e.buildMsg(err)
 }
 
 func (e *Event) Subscribe() error {
 	conditions := e.source.GetResource().GetEvent().GetCondition()
-	if err := Subscribe(conditions, e.instanceID); err != nil {
+	filter := e.source.GetResource().GetEvent().GetSubscribeFilter()
+
+	f := make(map[string][]string)
+	for key, val := range filter {
+		f[key] = val.Val
+	}
+
+	if err := event.Subscribe(conditions, e.instanceID, f); err != nil {
 		return errors.Trace(err)
 	}
 	return nil
@@ -50,16 +56,10 @@ func (e *Event) Subscribe() error {
 
 func (e *Event) Unsubscribe() error {
 	conditions := e.source.GetResource().GetEvent().GetCondition()
-	if err := Unsubscribe(conditions, e.instanceID); err != nil {
+	if err := event.Unsubscribe(conditions, e.instanceID); err != nil {
 		return errors.Trace(err)
 	}
 	return nil
-}
-
-// SubscribeWithFilter TODO 没有实现, 原因是filter的逻辑与主系统高度绑定。目前使用subscribe代替
-// 如果后续添加,需要抽象一个 Filter interface
-func (e *Event) SubscribeWithFilter() error {
-	return e.Subscribe()
 }
 
 func (e *Event) buildMsg(err error) {

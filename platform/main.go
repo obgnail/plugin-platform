@@ -6,6 +6,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/log"
 	hotboot_handler "github.com/obgnail/plugin-platform/host_boot/handler"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
+	"github.com/obgnail/plugin-platform/platform/conn/lifecycle"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/model/redis"
 	"github.com/obgnail/plugin-platform/platform/router"
@@ -27,7 +28,7 @@ func main() {
 		fmt.Printf("111%+v\n", err.Msg())
 		err = <-handler.CallPluginEvent("InstanceID123", "project.user", []byte("project.user_payload"))
 		fmt.Printf("222%+v\n", err.Msg())
-		err = <-handler.ForceCallPluginEvent("InstanceID123", "project.userXXX", []byte("project.user_payload"))
+		err = <-handler.CallPluginEvent("InstanceID123", "project.userXXX", []byte("project.user_payload"))
 		fmt.Printf("333%+v\n", err.Msg())
 
 		//req := common_type.HttpRequest{
@@ -104,6 +105,7 @@ func Init() {
 	onStart(mysql.InitDB)
 	onStart(redis.InitRedis)
 	onStart(hotboot_handler.InitHostBoot)
+	onStart(lifecycle.InitLifecycleTool)
 }
 
 //func RunServer() {
