@@ -27,7 +27,7 @@ func main() {
 		fmt.Printf("111%+v\n", err.Msg())
 		err = <-handler.CallPluginEvent("InstanceID123", "project.user", []byte("project.user_payload"))
 		fmt.Printf("222%+v\n", err.Msg())
-		err = <-handler.CallPluginEvent("InstanceID123", "project.userXXX", []byte("project.user_payload"))
+		err = <-handler.ForceCallPluginEvent("InstanceID123", "project.userXXX", []byte("project.user_payload"))
 		fmt.Printf("333%+v\n", err.Msg())
 
 		//req := common_type.HttpRequest{

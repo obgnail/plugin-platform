@@ -289,12 +289,12 @@ package main
 //	return nil
 //}
 //
-//// TODO
+//
 //func (p *mockPlugin) CheckState() common_type.PluginError {
 //	return nil
 //}
 //
-//// TODO
+//
 //func (p *mockPlugin) CheckCompatibility() common_type.PluginError {
 //	return nil
 //}

@@ -223,12 +223,10 @@ func (p *mockPlugin2) Stop(common_type.LifeCycleRequest) common_type.PluginError
 	return nil
 }
 
-// TODO
 func (p *mockPlugin2) CheckState() common_type.PluginError {
 	return nil
 }
 
-// TODO
 func (p *mockPlugin2) CheckCompatibility() common_type.PluginError {
 	return nil
 }
