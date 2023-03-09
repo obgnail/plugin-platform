@@ -10,5 +10,6 @@ func InitRouter() error {
 }
 
 func RegisterRouter(apis []*common.Api, instanceID string) error {
-	return r.Add(apis, instanceID)
+	return nil
+	//return r.Add(apis, instanceID)
 }

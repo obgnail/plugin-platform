@@ -340,6 +340,16 @@ func (h *HostHandler) buildReportMessage() *protocol.ControlMessage_HostReportMe
 	return msg
 }
 
+// 查找正在运行插件
+func (h *HostHandler) getRunningInstance(msg *protocol.PlatformMessage) common_type.IInstanceDescription {
+	if msg.Plugin.Target == nil {
+		return nil
+	}
+	instanceID := msg.Plugin.Target.InstanceID
+	desc, _ := h.instancePool.GetRunning(instanceID)
+	return desc
+}
+
 func (h *HostHandler) OnHeartbeat(msg *protocol.PlatformMessage) {
 	log.Trace("【GET】Heartbeat. %d", msg.Control.Heartbeat)
 
@@ -383,16 +393,6 @@ func (h *HostHandler) OnKillPlugin(msg *protocol.PlatformMessage) {
 	if err := h.SendOnly(resp); err != nil {
 		log.PEDetails(err)
 	}
-}
-
-// 查找正在运行插件
-func (h *HostHandler) getRunningInstance(msg *protocol.PlatformMessage) common_type.IInstanceDescription {
-	if msg.Plugin.Target == nil {
-		return nil
-	}
-	instanceID := msg.Plugin.Target.InstanceID
-	desc, _ := h.instancePool.GetRunning(instanceID)
-	return desc
 }
 
 func (h *HostHandler) OnErrorTarget(msg *protocol.PlatformMessage) {

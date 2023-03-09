@@ -23,31 +23,38 @@ func main() {
 			"golang", "1.14.0", "1.0.0")
 		<-handler.EnablePlugin("InstanceID123")
 
-		req := common_type.HttpRequest{
-			Method:   "",
-			QueryMap: nil,
-			Url:      "/url",
-			Path:     "",
-			Headers:  nil,
-			Body:     nil,
-			Root:     false,
-		}
-		result := <-handler.CallPluginInternalHTTP("InstanceID123", &req, "OnHttpCall")
-		fmt.Printf("==============Internal=================%+v\n", result)
+		err := <-handler.CallPluginEvent("InstanceID123", "project.task", []byte("project.task_payload"))
+		fmt.Printf("111%+v\n", err.Msg())
+		err = <-handler.CallPluginEvent("InstanceID123", "project.user", []byte("project.user_payload"))
+		fmt.Printf("222%+v\n", err.Msg())
+		err = <-handler.CallPluginEvent("InstanceID123", "project.userXXX", []byte("project.user_payload"))
+		fmt.Printf("333%+v\n", err.Msg())
 
-		result = <-handler.CallPluginExternalHTTP("InstanceID123", &req)
-		fmt.Printf("============External===================%+v\n", result)
-
-		err := <-handler.CallPluginEvent("InstanceID123", "myEventType", []byte("xasasdasdasdasd"))
-		fmt.Printf("((((((((((((((((((((((((((((((((((%+v\n", err.Msg())
-
-		err = <-handler.CallPluginConfigChanged("InstanceID123", "myConfigKey", []string{"originValue"}, []string{"newValue"})
-		fmt.Printf("``````````````````````````````````%+v\n", err.Msg())
-
-		resp := <-handler.CallPluginFunction("InstanceID123", "abilityID", "abilityType", "AbilityFuncKey1", []byte("args1"))
-		fmt.Println("+++++++++++++++1111111111+++++++++++++++++++++++", resp.Data, resp.Err)
-		resp = <-handler.CallPluginFunction("InstanceID123", "abilityID", "abilityType", "AbilityFuncKey2", []byte("args2"))
-		fmt.Println("+++++++++++++++2222222222+++++++++++++++++++++++", resp.Data, resp.Err)
+		//req := common_type.HttpRequest{
+		//	Method:   "",
+		//	QueryMap: nil,
+		//	Url:      "/url",
+		//	Path:     "",
+		//	Headers:  nil,
+		//	Body:     nil,
+		//	Root:     false,
+		//}
+		//result := <-handler.CallPluginInternalHTTP("InstanceID123", &req, "OnHttpCall")
+		//fmt.Printf("==============Internal=================%+v\n", result)
+		//
+		//result = <-handler.CallPluginExternalHTTP("InstanceID123", &req)
+		//fmt.Printf("============External===================%+v\n", result)
+		//
+		//err := <-handler.CallPluginEvent("InstanceID123", "myEventType", []byte("xasasdasdasdasd"))
+		//fmt.Printf("((((((((((((((((((((((((((((((((((%+v\n", err.Msg())
+		//
+		//err = <-handler.CallPluginConfigChanged("InstanceID123", "myConfigKey", []string{"originValue"}, []string{"newValue"})
+		//fmt.Printf("``````````````````````````````````%+v\n", err.Msg())
+		//
+		//resp := <-handler.CallPluginFunction("InstanceID123", "abilityID", "abilityType", "AbilityFuncKey1", []byte("args1"))
+		//fmt.Println("+++++++++++++++1111111111+++++++++++++++++++++++", resp.Data, resp.Err)
+		//resp = <-handler.CallPluginFunction("InstanceID123", "abilityID", "abilityType", "AbilityFuncKey2", []byte("args2"))
+		//fmt.Println("+++++++++++++++2222222222+++++++++++++++++++++++", resp.Data, resp.Err)
 	}()
 
 	router.Run()

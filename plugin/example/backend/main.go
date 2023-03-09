@@ -35,10 +35,10 @@ func (p *mockPlugin) Install(common_type.LifeCycleRequest) common_type.PluginErr
 	if er != nil {
 		panic(er)
 	}
-	er2 := event.Unsubscribe(cnd)
-	if er2 != nil {
-		panic(er2)
-	}
+	//er2 := event.Unsubscribe(cnd)
+	//if er2 != nil {
+	//	panic(er2)
+	//}
 	fmt.Println("-------------install-------------", cnd)
 	return nil
 }

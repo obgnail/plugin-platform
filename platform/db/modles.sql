@@ -71,8 +71,6 @@ CREATE TABLE `plugin_permission_info`
   DEFAULT CHARSET = latin1
   COLLATE = latin1_bin;
 
-
-
 -- ----------------------------
 -- Table structure for plugin_user
 -- ----------------------------
@@ -92,6 +90,23 @@ CREATE TABLE `plugin_user`
     PRIMARY KEY (`id`) USING BTREE,
     KEY `app_uuid` (`app_uuid`) USING BTREE,
     KEY `instance_uuid` (`instance_uuid`) USING BTREE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = latin1
+  COLLATE = latin1_bin;
+
+-- ----------------------------
+-- Table structure for plugin_event
+-- ----------------------------
+DROP TABLE IF EXISTS `plugin_event`;
+CREATE TABLE `plugin_event`
+(
+    `id`          BIGINT UNSIGNED NOT NULL,
+    `action`      VARCHAR(50)     NOT NULL COMMENT '事件类型',
+    `extended`    varchar(255)    NOT NULL default '' COMMENT '扩展信息，不同的事件可能有不同的扩展参数',
+    `create_time` bigint(20)      NOT NULL COMMENT '创建时间',
+    `update_time` bigint(20)      NOT NULL COMMENT '更新时间',
+    `deleted`     tinyint(1)      NOT NULL DEFAULT '0' COMMENT '删除状态',
+    PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = latin1
   COLLATE = latin1_bin;

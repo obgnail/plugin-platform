@@ -65,54 +65,6 @@ func (i *PluginInstance) LoadYamlConfig() (*common.PluginConfig, error) {
 	return pluginConfig, nil
 }
 
-//func (i *PluginInstance) Uninstall(appId string, instanceId string, orgId string, teamId string) error {
-//	callback := func(tx *gorm.DB) error {
-//		err := tx.Table(i.tableName()).
-//			Where("app_uuid = ? and instance_uuid = ? and org_uuid = ? and team_uuid = ?", appId, instanceId, orgId, teamId).
-//			Updates(map[string]interface{}{
-//				"deleted": true,
-//			}).Error
-//		if err != nil {
-//			return err
-//		}
-//
-//		configModel := ModelPluginConfig()
-//		if err = configModel.Uninstall(tx, appId, instanceId, orgId, teamId); err != nil {
-//			return err
-//		}
-//
-//		authModel := ModelPluginAuthDesc()
-//		if err = authModel.Uninstall(tx, appId, instanceId, orgId, teamId); err != nil {
-//			return err
-//		}
-//
-//		permissionInfoModel := ModelPluginPermissionInfo()
-//		if err = permissionInfoModel.Uninstall(tx, instanceId, orgId, teamId); err != nil {
-//			return err
-//		}
-//
-//		one := &PluginUser{
-//			InstanceUUID: instanceId,
-//			TeamUUID:     teamId,
-//		}
-//		m := ModelPluginUser()
-//		if err = m.One(one); err != nil && err != RecordNotFound {
-//			return err
-//		}
-//		if err = m.RealDeleteWithDB(tx, one.Id, one); err != nil {
-//			return err
-//		}
-//
-//		propertyModel := ModelPluginDataProperty()
-//		if err = propertyModel.DelAbilityProperties(tx, appId, instanceId, orgId, teamId); err != nil {
-//			return errors.Trace(err)
-//		}
-//
-//		return nil
-//	}
-//	return DB.Transaction(callback)
-//}
-
 func (i *PluginInstance) FirstInstance(appId string) (*PluginInstance, error) {
 	var all = make([]*PluginInstance, 0)
 	err := DB.Table(i.tableName()).

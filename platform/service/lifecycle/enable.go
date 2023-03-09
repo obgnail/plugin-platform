@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
+	"github.com/obgnail/plugin-platform/platform/conn/ability"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
 	"github.com/obgnail/plugin-platform/platform/conn/router"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
@@ -39,9 +40,12 @@ func Enable(req *EnableReq) (ret gin.H, err error) {
 	if err := helper.Enable(); err != nil {
 		return ret, errors.Trace(err)
 	}
-	//if err := helper.RegisterRouter(); err != nil {
-	//	return ret, errors.Trace(err)
-	//}
+	if err := helper.RegisterRouter(); err != nil {
+		return ret, errors.Trace(err)
+	}
+	if err := helper.RegisterAbility(); err != nil {
+		return ret, errors.Trace(err)
+	}
 	if err := helper.UpdateDb(); err != nil {
 		return ret, errors.Trace(err)
 	}
@@ -81,6 +85,15 @@ func (h *EnableHelper) Enable() error {
 func (h *EnableHelper) RegisterRouter() error {
 	apis := h.cfg.Apis
 	if err := router.RegisterRouter(apis, h.instance.InstanceUUID); err != nil {
+		log.ErrorDetails(errors.Trace(err))
+		return errors.PluginEnableError(errors.ServerError)
+	}
+	return nil
+}
+
+func (h *EnableHelper) RegisterAbility() error {
+	abilities := h.cfg.Abilities
+	if err := ability.RegisterAbility(abilities, h.instance.InstanceUUID); err != nil {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginEnableError(errors.ServerError)
 	}

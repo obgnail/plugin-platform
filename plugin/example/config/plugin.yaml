@@ -10,8 +10,17 @@ service:
   host_version: 0.2.0
   host_sub_version: 1.14.0
   min_system_version: 3.2.0
-  auth: null
-  config: null
+  config:
+    - key: mykey1
+      value: myvalue1
+      type: input
+      require: false
+      label: lable1
+    - key: mykey2
+      value: myvalue2
+      type: input
+      require: false
+      label: lable2
   permission:
     - name: 上传文件时确认安全提示弹窗
       field: global-modal-upload-X5Rv
@@ -41,3 +50,17 @@ modules:
     events:
       - modal:cancel
       - modal:ok
+abilities:
+  - id: ability_id1
+    name: ability_name1
+    abilityType: abilityType1
+    version: 1.0.0
+    label: label1
+    function:
+      AbilityFunction1: MyAbilityFunction1
+      AbilityFunction2: MyAbilityFunction2
+      AbilityFunction3: MyAbilityFunction3
+    setting:
+      Setting1: MySetting1
+      Setting2: MySetting2
+    config: ["config1", "config2"]

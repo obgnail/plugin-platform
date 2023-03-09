@@ -56,12 +56,10 @@ func (e *Event) Unsubscribe() error {
 	return nil
 }
 
+// SubscribeWithFilter TODO 没有实现, 原因是filter的逻辑与主系统高度绑定。目前使用subscribe代替
+// 如果后续添加,需要抽象一个 Filter interface
 func (e *Event) SubscribeWithFilter() error {
-	conditions := e.source.GetResource().GetEvent().GetCondition()
-	if err := Subscribe(conditions, e.instanceID); err != nil {
-		return errors.Trace(err)
-	}
-	return nil
+	return e.Subscribe()
 }
 
 func (e *Event) buildMsg(err error) {

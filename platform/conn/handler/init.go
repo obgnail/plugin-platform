@@ -58,7 +58,11 @@ func CallPluginExternalHTTP(instanceID string, req *common_type.HttpRequest) cha
 }
 
 func CallPluginEvent(instanceID string, eventType string, payload []byte) chan common_type.PluginError {
-	return ph.CallPluginEvent(instanceID, eventType, payload)
+	return ph.CallPluginEvent(instanceID, eventType, payload, false)
+}
+
+func ForceCallPluginEvent(instanceID string, eventType string, payload []byte) chan common_type.PluginError {
+	return ph.CallPluginEvent(instanceID, eventType, payload, true)
 }
 
 func CallPluginConfigChanged(instanceID string, configKey string, originValue, newValue []string) chan common_type.PluginError {
