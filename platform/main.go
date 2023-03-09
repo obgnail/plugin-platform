@@ -6,7 +6,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/log"
 	hotboot_handler "github.com/obgnail/plugin-platform/host_boot/handler"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
-	"github.com/obgnail/plugin-platform/platform/conn/lifecycle"
+	"github.com/obgnail/plugin-platform/platform/conn/hub"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/model/redis"
 	"github.com/obgnail/plugin-platform/platform/router"
@@ -105,7 +105,7 @@ func Init() {
 	onStart(mysql.InitDB)
 	onStart(redis.InitRedis)
 	onStart(hotboot_handler.InitHostBoot)
-	onStart(lifecycle.InitLifecycleTool)
+	onStart(hub.InitHub)
 }
 
 //func RunServer() {

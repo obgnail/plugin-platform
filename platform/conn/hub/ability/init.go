@@ -1,0 +1,5 @@
+package ability
+
+func InitAbility() {
+
+}

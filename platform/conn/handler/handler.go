@@ -10,7 +10,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/common/utils/math"
 	"github.com/obgnail/plugin-platform/common/utils/message"
-	"github.com/obgnail/plugin-platform/platform/conn/lifecycle/event"
+	"github.com/obgnail/plugin-platform/platform/conn/hub/event"
 	"github.com/obgnail/plugin-platform/platform/conn/resource"
 	resourceLog "github.com/obgnail/plugin-platform/platform/conn/resource/log"
 	"time"

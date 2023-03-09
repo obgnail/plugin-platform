@@ -6,7 +6,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/common/protocol"
 	"github.com/obgnail/plugin-platform/common/utils/message"
-	"github.com/obgnail/plugin-platform/platform/conn/lifecycle/event"
+	"github.com/obgnail/plugin-platform/platform/conn/hub/event"
 )
 
 type Event struct {

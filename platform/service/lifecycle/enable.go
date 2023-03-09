@@ -5,8 +5,8 @@ import (
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
-	"github.com/obgnail/plugin-platform/platform/conn/lifecycle/ability"
-	"github.com/obgnail/plugin-platform/platform/conn/lifecycle/router"
+	"github.com/obgnail/plugin-platform/platform/conn/hub/ability"
+	"github.com/obgnail/plugin-platform/platform/conn/hub/router"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/service/common"
 )
