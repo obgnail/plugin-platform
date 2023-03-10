@@ -18,28 +18,29 @@ var (
 )
 
 func InitPluginService() {
-	ticker := time.NewTicker(cycleInterval)
-	defer ticker.Stop()
+	go func() {
+		ticker := time.NewTicker(cycleInterval)
+		defer ticker.Stop()
 
-	url := addr + routerListPath
-
-	for {
-		select {
-		case <-ticker.C:
-			resp, err := Get(url, nil)
-			if err != nil {
-				log.ErrorDetails(err)
-				continue
-			}
-			plugin, err := UnmarshalRouterList(resp)
-			if err != nil {
-				log.ErrorDetails(err)
-				continue
-			}
-			if err = Register(plugin); err != nil {
-				log.ErrorDetails(err)
-				continue
+		url := addr + routerListPath
+		for {
+			select {
+			case <-ticker.C:
+				resp, err := Get(url, nil)
+				if err != nil {
+					log.ErrorDetails(err)
+					continue
+				}
+				plugin, err := UnmarshalRouterList(resp)
+				if err != nil {
+					log.ErrorDetails(err)
+					continue
+				}
+				if err = Register(plugin); err != nil {
+					log.ErrorDetails(err)
+					continue
+				}
 			}
 		}
-	}
+	}()
 }

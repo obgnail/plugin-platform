@@ -37,18 +37,18 @@ func registerPluginMiddlewares(app *gin.Engine) {
 	}
 
 	app.Use(middlewares.PrefixProcessor()) // 顺序不能反,先prefix再replace
-	app.Use(middlewares.ReplaceProcessor())
-	app.Use(middlewares.SuffixProcessor())
-	app.NoRoute(middlewares.AdditionProcessor())
+	//app.Use(middlewares.ReplaceProcessor())
+	//app.Use(middlewares.SuffixProcessor())
+	//app.NoRoute(middlewares.AdditionProcessor())
 }
 
 func registerPlatformRouter(app *gin.Engine) {
-	app.GET("/getUploadTips", func(c *gin.Context) {
+	app.GET("/prefix", func(c *gin.Context) {
 		data, err := ioutil.ReadAll(c.Request.Body)
 		if err != nil {
 			panic(err)
 		}
-		c.String(200, "Hello Wold"+string(data))
+		c.String(200, "Hello Wold main system"+string(data))
 	})
 }
 

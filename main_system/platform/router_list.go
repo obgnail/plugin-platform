@@ -3,6 +3,7 @@ package platform
 import (
 	"encoding/json"
 	"github.com/obgnail/plugin-platform/common/errors"
+	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/conn/hub/router"
 	"github.com/obgnail/plugin-platform/platform/conn/hub/router/http_router"
 	"github.com/obgnail/plugin-platform/platform/service/common"
@@ -67,5 +68,9 @@ func Register(plugins []*Plugin) error {
 func MatchRouter(Type, method, url string) *http_router.RouterInfo {
 	mu.Lock()
 	defer mu.Unlock()
+	if route == nil {
+		log.Error("router not init")
+		return nil
+	}
 	return route.Match(Type, method, url)
 }
