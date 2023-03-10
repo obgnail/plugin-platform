@@ -37,19 +37,18 @@ func PluginInvoke() gin.HandlerFunc {
 }
 
 func invoke(c *gin.Context) {
-	var resp *common_type.HttpResponse
 	uri := c.Request.RequestURI
 	instanceUUID := c.GetHeader(headerInstanceID)
-	requestType := c.GetHeader(headerRequestType)
+	requestType := strings.ToLower(c.GetHeader(headerRequestType))
 
 	// NOTE: 必须先判断pluginExternal,因为header的优先级高于url
-	if strings.Contains(uri, pluginExternal) || strings.ToLower(requestType) == common.External {
+	if requestType == common.RouterTypeExternal || strings.Contains(uri, pluginExternal) {
 		req, err := convert2Request(c, uri)
 		if err != nil {
 			handlerError(c, err.Error())
 			return
 		}
-		resp = <-handler.CallPluginExternalHTTP(instanceUUID, req)
+		resp := <-handler.CallPluginExternalHTTP(instanceUUID, req)
 		convertResponse(c, resp)
 	} else if strings.Contains(uri, pluginPrefix) {
 		url, err := getUrl(uri, pluginPrefix)
@@ -69,7 +68,7 @@ func invoke(c *gin.Context) {
 			handlerError(c, err.Error())
 			return
 		}
-		resp = <-handler.CallPluginInternalHTTP(instanceUUID, req, routerInfo.FunctionName)
+		resp := <-handler.CallPluginInternalHTTP(instanceUUID, req, routerInfo.FunctionName)
 		convertResponse(c, resp)
 	}
 }
@@ -77,7 +76,7 @@ func invoke(c *gin.Context) {
 func getUrl(uri string, splitString string) (string, error) {
 	parts := strings.Split(uri, splitString)
 	if len(parts) < 2 {
-		return "", fmt.Errorf("uri error")
+		return "", fmt.Errorf("uri error: %s", uri)
 	}
 	url := parts[1]
 	return url, nil

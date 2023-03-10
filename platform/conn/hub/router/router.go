@@ -32,7 +32,7 @@ func (r *PluginRouter) Add(apis []*common.Api, instanceID string) error {
 }
 
 func (r *PluginRouter) Delete(instanceID string) {
-	// 将instanceID对应的所有route删掉,即是删除
+	// 将instanceID对应的所有handle删掉,即是删除
 	r.route.RangeRoute(func(Type, method string, route *http_router.RouterInfo) {
 		if route != nil && route.InstanceUUID == instanceID {
 			route = nil

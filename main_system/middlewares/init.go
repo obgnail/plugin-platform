@@ -72,7 +72,7 @@ func suffix(c *gin.Context) {
 		return
 	}
 
-	route := platform.MatchRouter(common.Prefix, c.Request.Method, c.Request.RequestURI)
+	route := platform.MatchRouter(common.RouterTypePrefix, c.Request.Method, c.Request.RequestURI)
 	if route == nil {
 		c.Next()
 		return
@@ -85,7 +85,7 @@ func prefix(c *gin.Context) {
 		return
 	}
 
-	route := platform.MatchRouter(common.Prefix, c.Request.Method, c.Request.RequestURI)
+	route := platform.MatchRouter(common.RouterTypePrefix, c.Request.Method, c.Request.RequestURI)
 	if route == nil {
 		c.Next()
 		return
@@ -116,7 +116,7 @@ func requestForwardingPrefix(c *gin.Context, route *http_router.RouterInfo) erro
 		return errors.Trace(err)
 	}
 	r.Header.Add(headerInstanceID, route.InstanceUUID)
-	r.Header.Add(headerRequestType, common.Prefix)
+	r.Header.Add(headerRequestType, common.RouterTypePrefix)
 
 	client := &http.Client{Timeout: timeout}
 	resp, err := client.Do(r)

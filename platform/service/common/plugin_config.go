@@ -2,12 +2,17 @@ package common
 
 type RouterType = string
 
+// addition和external的异同:
+//   前者是加在主系统里的,补充主系统的接口。
+//   后者是插件提供一个暴露到到程序外面的接口,提供对外的http服务。
+//   二者是根据业务来区分的,最终url不同,调用的函数也不同:前者是自定义,后者强制OnExternalHttpRequest
+//   当然,二者底层实现没有区别,所以硬要混着用也行:)
 const (
-	Addition RouterType = "addition"
-	Replace  RouterType = "replace"
-	Prefix   RouterType = "prefix"
-	Suffix   RouterType = "suffix"
-	External RouterType = "external"
+	RouterTypeAddition RouterType = "addition"
+	RouterTypeExternal RouterType = "external"
+	RouterTypeReplace  RouterType = "replace"
+	RouterTypePrefix   RouterType = "prefix"
+	RouterTypeSuffix   RouterType = "suffix"
 )
 
 type StatusType = int
