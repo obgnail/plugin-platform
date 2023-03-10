@@ -3,13 +3,18 @@ package main
 import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	hotboot_handler "github.com/obgnail/plugin-platform/host_boot/handler"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
 	"github.com/obgnail/plugin-platform/platform/conn/hub"
+	router2 "github.com/obgnail/plugin-platform/platform/conn/hub/router"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/model/redis"
 	"github.com/obgnail/plugin-platform/platform/router"
+	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/utils"
+	"gopkg.in/yaml.v2"
 	"time"
 )
 
@@ -17,20 +22,41 @@ func main() {
 	Init()
 	log.Info("run")
 
+	cfg, err := LoadYamlConfig("lt1ZZuMd", "1.0.0")
+	if err != nil {
+		panic(err)
+	}
+
+	if err := router2.RegisterRouter(cfg.Apis, "HXCEB1oF"); err != nil {
+		panic(err)
+	}
+
 	go func() {
 		time.Sleep(4 * time.Second)
 		log.Info("InstallPlugin...")
-		<-handler.InstallPlugin("lt1ZZuMd", "InstanceID123", "上传文件的安全提示",
+		<-handler.InstallPlugin("lt1ZZuMd", "HXCEB1oF", "上传文件的安全提示",
 			"golang", "1.14.0", "1.0.0")
-		<-handler.EnablePlugin("InstanceID123")
+		<-handler.EnablePlugin("HXCEB1oF")
 
-		err := <-handler.CallPluginEvent("InstanceID123", "project.task", []byte("project.task_payload"))
-		fmt.Printf("111%+v\n", err.Msg())
-		err = <-handler.CallPluginEvent("InstanceID123", "project.user", []byte("project.user_payload"))
-		fmt.Printf("222%+v\n", err.Msg())
-		err = <-handler.CallPluginEvent("InstanceID123", "project.userXXX", []byte("project.user_payload"))
-		fmt.Printf("333%+v\n", err.Msg())
+		req := common_type.HttpRequest{
+			Method:   "",
+			QueryMap: nil,
+			Url:      "/urlXXXXXXXXXXXXX",
+			Path:     "",
+			Headers:  nil,
+			Body:     nil,
+			Root:     false,
+		}
+		result := <-handler.CallPluginExternalHTTP("HXCEB1oF", &req)
+		fmt.Printf("==============Internal=================%+v\n", result)
 
+		//err := <-handler.CallPluginEvent("InstanceID123", "project.task", []byte("project.task_payload"))
+		//fmt.Printf("111%+v\n", err.Msg())
+		//err = <-handler.CallPluginEvent("InstanceID123", "project.user", []byte("project.user_payload"))
+		//fmt.Printf("222%+v\n", err.Msg())
+		//err = <-handler.CallPluginEvent("InstanceID123", "project.userXXX", []byte("project.user_payload"))
+		//fmt.Printf("333%+v\n", err.Msg())
+		//
 		//req := common_type.HttpRequest{
 		//	Method:   "",
 		//	QueryMap: nil,
@@ -61,6 +87,19 @@ func main() {
 	router.Run()
 }
 
+func LoadYamlConfig(appid, version string) (*common.PluginConfig, error) {
+	yamlPath := utils.GetPluginConfigPath(appid, version)
+	res, err := utils.ReadFile(yamlPath)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	var pluginConfig = new(common.PluginConfig)
+	if err := yaml.Unmarshal(res, pluginConfig); err != nil {
+		return nil, errors.Trace(err)
+	}
+	return pluginConfig, nil
+}
 func main2() {
 	Init()
 

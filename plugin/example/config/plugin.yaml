@@ -26,16 +26,42 @@ service:
       field: global-modal-upload-X5Rv
       desc: 需要成员在上传文件时确认安全提示弹窗，否则不能继续上传
 apis:
-  - type: addition
+  - type: prefix
     methods:
       - GET
-    url: /getUploadTips
-    function: GetUploadTips
+    url: /prefix
+    function: Prefix
+
+  - type: suffix
+    methods:
+      - GET
+    url: /suffix
+    function: Suffix
+
   - type: addition
     methods:
       - POST
-    url: /setUploadTips
-    function: SetUploadTips
+    url: /addition
+    function: Addition
+
+  - type: replace
+    methods:
+      - POST
+    url: /replace
+    function: Replace
+
+  - type: external
+    methods:
+      - POST
+    url: /external
+    function: External
+
+  - type: prefix
+    methods:
+      - POST
+    url: /onerror
+    function: PrefixOnError
+
 modules:
   - id: settings-74_L
     title: 安全提示语配置

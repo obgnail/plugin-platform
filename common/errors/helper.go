@@ -44,7 +44,7 @@ func PluginMessageError(reason string) error {
 }
 
 func PluginCallError(model string, field string) error {
-	return errorWithModelFieldReason(MissingParameter, model, field, "")
+	return errorWithModelFieldReason(CallPluginFailure, model, field, "")
 }
 
 func MissingParameterError(model string, field string) error {

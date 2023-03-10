@@ -1,7 +1,10 @@
 {
   "main_system": {
     "id": "S0000001",
-    "addr": "http://127.0.0.1:9001"
+    "addr": "127.0.0.1:9001",
+    "enable_plugin": true,
+    "timeout_sec": 30,
+    "heartbeat_sec": 3
   },
   "platform": {
     "id": "P0000001",

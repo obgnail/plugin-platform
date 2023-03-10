@@ -75,6 +75,7 @@ func (h *EnableHelper) Enable() error {
 
 	er := <-handler.EnablePlugin(h.instance.InstanceUUID)
 	if er != nil {
+		log.Error("instanceID: %s", h.instance.InstanceUUID)
 		log.PEDetails(er)
 		return errors.PluginEnableError(er.Error() + " " + er.Msg())
 	}

@@ -95,7 +95,7 @@ func (p *mockPlugin) OnEvent(eventType string, payload []byte) common_type.Plugi
 
 func (p *mockPlugin) OnExternalHttpRequest(req *common_type.HttpRequest) *common_type.HttpResponse {
 	fmt.Println("-------------OnExternalHttpRequest-------------", req.Url)
-	body := "呵呵External"
+	body := "呵呵ExternalXXXXXXXXXXXX"
 	resp := &common_type.HttpResponse{
 		Err:        nil,
 		Headers:    req.Headers,
@@ -150,4 +150,76 @@ func (p *mockPlugin) AbilityFuncKey2(req *common_type.AbilityRequest) *common_ty
 		Err:  common_type.NewPluginError(2123, "xasasd"),
 	}
 	return result
+}
+
+func (p *mockPlugin) Prefix(req *common_type.HttpRequest) (resp *common_type.HttpResponse) {
+	fmt.Println("-------------Prefix-------------", req.Url)
+	body := "呵呵Prefix"
+	resp = &common_type.HttpResponse{
+		Err:        nil,
+		Headers:    req.Headers,
+		Body:       []byte(body),
+		StatusCode: 200,
+	}
+	return resp
+}
+
+func (p *mockPlugin) Suffix(req *common_type.HttpRequest) (resp *common_type.HttpResponse) {
+	fmt.Println("-------------Suffix-------------", req.Url)
+	body := "呵呵Suffix"
+	resp = &common_type.HttpResponse{
+		Err:        nil,
+		Headers:    req.Headers,
+		Body:       []byte(body),
+		StatusCode: 200,
+	}
+	return resp
+}
+
+func (p *mockPlugin) Addition(req *common_type.HttpRequest) (resp *common_type.HttpResponse) {
+	fmt.Println("-------------Addition-------------", req.Url)
+	body := "呵呵Addition"
+	resp = &common_type.HttpResponse{
+		Err:        nil,
+		Headers:    req.Headers,
+		Body:       []byte(body),
+		StatusCode: 200,
+	}
+	return resp
+}
+
+func (p *mockPlugin) Replace(req *common_type.HttpRequest) (resp *common_type.HttpResponse) {
+	fmt.Println("-------------Replace-------------", req.Url)
+	body := "呵呵Replace"
+	resp = &common_type.HttpResponse{
+		Err:        nil,
+		Headers:    req.Headers,
+		Body:       []byte(body),
+		StatusCode: 200,
+	}
+	return resp
+}
+
+func (p *mockPlugin) external(req *common_type.HttpRequest) (resp *common_type.HttpResponse) {
+	fmt.Println("-------------Replace-------------", req.Url)
+	body := "呵呵Replace"
+	resp = &common_type.HttpResponse{
+		Err:        nil,
+		Headers:    req.Headers,
+		Body:       []byte(body),
+		StatusCode: 200,
+	}
+	return resp
+}
+
+func (p *mockPlugin) PrefixOnError(req *common_type.HttpRequest) (resp *common_type.HttpResponse) {
+	fmt.Println("-------------PrefixOnError-------------", req.Url)
+	body := "呵呵PrefixOnError"
+	resp = &common_type.HttpResponse{
+		Err:        common_type.NewPluginError(2123, "xasasd"),
+		Headers:    req.Headers,
+		Body:       []byte(body),
+		StatusCode: 200,
+	}
+	return resp
 }

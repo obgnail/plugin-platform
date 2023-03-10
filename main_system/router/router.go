@@ -3,13 +3,12 @@ package router
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/obgnail/plugin-platform/common/config"
 	utils_errors "github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
-	"github.com/obgnail/plugin-platform/platform/controllers"
-	"github.com/obgnail/plugin-platform/platform/middlewares"
+	"github.com/obgnail/plugin-platform/main_system/middlewares"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,31 +19,41 @@ import (
 func Run() {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.Default()
-	app.Use(middlewares.PluginInvoke())
 
-	register(app)
+	registerPluginMiddlewares(app)
+	registerRouter(app)
+	registerPlatformRouter(app)
 	run(app)
 }
 
-func register(app *gin.Engine) {
-	plugin := app.Group("/plugin")
+func registerRouter(app *gin.Engine) {
+	//plugin := app.Group("/plugin")
 
-	plugin.POST("/list", controllers.ListPlugins)
-	// 插件的路由同步给标品
-	plugin.GET("router_list", controllers.RouterList)
+}
 
-	// life cycle
-	plugin.POST("/upload", controllers.Upload)
-	plugin.POST("/delete", controllers.Delete)
-	plugin.POST("/install", controllers.Install)
-	plugin.POST("/enable", controllers.Enable)
-	plugin.POST("/disable", controllers.Disable)
-	plugin.POST("/uninstall", controllers.UnInstall)
-	//plugin.POST("/upgrade", controllers.Upgrade)
+func registerPluginMiddlewares(app *gin.Engine) {
+	if !config.Bool("main_system.enable_plugin", true) {
+		return
+	}
+
+	app.Use(middlewares.PrefixProcessor()) // 顺序不能反,先prefix再replace
+	app.Use(middlewares.ReplaceProcessor())
+	app.Use(middlewares.SuffixProcessor())
+	app.NoRoute(middlewares.AdditionProcessor())
+}
+
+func registerPlatformRouter(app *gin.Engine) {
+	app.GET("/getUploadTips", func(c *gin.Context) {
+		data, err := ioutil.ReadAll(c.Request.Body)
+		if err != nil {
+			panic(err)
+		}
+		c.String(200, "Hello Wold"+string(data))
+	})
 }
 
 func run(app *gin.Engine) {
-	addr := fmt.Sprintf("%s:%d", config.StringOrPanic("platform.host"), config.IntOrPanic("platform.http_port"))
+	addr := config.StringOrPanic("main_system.addr")
 	srv := &http.Server{Addr: addr, Handler: app}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
@@ -57,13 +66,12 @@ func run(app *gin.Engine) {
 	<-quit
 
 	log.Warn("Shutting down server...")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Error("Server forced to shutdown: %v", err)
 	}
-	//common.RemoveAllHosts() TODO
 
 	log.Warn("Server exiting")
 }
