@@ -165,8 +165,8 @@ func (p *mockPlugin) Prefix(req *common_type.HttpRequest) (resp *common_type.Htt
 }
 
 func (p *mockPlugin) Suffix(req *common_type.HttpRequest) (resp *common_type.HttpResponse) {
-	fmt.Println("-------------Suffix-------------", req.Url)
-	body := "呵呵Suffix"
+	fmt.Println("-------------Suffix-------------", req.Body)
+	body := string(req.Body) + "---XXXXXXXXXXXXXXXXX呵呵SuffixXXXXXXXX"
 	resp = &common_type.HttpResponse{
 		Err:        nil,
 		Headers:    req.Headers,

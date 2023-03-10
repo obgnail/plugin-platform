@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/obgnail/plugin-platform/common/config"
 	utils_errors "github.com/obgnail/plugin-platform/common/errors"
@@ -38,7 +39,7 @@ func registerPluginMiddlewares(app *gin.Engine) {
 
 	app.Use(middlewares.PrefixProcessor()) // 顺序不能反,先prefix再replace
 	//app.Use(middlewares.ReplaceProcessor())
-	//app.Use(middlewares.SuffixProcessor())
+	app.Use(middlewares.SuffixProcessor())
 	//app.NoRoute(middlewares.AdditionProcessor())
 }
 
@@ -49,6 +50,11 @@ func registerPlatformRouter(app *gin.Engine) {
 			panic(err)
 		}
 		c.String(200, "Hello Wold main system"+string(data))
+	})
+
+	app.GET("/suffix", func(c *gin.Context) {
+		fmt.Println("this is before message")
+		c.String(200, "Hello Wold main system before message")
 	})
 }
 
