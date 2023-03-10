@@ -191,9 +191,13 @@ func (p *mockPlugin) Addition(req *common_type.HttpRequest) (resp *common_type.H
 func (p *mockPlugin) Replace(req *common_type.HttpRequest) (resp *common_type.HttpResponse) {
 	fmt.Println("-------------Replace-------------", req.Url)
 	body := "呵呵Replace"
+
+	header := req.Headers
+	header["xx123xx"] = []string{"xxx"}
+
 	resp = &common_type.HttpResponse{
 		Err:        nil,
-		Headers:    req.Headers,
+		Headers:    header,
 		Body:       []byte(body),
 		StatusCode: 200,
 	}

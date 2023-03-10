@@ -51,9 +51,25 @@ func AdditionProcessor() gin.HandlerFunc {
 }
 
 func ReplaceProcessor() gin.HandlerFunc {
-	return func(context *gin.Context) {
-		fmt.Println("ReplaceProcessor")
-		context.Next()
+	return func(c *gin.Context) {
+		if !(c.GetHeader("role") == usePluginFlag) {
+			c.Next()
+			return
+		}
+
+		route := platform.MatchRouter(common.RouterTypeReplace, c.Request.Method, c.Request.RequestURI)
+		if route == nil {
+			c.Next()
+			return
+		}
+
+		if err := requestReplace(c, route); err != nil {
+			log.ErrorDetails(err)
+			err = errors.PluginCallError(errors.CallPluginFailure, "")
+			controllers.RenderJSONAndStop(c, err, nil)
+			return
+		}
+		return
 	}
 }
 
@@ -93,7 +109,7 @@ func SuffixProcessor() gin.HandlerFunc {
 			ResponseWriter: c.Writer,
 			status:         Origin,
 		}
-		c.Writer = w
+		c.Writer = w // 劫持writer, 将handleFunc的数据先暂时写到w.body
 
 		c.Next()
 
@@ -103,20 +119,26 @@ func SuffixProcessor() gin.HandlerFunc {
 
 		if code := c.Writer.Status(); code != http.StatusOK {
 			log.Trace("resp.StatusCode: %d", code)
-			whenErr(c, w, originBytes)
+			// 状态不为200,就不走插件了,直接返回
+			// NOTE: 注意要把原来的数据写回去
+			if _, err := w.Write(originBytes.Bytes()); err != nil {
+				log.ErrorDetails(err)
+			}
 			return
 		}
 
 		route := platform.MatchRouter(common.RouterTypeSuffix, c.Request.Method, c.Request.RequestURI)
 		if route == nil {
-			whenErr(c, w, originBytes)
+			err := errors.PluginCallError(errors.CallPluginFailure, "")
+			controllers.RenderJSONAndStop(c, err, nil)
 			return
 		}
 
 		err := requestSuffix(c, w, originBytes, route)
 		if err != nil {
 			log.ErrorDetails(err)
-			whenErr(c, w, originBytes)
+			err := errors.PluginCallError(errors.CallPluginFailure, "")
+			controllers.RenderJSONAndStop(c, err, nil)
 			return
 		}
 	}
@@ -126,7 +148,9 @@ func requestSuffix(c *gin.Context, w *toolBodyWriter, origin *bytes.Buffer, rout
 	log.Trace("suffix router: %s", c.Request.RequestURI)
 
 	body := origin.Bytes()
-	resp, err := request(c, c.Writer.Header(), body, route.InstanceUUID, common.RouterTypeSuffix)
+	header := c.Writer.Header()
+	url := addr + pluginPrefix + c.Request.RequestURI
+	resp, err := request(url, route.Method, header, body, route.InstanceUUID, common.RouterTypeSuffix)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -160,7 +184,10 @@ func requestPrefix(c *gin.Context, route *http_router.RouterInfo) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
-	resp, err := request(c, nil, body, route.InstanceUUID, common.RouterTypePrefix)
+
+	url := addr + pluginPrefix + c.Request.RequestURI
+
+	resp, err := request(url, route.Method, c.Request.Header, body, route.InstanceUUID, common.RouterTypePrefix)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -178,22 +205,40 @@ func requestPrefix(c *gin.Context, route *http_router.RouterInfo) error {
 	return nil
 }
 
-func whenErr(c *gin.Context, w *toolBodyWriter, origin *bytes.Buffer) {
-	if _, err := w.Write(origin.Bytes()); err != nil {
-		log.ErrorDetails(err)
+func requestReplace(c *gin.Context, route *http_router.RouterInfo) error {
+	log.Trace("replace router: %s", c.Request.RequestURI)
+	body, err := c.GetRawData()
+	if err != nil {
+		return errors.Trace(err)
 	}
-	c.Next()
+
+	url := addr + pluginPrefix + c.Request.RequestURI
+	resp, err := request(url, route.Method, c.Request.Header, body, route.InstanceUUID, common.RouterTypeReplace)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	for key, val := range resp.Header {
+		for _, v := range val {
+			c.Header(key, v)
+		}
+	}
+	defer resp.Body.Close()
+
+	result, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	if _, err = c.Writer.Write(result); err != nil {
+		return errors.Trace(err)
+	}
+	return nil
 }
 
-func request(
-	c *gin.Context,
-	headers http.Header,
-	body []byte,
-	instance string,
-	routeType common.RouterType,
+func request(url string, method string, headers http.Header, body []byte,
+	instance string, routeType common.RouterType,
 ) (*http.Response, error) {
-	url := addr + pluginPrefix + c.Request.RequestURI
-	r, err := http.NewRequest(c.Request.Method, url, bytes.NewReader(body))
+	r, err := http.NewRequest(method, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

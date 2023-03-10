@@ -20,7 +20,12 @@ func (r *PluginRouter) Add(apis []*common.Api, instanceID string) error {
 
 	for _, api := range apis {
 		for _, method := range api.Methods {
-			router := &http_router.RouterInfo{FunctionName: api.Function, InstanceUUID: instanceID}
+			router := &http_router.RouterInfo{
+				Method:       method,
+				Type:         api.Type,
+				FunctionName: api.Function,
+				InstanceUUID: instanceID,
+			}
 
 			if err := r.route.AddRoute(strings.ToLower(api.Type), strings.ToLower(method), api.Url, router); err != nil {
 				r.route = backup // 失败时还原

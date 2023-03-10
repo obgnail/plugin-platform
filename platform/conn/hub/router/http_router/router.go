@@ -1,6 +1,8 @@
 package http_router
 
 type RouterInfo struct {
+	Type         string
+	Method       string
 	FunctionName string
 	InstanceUUID string
 }

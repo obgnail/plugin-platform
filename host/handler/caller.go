@@ -116,6 +116,7 @@ func (p *pluginCaller) convert2HTTPPb(resp *common_type.HttpResponse) *protocol.
 		StatusCode: int64(resp.StatusCode),
 		Error:      message.BuildErrorMessage(resp.Err),
 		Body:       resp.Body,
+		Headers:    make(map[string]*protocol.HeaderVal),
 	}
 	for k, v := range resp.Headers {
 		respMsg.Headers[k] = &protocol.HeaderVal{Val: v}

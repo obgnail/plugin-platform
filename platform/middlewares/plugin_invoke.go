@@ -43,7 +43,7 @@ func invoke(c *gin.Context) {
 
 	// NOTE: 必须先判断pluginExternal,因为header的优先级高于url
 	if requestType == common.RouterTypeExternal || strings.Contains(uri, pluginExternal) {
-		req, err := convert2Request(c, uri)
+		req, err := convert2Request(c, uri, c.Request.Method)
 		if err != nil {
 			handlerError(c, err.Error())
 			return
@@ -63,7 +63,7 @@ func invoke(c *gin.Context) {
 			return
 		}
 
-		req, err := convert2Request(c, url)
+		req, err := convert2Request(c, url, routerInfo.Method)
 		if err != nil {
 			handlerError(c, err.Error())
 			return
@@ -82,14 +82,14 @@ func getUrl(uri string, splitString string) (string, error) {
 	return url, nil
 }
 
-func convert2Request(c *gin.Context, url string) (*common_type.HttpRequest, error) {
+func convert2Request(c *gin.Context, url, method string) (*common_type.HttpRequest, error) {
 	body, err := c.GetRawData()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 
 	req := &common_type.HttpRequest{
-		Method:  c.Request.Method,
+		Method:  method,
 		Url:     url,
 		Body:    body,
 		Headers: make(map[string][]string),

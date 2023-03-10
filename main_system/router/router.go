@@ -38,7 +38,7 @@ func registerPluginMiddlewares(app *gin.Engine) {
 	}
 
 	app.Use(middlewares.PrefixProcessor()) // 顺序不能反,先prefix再replace
-	//app.Use(middlewares.ReplaceProcessor())
+	app.Use(middlewares.ReplaceProcessor())
 	app.Use(middlewares.SuffixProcessor())
 	//app.NoRoute(middlewares.AdditionProcessor())
 }
@@ -54,7 +54,10 @@ func registerPlatformRouter(app *gin.Engine) {
 
 	app.GET("/suffix", func(c *gin.Context) {
 		fmt.Println("this is before message")
-		c.String(200, "Hello Wold main system before message")
+		c.String(400, "Hello Wold main system before message")
+	})
+	app.POST("/replace", func(c *gin.Context) {
+		c.String(400, "replace message")
 	})
 }
 
