@@ -9,6 +9,7 @@ import (
 	utils_errors "github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/main_system/middlewares"
+	"github.com/obgnail/plugin-platform/main_system/platform/hub"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -45,6 +46,26 @@ func registerRouter(app *gin.Engine) {
 	})
 	app.POST("/replace", func(c *gin.Context) {
 		c.String(400, "replace message")
+	})
+	app.GET("/ability_test", func(c *gin.Context) {
+		fmt.Println("ability test")
+
+		instanceID := "HXCEB1oF"
+		args1 := "args1"
+		result1, err := hub.ExecuteAbility(instanceID, "send_short_message-QWERASDF",
+			"send_short_message", "getEmail", []byte(args1))
+		if err != nil {
+			panic(err)
+		}
+
+		args2 := "args2"
+		result2, err := hub.ExecuteAbility(instanceID, "send_short_message-QWERASDF",
+			"send_short_message", "sendShortMessage", []byte(args2))
+		if err != nil {
+			panic(err)
+		}
+
+		c.String(400, string(result1)+string(result2))
 	})
 }
 

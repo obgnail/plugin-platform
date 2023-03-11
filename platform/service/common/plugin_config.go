@@ -65,14 +65,13 @@ type Api struct {
 }
 
 type Ability struct {
-	Id          string            `yaml:"id" json:"id"`
-	Name        string            `yaml:"name" json:"name"`
-	AbilityType string            `yaml:"abilityType" json:"abilityType"` // 主系统支持的能力
-	Version     string            `yaml:"version" json:"version"`         // 主系统支持能力的版本
-	Label       string            `yaml:"label" json:"label"`
-	Function    map[string]string `yaml:"function" json:"function"` // handler函数组
-	Setting     map[string]string `yaml:"setting" json:"setting"`   // 可以当成没有
-	Config      []interface{}     `yaml:"config" json:"config"`     // 每个能力都有自己的配置，
+	Id       string            `yaml:"id" json:"id"`
+	Name     string            `yaml:"name" json:"name"`
+	Desc     string            `yaml:"desc" json:"desc"`
+	Type     string            `yaml:"type" json:"type"`         // 主系统支持的能力
+	Version  string            `yaml:"version" json:"version"`   // 主系统支持能力的版本
+	Function map[string]string `yaml:"function" json:"function"` // handler函数组
+	Config   map[string]string `yaml:"config" json:"config"`     // 每个能力都有自己的配置
 }
 
 type PluginConfig struct {

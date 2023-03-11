@@ -23,6 +23,14 @@ func CancelAbility(instanceID string) {
 	ability.Cancel(instanceID)
 }
 
-func Execute(instanceID, abilityID, abilityType, abilityFuncKey string, arg []byte) (chan *common_type.AbilityResponse, error) {
+func GetConfig(instanceID, abilityID string) (map[string]string, error) {
+	return ability.GetConfig(instanceID, abilityID)
+}
+
+func AsyncExecute(instanceID, abilityID, abilityType, abilityFuncKey string, arg []byte) (chan *common_type.AbilityResponse, error) {
 	return ability.Execute(instanceID, abilityID, abilityType, abilityFuncKey, arg)
+}
+
+func SyncExecute(instanceID, abilityID, abilityType, abilityFuncKey string, arg []byte) ([]byte, error) {
+	return ability.SyncExecute(instanceID, abilityID, abilityType, abilityFuncKey, arg)
 }

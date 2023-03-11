@@ -2,7 +2,6 @@ package hub
 
 import (
 	"encoding/json"
-	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/conn/hub/ability"
@@ -50,8 +49,20 @@ func MatchRouter(Type, method, url string) *http_router.RouterInfo {
 	return routeHub.Match(Type, method, url)
 }
 
-func ExecuteAbility(instanceID, abilityID, abilityType, abilityFuncKey string, arg []byte) (chan *common_type.AbilityResponse, error) {
-	return abilityHub.Execute(instanceID, abilityID, abilityType, abilityFuncKey, arg)
+func GetAbilityConfig(instanceID, abilityID string) (map[string]string, error) {
+	config, err := abilityHub.GetConfig(instanceID, abilityID)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	return config, nil
+}
+
+func ExecuteAbility(instanceID, abilityID, abilityType, abilityFuncKey string, arg []byte) ([]byte, error) {
+	resp, err := callPlugin(instanceID, abilityID, abilityType, abilityFuncKey, arg)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	return resp, nil
 }
 
 type Plugin struct {
@@ -64,7 +75,7 @@ type Plugin struct {
 	Abilities   []*common.Ability `json:"abilities"`
 }
 
-func unmarshalPluginList(resp []byte) ([]*Plugin, error) {
+func unmarshalPlugins(resp []byte) ([]*Plugin, error) {
 	s := struct {
 		Data []*Plugin `json:"data"`
 	}{}

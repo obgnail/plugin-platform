@@ -76,17 +76,15 @@ modules:
     events:
       - modal:cancel
       - modal:ok
+
 abilities:
-  - id: ability_id1
-    name: ability_name1
-    abilityType: abilityType1
+  - id: send_short_message-QWERASDF
+    name: send_short_message
+    type: send_short_message
     version: 1.0.0
-    label: label1
+    desc: 发送短信
     function:
-      AbilityFunction1: MyAbilityFunction1
-      AbilityFunction2: MyAbilityFunction2
-      AbilityFunction3: MyAbilityFunction3
-    setting:
-      Setting1: MySetting1
-      Setting2: MySetting2
-    config: ["config1", "config2"]
+      getEmail: GetEmail
+      sendShortMessage: SendShortMessage
+    config:
+      defaultEmail: 10086@email.com

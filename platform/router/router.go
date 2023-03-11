@@ -29,9 +29,12 @@ func Run() {
 func register(app *gin.Engine) {
 	plugin := app.Group("/plugin")
 
+	// 插件列表
 	plugin.POST("/list", controllers.ListPlugins)
 	// 插件的路由同步给标品
 	plugin.GET("router_list", controllers.RouterList)
+	// 调用插件ability
+	plugin.POST("/call_ability", controllers.CallAbility)
 
 	// life cycle
 	plugin.POST("/upload", controllers.Upload)

@@ -3,6 +3,7 @@ package ability
 import (
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/common_type"
+	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
 	"github.com/obgnail/plugin-platform/platform/service/common"
 	"sync"
@@ -56,8 +57,7 @@ func (a *Ability) Cancel(instanceID string) {
 	a.m.Delete(instanceID)
 }
 
-func (a *Ability) Execute(instanceID, abilityID, abilityType, abilityFuncKey string, arg []byte) (chan *common_type.AbilityResponse, error) {
-
+func (a *Ability) Search(instanceID, abilityID string) (*common.Ability, error) {
 	ins, ok := a.m.Load(instanceID)
 	if !ok {
 		return nil, fmt.Errorf("instance %s has no ability", instanceID)
@@ -67,8 +67,24 @@ func (a *Ability) Execute(instanceID, abilityID, abilityType, abilityFuncKey str
 	if !ok {
 		return nil, fmt.Errorf("instance %s has no such ability: %s", instanceID, abilityID)
 	}
+	return ab, nil
+}
 
-	if ab.AbilityType != abilityType {
+func (a *Ability) GetConfig(instanceID, abilityID string) (map[string]string, error) {
+	ab, err := a.Search(instanceID, abilityID)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	return ab.Config, nil
+}
+
+func (a *Ability) Execute(instanceID, abilityID, abilityType, abilityFuncKey string, arg []byte) (chan *common_type.AbilityResponse, error) {
+	ab, err := a.Search(instanceID, abilityID)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	if ab.Type != abilityType {
 		return nil, fmt.Errorf("ability id or type err: %s-%s", abilityID, abilityType)
 	}
 	function, ok := ab.Function[abilityFuncKey]
@@ -78,4 +94,16 @@ func (a *Ability) Execute(instanceID, abilityID, abilityType, abilityFuncKey str
 
 	c := handler.CallPluginFunction(instanceID, abilityID, abilityType, function, arg)
 	return c, nil
+}
+
+func (a *Ability) SyncExecute(instanceID, abilityID, abilityType, abilityFuncKey string, arg []byte) ([]byte, error) {
+	respChan, err := a.Execute(instanceID, abilityID, abilityType, abilityFuncKey, arg)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	resp := <-respChan
+	if resp.Err != nil {
+		return resp.Data, fmt.Errorf(resp.Err.Error() + resp.Err.Msg())
+	}
+	return resp.Data, nil
 }

@@ -1,0 +1,10 @@
+id: send_short_message-QWERASDF
+name: send_short_message
+type: send_short_message
+version: 1.0.0
+desc: 发送短信
+function:
+  - funcName: getEmail
+  - funcName: sendShortMessage
+config:
+  - defaultEmail:

@@ -8,6 +8,7 @@ import (
 	hotboot_handler "github.com/obgnail/plugin-platform/host_boot/handler"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
 	"github.com/obgnail/plugin-platform/platform/conn/hub"
+	"github.com/obgnail/plugin-platform/platform/conn/hub/ability"
 	hub_router "github.com/obgnail/plugin-platform/platform/conn/hub/router"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/model/redis"
@@ -30,6 +31,7 @@ func main() {
 	if err := hub_router.RegisterRouter("HXCEB1oF", cfg.Apis); err != nil {
 		panic(err)
 	}
+	ability.RegisterAbility("HXCEB1oF", cfg.Abilities)
 
 	go func() {
 		time.Sleep(4 * time.Second)
