@@ -13,6 +13,7 @@ const (
 	RouterTypeReplace  RouterType = "replace"
 	RouterTypePrefix   RouterType = "prefix"
 	RouterTypeSuffix   RouterType = "suffix"
+	RouterTypeBuiltIn  RouterType = "build_in" // 本来是platform的接口,但是让主系统转发
 )
 
 type StatusType = int

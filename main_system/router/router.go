@@ -54,6 +54,10 @@ func registerPlatformRouter(app *gin.Engine) {
 
 	app.GET("/suffix", func(c *gin.Context) {
 		fmt.Println("this is before message")
+		c.String(200, "Hello Wold main system before message")
+	})
+	app.GET("/suffix_error", func(c *gin.Context) {
+		fmt.Println("this is before message")
 		c.String(400, "Hello Wold main system before message")
 	})
 	app.POST("/replace", func(c *gin.Context) {
