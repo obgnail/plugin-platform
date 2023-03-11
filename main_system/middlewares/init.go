@@ -45,6 +45,7 @@ var (
 
 func AdditionProcessor() gin.HandlerFunc {
 	return func(context *gin.Context) {
+
 		fmt.Println("AdditionProcessor")
 		context.Next()
 	}
@@ -150,7 +151,7 @@ func requestSuffix(c *gin.Context, w *toolBodyWriter, origin *bytes.Buffer, rout
 	body := origin.Bytes()
 	header := c.Writer.Header()
 	url := addr + pluginPrefix + c.Request.RequestURI
-	resp, err := request(url, route.Method, header, body, route.InstanceUUID, common.RouterTypeSuffix)
+	resp, err := request(url, route.Method, header, body, route.InstanceUUID, route.Type)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -187,7 +188,7 @@ func requestPrefix(c *gin.Context, route *http_router.RouterInfo) error {
 
 	url := addr + pluginPrefix + c.Request.RequestURI
 
-	resp, err := request(url, route.Method, c.Request.Header, body, route.InstanceUUID, common.RouterTypePrefix)
+	resp, err := request(url, route.Method, c.Request.Header, body, route.InstanceUUID, route.Type)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -213,7 +214,7 @@ func requestReplace(c *gin.Context, route *http_router.RouterInfo) error {
 	}
 
 	url := addr + pluginPrefix + c.Request.RequestURI
-	resp, err := request(url, route.Method, c.Request.Header, body, route.InstanceUUID, common.RouterTypeReplace)
+	resp, err := request(url, route.Method, c.Request.Header, body, route.InstanceUUID, route.Type)
 	if err != nil {
 		return errors.Trace(err)
 	}

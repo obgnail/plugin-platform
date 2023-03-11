@@ -40,7 +40,7 @@ func registerPluginMiddlewares(app *gin.Engine) {
 	app.Use(middlewares.PrefixProcessor()) // 顺序不能反,先prefix再replace
 	app.Use(middlewares.ReplaceProcessor())
 	app.Use(middlewares.SuffixProcessor())
-	//app.NoRoute(middlewares.AdditionProcessor())
+	app.NoRoute(middlewares.AdditionProcessor())
 }
 
 func registerPlatformRouter(app *gin.Engine) {
