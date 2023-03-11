@@ -8,7 +8,7 @@ import (
 	hotboot_handler "github.com/obgnail/plugin-platform/host_boot/handler"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
 	"github.com/obgnail/plugin-platform/platform/conn/hub"
-	router2 "github.com/obgnail/plugin-platform/platform/conn/hub/router"
+	hub_router "github.com/obgnail/plugin-platform/platform/conn/hub/router"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/model/redis"
 	"github.com/obgnail/plugin-platform/platform/router"
@@ -27,7 +27,7 @@ func main() {
 		panic(err)
 	}
 
-	if err := router2.RegisterRouter(cfg.Apis, "HXCEB1oF"); err != nil {
+	if err := hub_router.RegisterRouter("HXCEB1oF", cfg.Apis); err != nil {
 		panic(err)
 	}
 

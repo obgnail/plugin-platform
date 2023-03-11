@@ -15,10 +15,10 @@ func InitRouter() {
 	r = NewRouter()
 }
 
-func RegisterRouter(apis []*common.Api, instanceID string) error {
+func RegisterRouter(instanceID string, apis []*common.Api) error {
 	mu.Lock()
 	defer mu.Unlock()
-	return r.Add(apis, instanceID)
+	return r.Register(instanceID, apis)
 }
 
 func MatchRouter(Type, method, url string) *http_router.RouterInfo {

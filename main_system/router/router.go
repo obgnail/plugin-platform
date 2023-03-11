@@ -23,27 +23,10 @@ func Run() {
 
 	registerPluginMiddlewares(app)
 	registerRouter(app)
-	registerPlatformRouter(app)
 	run(app)
 }
 
 func registerRouter(app *gin.Engine) {
-	//plugin := app.Group("/plugin")
-
-}
-
-func registerPluginMiddlewares(app *gin.Engine) {
-	if !config.Bool("main_system.enable_plugin", true) {
-		return
-	}
-
-	app.Use(middlewares.PrefixProcessor()) // 顺序不能反,先prefix再replace
-	app.Use(middlewares.ReplaceProcessor())
-	app.Use(middlewares.SuffixProcessor())
-	app.NoRoute(middlewares.AdditionProcessor())
-}
-
-func registerPlatformRouter(app *gin.Engine) {
 	app.GET("/prefix", func(c *gin.Context) {
 		data, err := ioutil.ReadAll(c.Request.Body)
 		if err != nil {
@@ -63,6 +46,17 @@ func registerPlatformRouter(app *gin.Engine) {
 	app.POST("/replace", func(c *gin.Context) {
 		c.String(400, "replace message")
 	})
+}
+
+func registerPluginMiddlewares(app *gin.Engine) {
+	if !config.Bool("main_system.enable_plugin", true) {
+		return
+	}
+
+	app.Use(middlewares.PrefixProcessor()) // 顺序不能反,先prefix再replace
+	app.Use(middlewares.ReplaceProcessor())
+	app.Use(middlewares.SuffixProcessor())
+	app.NoRoute(middlewares.AdditionProcessor())
 }
 
 func run(app *gin.Engine) {

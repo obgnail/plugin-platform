@@ -5,21 +5,17 @@ import (
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
+	"github.com/obgnail/plugin-platform/platform/service/common"
 )
 
 type Plugin struct {
-	UUID        string    `json:"uuid"`
-	Name        string    `json:"name"`
-	Version     string    `json:"version"`
-	LifeStage   int       `json:"life_stage"`
-	Description string    `json:"description"`
-	Routers     []*Router `json:"routers"`
-}
-
-type Router struct {
-	Type   string   `json:"type"`
-	Method []string `json:"methods"`
-	Url    string   `json:"url"`
+	UUID        string            `json:"uuid"`
+	Name        string            `json:"name"`
+	Version     string            `json:"version"`
+	LifeStage   int               `json:"life_stage"`
+	Description string            `json:"description"`
+	Routers     []*common.Api     `json:"routers"`
+	Abilities   []*common.Ability `json:"abilities"`
 }
 
 func RouterList() (ret gin.H, err error) {
@@ -38,23 +34,14 @@ func RouterList() (ret gin.H, err error) {
 			return ret, errors.PluginMessageError(errors.ServerError)
 		}
 
-		var routers []*Router
-		for _, api := range cfg.Apis {
-			_api := &Router{
-				Type:   api.Type,
-				Method: api.Methods,
-				Url:    api.Url,
-			}
-			routers = append(routers, _api)
-		}
-
 		plugin := &Plugin{
 			UUID:        instance.InstanceUUID,
 			Name:        instance.Name,
 			Version:     instance.Version,
 			LifeStage:   instance.Status,
 			Description: instance.Description,
-			Routers:     routers,
+			Routers:     cfg.Apis,
+			Abilities:   cfg.Abilities,
 		}
 		plugins = append(plugins, plugin)
 	}

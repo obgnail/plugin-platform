@@ -1,6 +1,7 @@
 package lifecycle
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
@@ -85,7 +86,7 @@ func (h *EnableHelper) Enable() error {
 
 func (h *EnableHelper) RegisterRouter() error {
 	apis := h.cfg.Apis
-	if err := router.RegisterRouter(apis, h.instance.InstanceUUID); err != nil {
+	if err := router.RegisterRouter(h.instance.InstanceUUID, apis); err != nil {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginEnableError(errors.ServerError)
 	}
@@ -94,10 +95,10 @@ func (h *EnableHelper) RegisterRouter() error {
 
 func (h *EnableHelper) RegisterAbility() error {
 	abilities := h.cfg.Abilities
-	if err := ability.RegisterAbility(abilities, h.instance.InstanceUUID); err != nil {
-		log.ErrorDetails(errors.Trace(err))
-		return errors.PluginEnableError(errors.ServerError)
+	if ok := ability.CheckAbility(abilities); !ok {
+		return fmt.Errorf("abilities check failed")
 	}
+	ability.RegisterAbility(h.instance.InstanceUUID, abilities)
 	return nil
 }
 

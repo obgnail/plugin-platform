@@ -31,12 +31,12 @@ func InitPluginService() {
 					log.ErrorDetails(err)
 					continue
 				}
-				plugin, err := UnmarshalRouterList(resp)
+				plugin, err := unmarshalPluginList(resp)
 				if err != nil {
 					log.ErrorDetails(err)
 					continue
 				}
-				if err = Register(plugin); err != nil {
+				if err = registerHub(plugin); err != nil {
 					log.ErrorDetails(err)
 					continue
 				}

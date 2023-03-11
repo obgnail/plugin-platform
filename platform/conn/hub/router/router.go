@@ -15,7 +15,7 @@ func NewRouter() *PluginRouter {
 	return &PluginRouter{route: http_router.New()}
 }
 
-func (r *PluginRouter) Add(apis []*common.Api, instanceID string) error {
+func (r *PluginRouter) Register(instanceID string, apis []*common.Api) error {
 	backup := r.route.DeepCopy()
 
 	for _, api := range apis {
