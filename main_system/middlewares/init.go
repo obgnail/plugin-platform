@@ -7,7 +7,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
-	"github.com/obgnail/plugin-platform/main_system/platform"
+	"github.com/obgnail/plugin-platform/main_system/platform/hub"
 	"github.com/obgnail/plugin-platform/platform/conn/hub/router/http_router"
 	"github.com/obgnail/plugin-platform/platform/controllers"
 	"github.com/obgnail/plugin-platform/platform/service/common"
@@ -56,7 +56,7 @@ func AdditionProcessor() gin.HandlerFunc {
 				return
 			}
 		case isExternalRoute(c):
-			route := platform.MatchRouter(common.RouterTypeExternal, c.Request.Method, c.Request.RequestURI)
+			route := hub.MatchRouter(common.RouterTypeExternal, c.Request.Method, c.Request.RequestURI)
 			if route == nil {
 				c.Next()
 				return
@@ -66,7 +66,7 @@ func AdditionProcessor() gin.HandlerFunc {
 				return
 			}
 		case isPluginRoute(c):
-			route := platform.MatchRouter(common.RouterTypeAddition, c.Request.Method, c.Request.RequestURI)
+			route := hub.MatchRouter(common.RouterTypeAddition, c.Request.Method, c.Request.RequestURI)
 			if route == nil {
 				c.Next()
 				return
@@ -88,7 +88,7 @@ func ReplaceProcessor() gin.HandlerFunc {
 			return
 		}
 
-		route := platform.MatchRouter(common.RouterTypeReplace, c.Request.Method, c.Request.RequestURI)
+		route := hub.MatchRouter(common.RouterTypeReplace, c.Request.Method, c.Request.RequestURI)
 		if route == nil {
 			c.Next()
 			return
@@ -110,7 +110,7 @@ func PrefixProcessor() gin.HandlerFunc {
 			return
 		}
 
-		route := platform.MatchRouter(common.RouterTypePrefix, c.Request.Method, c.Request.RequestURI)
+		route := hub.MatchRouter(common.RouterTypePrefix, c.Request.Method, c.Request.RequestURI)
 		if route == nil {
 			c.Next()
 			return
@@ -156,7 +156,7 @@ func SuffixProcessor() gin.HandlerFunc {
 			return
 		}
 
-		route := platform.MatchRouter(common.RouterTypeSuffix, c.Request.Method, c.Request.RequestURI)
+		route := hub.MatchRouter(common.RouterTypeSuffix, c.Request.Method, c.Request.RequestURI)
 		if route == nil {
 			handleError(c, nil)
 			return

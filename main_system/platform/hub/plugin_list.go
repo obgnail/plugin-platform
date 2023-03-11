@@ -1,4 +1,4 @@
-package platform
+package hub
 
 import (
 	"encoding/json"
@@ -22,19 +22,19 @@ func registerHub(plugins []*Plugin) error {
 	mu.Lock()
 	defer mu.Unlock()
 
+	// 因为随时可能挂掉,每次都renew一个新的
 	routeHub = router.NewRouter()
 	abilityHub = ability.NewAbility()
 
-	err := rangeRunningPlugin(plugins, func(plugin *Plugin) error {
+	for _, plugin := range plugins {
+		if plugin.LifeStage != common.PluginStatusRunning {
+			continue
+		}
+
 		if err := routeHub.Register(plugin.UUID, plugin.Routers); err != nil {
 			return errors.Trace(err)
 		}
 		abilityHub.Register(plugin.UUID, plugin.Abilities)
-		return nil
-	})
-
-	if err != nil {
-		return errors.Trace(err)
 	}
 
 	return nil
@@ -62,18 +62,6 @@ type Plugin struct {
 	Description string            `json:"description"`
 	Routers     []*common.Api     `json:"routers"`
 	Abilities   []*common.Ability `json:"abilities"`
-}
-
-func rangeRunningPlugin(plugins []*Plugin, f func(plugin *Plugin) error) error {
-	for _, plugin := range plugins {
-		if plugin.LifeStage != common.PluginStatusRunning {
-			continue
-		}
-		if err := f(plugin); err != nil {
-			return errors.Trace(err)
-		}
-	}
-	return nil
 }
 
 func unmarshalPluginList(resp []byte) ([]*Plugin, error) {

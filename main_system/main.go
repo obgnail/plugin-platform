@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/obgnail/plugin-platform/common/log"
-	"github.com/obgnail/plugin-platform/main_system/platform"
+	"github.com/obgnail/plugin-platform/main_system/platform/hub"
 	"github.com/obgnail/plugin-platform/main_system/router"
 )
 
@@ -14,5 +14,5 @@ func main() {
 }
 
 func Init() {
-	platform.InitPluginService()
+	hub.InitPluginService()
 }
