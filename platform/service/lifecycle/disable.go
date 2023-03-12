@@ -5,6 +5,8 @@ import (
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
+	"github.com/obgnail/plugin-platform/platform/conn/hub/ability"
+	"github.com/obgnail/plugin-platform/platform/conn/hub/router"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
 	"github.com/obgnail/plugin-platform/platform/service/common"
 )
@@ -36,6 +38,12 @@ func Disable(req *DisableReq) (ret gin.H, err error) {
 	if err := helper.Disable(); err != nil {
 		return ret, errors.Trace(err)
 	}
+	if err := helper.DisableRouter(); err != nil {
+		return ret, errors.Trace(err)
+	}
+	if err := helper.DisableAbility(); err != nil {
+		return ret, errors.Trace(err)
+	}
 	if err := helper.UpdateDb(); err != nil {
 		return ret, errors.Trace(err)
 	}
@@ -62,6 +70,16 @@ func (h *DisableHelper) Disable() error {
 		log.PEDetails(er)
 		return errors.PluginDisableError(er.Error() + " " + er.Msg())
 	}
+	return nil
+}
+
+func (h *DisableHelper) DisableRouter() error {
+	router.DeleteRouter(h.instance.InstanceUUID)
+	return nil
+}
+
+func (h *DisableHelper) DisableAbility() error {
+	ability.CancelAbility(h.instance.InstanceUUID)
 	return nil
 }
 

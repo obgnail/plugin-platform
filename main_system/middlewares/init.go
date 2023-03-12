@@ -181,9 +181,6 @@ func requestPlatform(c *gin.Context) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("resp.StatusCode: %d", resp.StatusCode)
-	}
 	for key, val := range resp.Header {
 		for _, v := range val {
 			c.Writer.Header().Add(key, v)
@@ -233,9 +230,6 @@ func requestSuffix(c *gin.Context, w *toolBodyWriter, origin *bytes.Buffer, rout
 	if err != nil {
 		return errors.Trace(err)
 	}
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("resp.StatusCode: %d", resp.StatusCode)
-	}
 
 	for key, val := range resp.Header {
 		for _, v := range val {
@@ -263,9 +257,6 @@ func requestPrefix(c *gin.Context, route *http_router.RouterInfo) error {
 	resp, err := request(url, route.Method, c.Request.Header, body, route.InstanceUUID, route.Type)
 	if err != nil {
 		return errors.Trace(err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("resp.StatusCode: %d", resp.StatusCode)
 	}
 
 	c.Request.Header = resp.Header.Clone()

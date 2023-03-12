@@ -30,7 +30,7 @@ func registerRouter(app *gin.Engine) {
 	app.GET("/ability_test", func(c *gin.Context) {
 		fmt.Println("ability test")
 
-		instanceID := "HXCEB1oF"
+		instanceID := "TNcoTKHS"
 		args1 := "args1"
 		result1, err := hub.ExecuteAbility(instanceID, "send_short_message-QWERASDF",
 			"send_short_message", "getEmail", []byte(args1))

@@ -21,6 +21,12 @@ func RegisterRouter(instanceID string, apis []*common.Api) error {
 	return r.Register(instanceID, apis)
 }
 
+func DeleteRouter(instanceID string) {
+	mu.Lock()
+	defer mu.Unlock()
+	r.Delete(instanceID)
+}
+
 func MatchRouter(Type, method, url string) *http_router.RouterInfo {
 	mu.Lock()
 	defer mu.Unlock()

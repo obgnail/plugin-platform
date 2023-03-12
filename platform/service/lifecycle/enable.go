@@ -69,22 +69,22 @@ func (h *EnableHelper) checkEnable() error {
 }
 
 func (h *EnableHelper) Enable() error {
-	cfg, err := h.instance.LoadYamlConfig()
-	if err != nil {
-		return errors.Trace(err)
-	}
-
 	er := <-handler.EnablePlugin(h.instance.InstanceUUID)
 	if er != nil {
 		log.Error("instanceID: %s", h.instance.InstanceUUID)
 		log.PEDetails(er)
 		return errors.PluginEnableError(er.Error() + " " + er.Msg())
 	}
-	h.cfg = cfg
 	return nil
 }
 
 func (h *EnableHelper) RegisterRouter() error {
+	cfg, err := h.instance.LoadYamlConfig()
+	if err != nil {
+		return errors.Trace(err)
+	}
+	h.cfg = cfg
+
 	apis := h.cfg.Apis
 	if err := router.RegisterRouter(h.instance.InstanceUUID, apis); err != nil {
 		log.ErrorDetails(errors.Trace(err))
