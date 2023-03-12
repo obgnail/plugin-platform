@@ -11,8 +11,6 @@ import (
 
 var (
 	DB *gorm.DB
-
-	RecordNotFound = gorm.ErrRecordNotFound
 )
 
 func InitDB() (err error) {

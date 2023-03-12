@@ -76,6 +76,7 @@ func (h *InstallHelper) generatePlugin() (err error) {
 	if err != nil {
 		return errors.PluginInstallError(errors.LoadYamlConfigFailed)
 	}
+	h.Cfg.Service.InstanceUUID = h.req.InstanceUUID
 	er := <-handler.InstallPlugin(h.instance.AppUUID, h.instance.InstanceUUID, h.instance.Name,
 		h.Cfg.Language, h.Cfg.LanguageVersion, h.Cfg.Version)
 	if er != nil {

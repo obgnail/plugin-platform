@@ -184,7 +184,7 @@ func requestPlatform(c *gin.Context) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("resp.StatusCode: %d", resp.StatusCode)
 	}
-	for key, val := range c.Request.Header {
+	for key, val := range resp.Header {
 		for _, v := range val {
 			c.Writer.Header().Add(key, v)
 		}

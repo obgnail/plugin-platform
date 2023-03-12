@@ -23,6 +23,7 @@ func CallAbility(c *gin.Context) {
 		RenderError(c, err)
 		return
 	}
+	c.Header("Content-Type", "application/json")
 	c.Header("Content-Length", strconv.Itoa(len(data)))
 	c.Render(200, render.Data{Data: data})
 }
