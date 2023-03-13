@@ -1,5 +1,10 @@
 # plugin-platform
 
+<div align="center">
+  <img src="assets/gopher.png" alt="worktop" width="400" />
+</div>
+
+
 ## 简介
 
 Web Server 的通用插件框架。抽象出供二次开发使用的代码框架与对应的工具集，使得开发人员能够低成本、高效率的拓展 Web 系统能力，满足定制化需求。
