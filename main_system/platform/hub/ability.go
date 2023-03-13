@@ -84,7 +84,7 @@ func callEvent(instanceID, eventType string, payload []byte) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
-	fmt.Println("---", string(respData))
+
 	rep := &Resp{}
 	if err := json.Unmarshal(respData, rep); err != nil {
 		return errors.Trace(err)
