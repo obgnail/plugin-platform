@@ -5,17 +5,17 @@ import (
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 )
 
 type Item struct {
-	AppUUID      string               `json:"app_uuid"`
-	InstanceUUID string               `json:"instance_uuid"`
-	Name         string               `json:"name"`
-	Version      string               `json:"version"`
-	Description  string               `json:"description"`
-	Status       int                  `json:"status"`
-	Permission   []*common.Permission `json:"permission"`
+	AppUUID      string              `json:"app_uuid"`
+	InstanceUUID string              `json:"instance_uuid"`
+	Name         string              `json:"name"`
+	Version      string              `json:"version"`
+	Description  string              `json:"description"`
+	Status       int                 `json:"status"`
+	Permission   []*types.Permission `json:"permission"`
 }
 
 func ListPlugins() (ret gin.H, err error) {
@@ -35,9 +35,9 @@ func ListPlugins() (ret gin.H, err error) {
 			return ret, errors.PluginMessageError(errors.ServerError)
 		}
 
-		var permission []*common.Permission
+		var permission []*types.Permission
 		for _, info := range infos {
-			permission = append(permission, &common.Permission{
+			permission = append(permission, &types.Permission{
 				Name:  info.PermissionName,
 				Field: info.PermissionField,
 				Desc:  info.PermissionDesc,

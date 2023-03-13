@@ -8,7 +8,7 @@ import (
 	"github.com/obgnail/plugin-platform/common/utils/math"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 )
 
 type InstallReq struct {
@@ -16,9 +16,9 @@ type InstallReq struct {
 }
 
 type InstallResp struct {
-	*common.Service `json:"service"`
-	Apis            []*common.Api     `json:"apis"`
-	Abilities       []*common.Ability `json:"abilities"`
+	*types.Service `json:"service"`
+	Apis           []*types.Api     `json:"apis"`
+	Abilities      []*types.Ability `json:"abilities"`
 }
 
 func (i *InstallReq) validate() error {
@@ -52,7 +52,7 @@ func Install(req *InstallReq) (ret gin.H, err error) {
 
 type InstallHelper struct {
 	req      *InstallReq
-	Cfg      *common.PluginConfig
+	Cfg      *types.PluginConfig
 	instance *mysql.PluginInstance
 }
 
@@ -64,7 +64,7 @@ func (h *InstallHelper) checkInstall() error {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginInstallError(errors.ServerError)
 	}
-	if exist && instance.Status != common.PluginStatusUploaded {
+	if exist && instance.Status != types.PluginStatusUploaded {
 		return errors.PluginInstallError(errors.PluginAlreadyInstall)
 	}
 	h.instance = instance
@@ -88,7 +88,7 @@ func (h *InstallHelper) generatePlugin() (err error) {
 
 func (h *InstallHelper) Save2Db() error {
 	err := mysql.Transaction(func(db *gorm.DB) error {
-		h.instance.Status = common.PluginStatusStopping
+		h.instance.Status = types.PluginStatusStopping
 		if err := mysql.ModelPluginInstance().Update(h.instance.Id, h.instance); err != nil {
 			return errors.Trace(err)
 		}
@@ -116,7 +116,7 @@ func (h *InstallHelper) Save2Db() error {
 	return nil
 }
 
-func generatePluginConfig(db *gorm.DB, instance *mysql.PluginInstance, cfg *common.PluginConfig) error {
+func generatePluginConfig(db *gorm.DB, instance *mysql.PluginInstance, cfg *types.PluginConfig) error {
 	configs := cfg.Service.Config
 	if len(configs) == 0 {
 		return nil
@@ -142,7 +142,7 @@ func generatePluginConfig(db *gorm.DB, instance *mysql.PluginInstance, cfg *comm
 	return nil
 }
 
-func generatePluginPermission(db *gorm.DB, instance *mysql.PluginInstance, cfg *common.PluginConfig) error {
+func generatePluginPermission(db *gorm.DB, instance *mysql.PluginInstance, cfg *types.PluginConfig) error {
 	permission := cfg.Service.Permission
 	if len(permission) == 0 {
 		return nil

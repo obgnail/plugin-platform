@@ -2,7 +2,7 @@ package ability
 
 import (
 	"github.com/obgnail/plugin-platform/common/common_type"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 )
 
 var ability *Ability
@@ -11,11 +11,11 @@ func InitAbility() {
 	ability = NewAbility()
 }
 
-func CheckAbility(abilities []*common.Ability) bool {
+func CheckAbility(abilities []*types.Ability) bool {
 	return ability.Check(abilities)
 }
 
-func RegisterAbility(instanceID string, abilities []*common.Ability) {
+func RegisterAbility(instanceID string, abilities []*types.Ability) {
 	ability.Register(instanceID, abilities)
 }
 

@@ -27,10 +27,22 @@ func registerRouter(app *gin.Engine) {
 	app.POST("/replace", func(c *gin.Context) {
 		c.String(400, "replace message")
 	})
+
+	app.POST("/onEvent", func(context *gin.Context) {
+		instanceID := context.GetHeader("instanceID")
+		eventType := "project.task"
+		payload := []byte("PPPPPPPPPPP")
+
+		if err := hub.PublicEvent(instanceID, eventType, payload); err != nil {
+			fmt.Println("---eee --", err)
+		}
+		context.String(200, "---eee --")
+	})
+
 	app.GET("/ability_test", func(c *gin.Context) {
 		fmt.Println("ability test")
 
-		instanceID := "TNcoTKHS"
+		instanceID := c.GetHeader("instanceID")
 		args1 := "args1"
 		result1, err := hub.ExecuteAbility(instanceID, "send_short_message-QWERASDF",
 			"send_short_message", "getEmail", []byte(args1))

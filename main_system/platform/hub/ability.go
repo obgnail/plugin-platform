@@ -2,6 +2,7 @@ package hub
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/obgnail/plugin-platform/common/config"
 	"github.com/obgnail/plugin-platform/common/errors"
@@ -12,6 +13,7 @@ import (
 
 const (
 	urlCallAbility = "/plugin/call_ability"
+	urlCallEvent   = "/plugin/on_event"
 
 	defaultTimeoutSec = 30
 )
@@ -42,9 +44,6 @@ func callPlugin(instanceID, abilityID, abilityType, abilityFuncKey string, arg [
 		return nil, errors.Trace(err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Trace(fmt.Errorf("call plugin api error: url=\"%s\", status=%d", url, resp.StatusCode))
-	}
 
 	if resp == nil || resp.Body == nil {
 		return nil, nil
@@ -56,4 +55,42 @@ func callPlugin(instanceID, abilityID, abilityType, abilityFuncKey string, arg [
 	}
 
 	return respData, nil
+}
+
+type Resp struct {
+	Code    int    `json:"code"`
+	ErrCode string `json:"errcode"`
+	Type    string `json:"type"`
+}
+
+func callEvent(instanceID, eventType string, payload []byte) error {
+	url := platformAddr + urlCallEvent
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payload))
+	if err != nil {
+		return errors.Trace(err)
+	}
+	req.Header.Set("instanceID", instanceID)
+	req.Header.Set("eventType", eventType)
+	client := &http.Client{Timeout: timeout}
+	resp, err := client.Do(req)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	defer resp.Body.Close()
+	if resp == nil || resp.Body == nil {
+		return nil
+	}
+	respData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	fmt.Println("---", string(respData))
+	rep := &Resp{}
+	if err := json.Unmarshal(respData, rep); err != nil {
+		return errors.Trace(err)
+	}
+	if rep.Code != http.StatusOK {
+		return fmt.Errorf(rep.ErrCode)
+	}
+	return nil
 }

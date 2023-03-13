@@ -35,6 +35,8 @@ func register(app *gin.Engine) {
 	plugin.GET("router_list", controllers.RouterList)
 	// 调用插件ability
 	plugin.POST("/call_ability", controllers.CallAbility)
+	// 调用插件的OnEvent
+	plugin.POST("/on_event", controllers.OnEvent)
 
 	// life cycle
 	plugin.POST("/upload", controllers.Upload)

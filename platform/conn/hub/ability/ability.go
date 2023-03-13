@@ -5,13 +5,13 @@ import (
 	"github.com/obgnail/plugin-platform/common/common_type"
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 	"sync"
 )
 
 type instanceAbilities struct {
 	instanceID string
-	Abilities  map[string]*common.Ability // map[abilityID]*common.Ability
+	Abilities  map[string]*types.Ability // map[abilityID]*common.Ability
 }
 
 type Ability struct {
@@ -23,12 +23,12 @@ func NewAbility() *Ability {
 }
 
 // TODO 检测是否完整实现了Ability的所有函数
-func (a *Ability) Check(abilities []*common.Ability) bool {
+func (a *Ability) Check(abilities []*types.Ability) bool {
 	return true
 }
 
-func (a *Ability) Register(instanceID string, abilities []*common.Ability) {
-	abilitiesMap := make(map[string]*common.Ability)
+func (a *Ability) Register(instanceID string, abilities []*types.Ability) {
+	abilitiesMap := make(map[string]*types.Ability)
 	for _, _ability := range abilities {
 		abilitiesMap[_ability.Id] = _ability
 	}
@@ -57,7 +57,7 @@ func (a *Ability) Cancel(instanceID string) {
 	a.m.Delete(instanceID)
 }
 
-func (a *Ability) Search(instanceID, abilityID string) (*common.Ability, error) {
+func (a *Ability) Search(instanceID, abilityID string) (*types.Ability, error) {
 	ins, ok := a.m.Load(instanceID)
 	if !ok {
 		return nil, fmt.Errorf("instance %s has no ability", instanceID)

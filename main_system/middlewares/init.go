@@ -10,7 +10,7 @@ import (
 	"github.com/obgnail/plugin-platform/main_system/platform/hub"
 	"github.com/obgnail/plugin-platform/platform/conn/hub/router/http_router"
 	"github.com/obgnail/plugin-platform/platform/controllers"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -56,7 +56,7 @@ func AdditionProcessor() gin.HandlerFunc {
 				return
 			}
 		case isExternalRoute(c):
-			route := hub.MatchRouter(common.RouterTypeExternal, c.Request.Method, c.Request.RequestURI)
+			route := hub.MatchRouter(types.RouterTypeExternal, c.Request.Method, c.Request.RequestURI)
 			if route == nil {
 				c.Next()
 				return
@@ -66,7 +66,7 @@ func AdditionProcessor() gin.HandlerFunc {
 				return
 			}
 		case isPluginRoute(c):
-			route := hub.MatchRouter(common.RouterTypeAddition, c.Request.Method, c.Request.RequestURI)
+			route := hub.MatchRouter(types.RouterTypeAddition, c.Request.Method, c.Request.RequestURI)
 			if route == nil {
 				c.Next()
 				return
@@ -88,7 +88,7 @@ func ReplaceProcessor() gin.HandlerFunc {
 			return
 		}
 
-		route := hub.MatchRouter(common.RouterTypeReplace, c.Request.Method, c.Request.RequestURI)
+		route := hub.MatchRouter(types.RouterTypeReplace, c.Request.Method, c.Request.RequestURI)
 		if route == nil {
 			c.Next()
 			return
@@ -110,7 +110,7 @@ func PrefixProcessor() gin.HandlerFunc {
 			return
 		}
 
-		route := hub.MatchRouter(common.RouterTypePrefix, c.Request.Method, c.Request.RequestURI)
+		route := hub.MatchRouter(types.RouterTypePrefix, c.Request.Method, c.Request.RequestURI)
 		if route == nil {
 			c.Next()
 			return
@@ -156,7 +156,7 @@ func SuffixProcessor() gin.HandlerFunc {
 			return
 		}
 
-		route := hub.MatchRouter(common.RouterTypeSuffix, c.Request.Method, c.Request.RequestURI)
+		route := hub.MatchRouter(types.RouterTypeSuffix, c.Request.Method, c.Request.RequestURI)
 		if route == nil {
 			handleError(c, nil)
 			return
@@ -327,7 +327,7 @@ func isExternalRoute(c *gin.Context) bool {
 }
 
 func request(url string, method string, headers http.Header, body []byte,
-	instance string, routeType common.RouterType,
+	instance string, routeType types.RouterType,
 ) (*http.Response, error) {
 	r, err := http.NewRequest(method, url, bytes.NewReader(body))
 	if err != nil {

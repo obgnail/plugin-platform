@@ -5,17 +5,17 @@ import (
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 )
 
 type Plugin struct {
-	UUID        string            `json:"uuid"`
-	Name        string            `json:"name"`
-	Version     string            `json:"version"`
-	LifeStage   int               `json:"life_stage"`
-	Description string            `json:"description"`
-	Routers     []*common.Api     `json:"routers"`
-	Abilities   []*common.Ability `json:"abilities"`
+	UUID        string           `json:"uuid"`
+	Name        string           `json:"name"`
+	Version     string           `json:"version"`
+	LifeStage   int              `json:"life_stage"`
+	Description string           `json:"description"`
+	Routers     []*types.Api     `json:"routers"`
+	Abilities   []*types.Ability `json:"abilities"`
 }
 
 func RouterList() (ret gin.H, err error) {

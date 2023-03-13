@@ -8,7 +8,7 @@ import (
 	"github.com/obgnail/plugin-platform/platform/conn/hub/ability"
 	"github.com/obgnail/plugin-platform/platform/conn/hub/router"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 )
 
 type DisableReq struct {
@@ -57,7 +57,7 @@ func (h *DisableHelper) checkDisable() error {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginDisableError(errors.ServerError)
 	}
-	if exist && instance.Status != common.PluginStatusRunning {
+	if exist && instance.Status != types.PluginStatusRunning {
 		return errors.PluginDisableError(errors.PluginAlreadyStop)
 	}
 	h.instance = instance
@@ -84,7 +84,7 @@ func (h *DisableHelper) DisableAbility() error {
 }
 
 func (h *DisableHelper) UpdateDb() error {
-	h.instance.Status = common.PluginStatusStopping
+	h.instance.Status = types.PluginStatusStopping
 	if err := mysql.ModelPluginInstance().Update(h.instance.Id, h.instance); err != nil {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginDisableError(errors.ServerError)

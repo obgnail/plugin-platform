@@ -10,7 +10,7 @@ import (
 	"github.com/obgnail/plugin-platform/platform/conn/handler"
 	"github.com/obgnail/plugin-platform/platform/conn/hub/router"
 	"github.com/obgnail/plugin-platform/platform/controllers"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 	"strconv"
 	"strings"
 )
@@ -42,7 +42,7 @@ func invoke(c *gin.Context) {
 	requestType := strings.ToLower(c.GetHeader(headerRequestType))
 
 	// NOTE: 必须先判断pluginExternal,因为header的优先级高于url
-	if requestType == common.RouterTypeExternal || strings.Contains(uri, pluginExternal) {
+	if requestType == types.RouterTypeExternal || strings.Contains(uri, pluginExternal) {
 		req, err := convert2Request(c, uri, c.Request.Method)
 		if err != nil {
 			handlerError(c, err.Error())

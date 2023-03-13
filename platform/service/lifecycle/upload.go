@@ -7,7 +7,6 @@ import (
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/common/log"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
-	"github.com/obgnail/plugin-platform/platform/service/common"
 	"github.com/obgnail/plugin-platform/platform/service/types"
 	"github.com/obgnail/plugin-platform/platform/service/utils"
 	"gopkg.in/yaml.v2"
@@ -43,7 +42,7 @@ func Upload(ctx *gin.Context) (ret gin.H, err error) {
 		return helper.uploadNonexistent()
 	}
 	// 覆盖安装(旧插件必须没有install过)
-	if instance.Status == common.PluginStatusUploaded {
+	if instance.Status == types.PluginStatusUploaded {
 		return helper.overlayExistent(instance)
 	} else {
 		// 升级
@@ -56,7 +55,7 @@ type UploadHelper struct {
 	fileHeader *multipart.FileHeader
 	file       multipart.File
 
-	cfg *common.PluginConfig // config.yaml
+	cfg *types.PluginConfig // config.yaml
 }
 
 func (h *UploadHelper) uploadNonexistent() (ret gin.H, err error) {
@@ -129,7 +128,7 @@ func (h *UploadHelper) parseConfigYaml() error {
 		return errors.PluginUploadError(errors.PluginConfigFileParseFailed)
 	}
 
-	var pluginConfig = new(common.PluginConfig)
+	var pluginConfig = new(types.PluginConfig)
 	if err = yaml.Unmarshal([]byte(configYaml), pluginConfig); err != nil {
 		log.Warn("Unmarshal err: %+v", errors.Trace(err))
 		return errors.PluginUploadError(errors.PluginConfigFileParseFailed)
@@ -190,7 +189,7 @@ func (h *UploadHelper) newInstance() (*mysql.PluginInstance, error) {
 		Version:      h.cfg.Version,
 		Description:  h.cfg.Description,
 		Contact:      h.cfg.Contact,
-		Status:       common.PluginStatusUploaded,
+		Status:       types.PluginStatusUploaded,
 		Apis:         string(apis),
 	}
 	if err := mysql.ModelPluginInstance().New(one); err != nil {

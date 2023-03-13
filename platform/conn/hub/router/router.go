@@ -3,7 +3,7 @@ package router
 import (
 	"github.com/obgnail/plugin-platform/common/errors"
 	"github.com/obgnail/plugin-platform/platform/conn/hub/router/http_router"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 	"strings"
 )
 
@@ -15,7 +15,7 @@ func NewRouter() *PluginRouter {
 	return &PluginRouter{route: http_router.New()}
 }
 
-func (r *PluginRouter) Register(instanceID string, apis []*common.Api) error {
+func (r *PluginRouter) Register(instanceID string, apis []*types.Api) error {
 	backup := r.route.DeepCopy()
 
 	for _, api := range apis {

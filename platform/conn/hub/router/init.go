@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/obgnail/plugin-platform/platform/conn/hub/router/http_router"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 	"sync"
 )
 
@@ -15,7 +15,7 @@ func InitRouter() {
 	r = NewRouter()
 }
 
-func RegisterRouter(instanceID string, apis []*common.Api) error {
+func RegisterRouter(instanceID string, apis []*types.Api) error {
 	mu.Lock()
 	defer mu.Unlock()
 	return r.Register(instanceID, apis)

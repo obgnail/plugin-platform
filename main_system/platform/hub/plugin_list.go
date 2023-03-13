@@ -7,7 +7,7 @@ import (
 	"github.com/obgnail/plugin-platform/platform/conn/hub/ability"
 	"github.com/obgnail/plugin-platform/platform/conn/hub/router"
 	"github.com/obgnail/plugin-platform/platform/conn/hub/router/http_router"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 	"sync"
 )
 
@@ -26,7 +26,7 @@ func registerHub(plugins []*Plugin) error {
 	abilityHub = ability.NewAbility()
 
 	for _, plugin := range plugins {
-		if plugin.LifeStage != common.PluginStatusRunning {
+		if plugin.LifeStage != types.PluginStatusRunning {
 			continue
 		}
 
@@ -65,14 +65,21 @@ func ExecuteAbility(instanceID, abilityID, abilityType, abilityFuncKey string, a
 	return resp, nil
 }
 
+func PublicEvent(instanceID, eventType string, payload []byte) error {
+	if err := callEvent(instanceID, eventType, payload); err != nil {
+		return errors.Trace(err)
+	}
+	return nil
+}
+
 type Plugin struct {
-	UUID        string            `json:"uuid"`
-	Name        string            `json:"name"`
-	Version     string            `json:"version"`
-	LifeStage   int               `json:"life_stage"`
-	Description string            `json:"description"`
-	Routers     []*common.Api     `json:"routers"`
-	Abilities   []*common.Ability `json:"abilities"`
+	UUID        string           `json:"uuid"`
+	Name        string           `json:"name"`
+	Version     string           `json:"version"`
+	LifeStage   int              `json:"life_stage"`
+	Description string           `json:"description"`
+	Routers     []*types.Api     `json:"routers"`
+	Abilities   []*types.Ability `json:"abilities"`
 }
 
 func unmarshalPlugins(resp []byte) ([]*Plugin, error) {

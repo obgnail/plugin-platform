@@ -9,7 +9,7 @@ import (
 	"github.com/obgnail/plugin-platform/platform/conn/hub/ability"
 	"github.com/obgnail/plugin-platform/platform/conn/hub/router"
 	"github.com/obgnail/plugin-platform/platform/model/mysql"
-	"github.com/obgnail/plugin-platform/platform/service/common"
+	"github.com/obgnail/plugin-platform/platform/service/types"
 )
 
 type EnableReq struct {
@@ -25,7 +25,7 @@ func (i *EnableReq) validate() error {
 
 type EnableHelper struct {
 	req      *EnableReq
-	cfg      *common.PluginConfig
+	cfg      *types.PluginConfig
 	instance *mysql.PluginInstance
 }
 
@@ -61,7 +61,7 @@ func (h *EnableHelper) checkEnable() error {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginEnableError(errors.ServerError)
 	}
-	if exist && instance.Status != common.PluginStatusStopping {
+	if exist && instance.Status != types.PluginStatusStopping {
 		return errors.PluginEnableError(errors.PluginAlreadyRunning)
 	}
 	h.instance = instance
@@ -103,7 +103,7 @@ func (h *EnableHelper) RegisterAbility() error {
 }
 
 func (h *EnableHelper) UpdateDb() error {
-	h.instance.Status = common.PluginStatusRunning
+	h.instance.Status = types.PluginStatusRunning
 	if err := mysql.ModelPluginInstance().Update(h.instance.Id, h.instance); err != nil {
 		log.ErrorDetails(errors.Trace(err))
 		return errors.PluginEnableError(errors.ServerError)
